@@ -174,26 +174,10 @@
       padding-bottom:14px;border-bottom:1px solid rgba(0,0,0,.06);margin-bottom:16px
     }
     .section-title{display:flex;align-items:flex-start;gap:12px;min-width:0}
-    .section-title .icon{
-      /* icon dot */
-      position:relative;
+.section-title .icon{ display:none !important; }
+.section-title{ gap:0; } /* optional: removes the empty space where the icon was */
 
-      width:38px;height:38px;border-radius:14px;
-      background:rgba(0,112,202,.10);
-      border:1px solid rgba(0,112,202,.18);
-      display:none !important;
-      color:var(--isl-primary);
-      font-size:18px;margin-top:2px
-    }
-    .section-title .icon::after{
-      content:"";
-      width:10px;height:10px;border-radius:999px;
-      background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
-      position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-      opacity:.75;
-    }
-    .section-title .icon
-    }
+
     .section-title h2{font-size:18px;font-weight:800;letter-spacing:-0.02em;line-height:1.2}
     .section-title p{font-size:13px;color:var(--muted);margin-top:4px;max-width:92ch}
 
@@ -777,7 +761,7 @@
   <div class="summary-shell">
     <div class="summary-rail" aria-hidden="true"></div>
 
-    <div class="summary-card" id="execSummaryBox" contenteditable="true" aria-label="Editable executive summary">
+    <div class="summary-card" id="execSummaryBox" data-editable="true" aria-label="Editable executive summary">
       <ul class="summary-list" id="execSummaryList"></ul>
     </div>
   </div>
@@ -904,7 +888,7 @@
       <div class="insight-grid">
         <div class="insight-card">
           <h3>What’s Working</h3>
-          <div class="body" contenteditable="true">
+          <div class="body" data-editable="true">
             • Engagement is climbing quickly: reactions & likes increased 86.9% quarter-over-quarter.<br>
             • Link clicks rose 122%, showing stronger CTA performance and more traffic-driving content.
           </div>
@@ -912,7 +896,7 @@
 
         <div class="insight-card">
           <h3>What’s Not Working</h3>
-          <div class="body" contenteditable="true">
+          <div class="body" data-editable="true">
             • Add 3–6 gaps or underperforming areas.<br>
             • Example: “Follower growth is positive but slower than engagement gains — we need more follow-driving formats.”
           </div>
@@ -920,7 +904,7 @@
 
         <div class="insight-card">
           <h3>Actions From This Data</h3>
-          <div class="body" contenteditable="true">
+          <div class="body" data-editable="true">
             • Add 3–8 actions (clear, measurable).<br>
             • Example: “Standardize post CTAs and track clicks per 1,000 impressions weekly.”
           </div>
@@ -928,7 +912,7 @@
 
         <div class="insight-card">
           <h3>Next Quarter Focus</h3>
-          <div class="body" contenteditable="true">
+          <div class="body" data-editable="true">
             • Add what you’ll prioritize and how you’ll measure it.<br>
             • Example: “Increase engagement rate while growing followers by improving distribution and repurposing top themes.”
           </div>
@@ -1289,6 +1273,16 @@ renderTopPosts();
         }
       }
     });
+
+    (function lockEditing(){
+  const params = new URLSearchParams(window.location.search);
+  const canEdit = params.get("edit") === "1";   // only editable on ?edit=1
+
+  document.querySelectorAll('[data-editable="true"]').forEach(el => {
+    el.setAttribute("contenteditable", canEdit ? "true" : "false");
+  });
+})();
+
   </script>
 </body>
 </html>
