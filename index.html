@@ -509,6 +509,65 @@
   justify-content:flex-start !important;
 }
 
+    /* =========================
+   KPI TILES — TIGHT + PROPORTIONAL
+========================= */
+
+/* Grid spacing tighter */
+.kpi-grid{
+  gap:10px !important;
+}
+
+/* Tile shape + padding */
+.kpi-card{
+  padding:14px 16px !important;
+  border-radius:16px !important;
+  min-height:110px !important;
+
+  box-shadow:none !important;
+  border:1px solid rgba(0,0,0,.10) !important;
+  background:#fff !important;
+}
+
+/* Remove the top gradient stripe */
+.kpi-card::before{
+  display:none !important;
+}
+
+/* Label smaller + tighter */
+.kpi-label{
+  font-size:10px !important;
+  margin-bottom:6px !important;
+  letter-spacing:.08em !important;
+}
+
+/* Main number more proportional */
+.kpi-value{
+  font-size:22px !important;
+  line-height:1.15 !important;
+  margin-bottom:8px !important;
+}
+
+/* Delta row tighter */
+.kpi-sub{
+  margin-top:0 !important;
+  justify-content:flex-start !important;
+}
+
+/* Delta pill smaller + cleaner */
+.delta{
+  padding:5px 10px !important;
+  font-size:11px !important;
+  border-radius:999px !important;
+}
+
+/* Make KPI tiles feel aligned */
+.kpi-card{
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:space-between !important;
+}
+
     .delta{
       display:inline-flex;
       align-items:center;
