@@ -499,7 +499,16 @@
     .kpi-sub{
       margin-top:8px;color:var(--muted);font-size:11px;
       display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap
-    }
+    }/* Hide the "Total / End of period / Overall" text in KPI tiles */
+.kpi-sub span:last-child{
+  display:none !important;
+}
+
+/* Optional: keep the delta nicely aligned after removing the right-side text */
+.kpi-sub{
+  justify-content:flex-start !important;
+}
+
     .delta{
       display:inline-flex;
       align-items:center;
@@ -648,6 +657,7 @@
       background:linear-gradient(90deg,transparent,rgba(0,112,202,.55),transparent);
       border-radius:999px;
     }
+    .footer a:hover{text-decoration:underline;}
 
     @media (max-width:1100px){
       .hero-grid{grid-template-columns:1fr}
@@ -892,7 +902,13 @@
     <div class="footer" aria-label="Report footer">
       <div class="divider" aria-hidden="true"></div>
       <p><strong>Prepared by:</strong> Josiah Yule</p>
-      <p style="margin-top: 10px; color: rgba(0,61,114,.95); font-weight: 900;">Integrated Staffing</p>
+      <p style="margin-top:10px;">
+  <a href="https://integratedstaffing.ca" target="_blank" rel="noopener"
+     style="color:rgba(0,61,114,.95); font-weight:900; text-decoration:none;">
+    Integrated Staffing
+  </a>
+</p>
+
     </div>
 
   </div>
