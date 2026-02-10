@@ -217,6 +217,126 @@
     .editable li{padding-left:14px;position:relative;color:rgba(11,18,32,.86);font-size:13px}
     .editable li::before{content:"•";position:absolute;left:0;top:0;color:rgba(0,112,202,.9);font-weight:900}
 
+     /* =========================
+   SUMMARY (Executive Highlights)
+========================= */
+.summary-shell{
+  position:relative;
+  display:grid;
+  grid-template-columns: 10px 1fr;
+  gap:14px;
+  align-items:stretch;
+}
+
+.summary-rail{
+  border-radius:999px;
+  background:linear-gradient(
+    180deg,
+    rgba(0,112,202,.0),
+    rgba(0,112,202,.45),
+    rgba(0,84,154,.30),
+    rgba(0,112,202,.0)
+  );
+  box-shadow:0 0 0 1px rgba(0,112,202,.10);
+}
+
+.summary-card{
+  background:
+    radial-gradient(900px 260px at 20% 0%, rgba(0,112,202,.08), transparent 55%),
+    rgba(255,255,255,.82);
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:var(--radius-xl);
+  padding:18px 18px;
+  box-shadow:0 12px 26px rgba(0,0,0,.07);
+  position:relative;
+  overflow:hidden;
+}
+
+.summary-card::before{
+  content:"";
+  position:absolute;
+  inset:-80px -120px auto auto;
+  width:340px;height:340px;
+  background:radial-gradient(circle, rgba(77,163,232,.22), transparent 62%);
+  filter:blur(8px);
+  opacity:.9;
+  transform:rotate(10deg);
+  pointer-events:none;
+}
+
+.summary-card[contenteditable="true"]:focus{
+  outline:none;
+  border-color:rgba(0,112,202,.35);
+  box-shadow:0 0 0 4px rgba(0,112,202,.10), 0 12px 26px rgba(0,0,0,.07);
+}
+
+.summary-list{
+  list-style:none;
+  display:grid;
+  gap:12px;
+  position:relative;
+  z-index:1;
+}
+
+.summary-list li{
+  display:grid;
+  grid-template-columns: 18px 1fr;
+  gap:10px;
+  align-items:flex-start;
+
+  padding:12px 12px;
+  border-radius:18px;
+  background:rgba(245,245,247,.70);
+  border:1px solid rgba(0,0,0,.06);
+}
+
+.summary-dot{
+  width:10px;height:10px;
+  border-radius:999px;
+  margin-top:5px;
+  background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
+  box-shadow:0 0 0 4px rgba(0,112,202,.10);
+}
+
+.summary-text{
+  font-size:13px;
+  color:rgba(11,18,32,.86);
+  line-height:1.55;
+}
+
+.summary-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  border:1px solid rgba(0,0,0,.06);
+  background:rgba(0,0,0,.04);
+  color:rgba(11,18,32,.72);
+  white-space:nowrap;
+  vertical-align:baseline;
+  margin:0 2px;
+}
+
+.summary-badge.positive{
+  background:rgba(6,214,160,.14);
+  color:#047a5c;
+  border-color:rgba(6,214,160,.28);
+}
+.summary-badge.negative{
+  background:rgba(239,71,111,.14);
+  color:#9b1c3e;
+  border-color:rgba(239,71,111,.28);
+}
+
+@media (max-width:560px){
+  .summary-shell{grid-template-columns:8px 1fr;gap:12px}
+  .summary-card{padding:16px}
+  .summary-list li{padding:12px}
+}
+    
     .kpi-grid{
       display:grid;
       grid-template-columns:repeat(4,1fr);
@@ -460,20 +580,31 @@
       </div>
     </section>
 
-    <section class="section" aria-label="Executive summary">
-      <div class="section-header">
-        <div class="section-title">
-          <div class="icon" aria-hidden="true"></div>
-          <div>
-            <h2>Summary</h2
-          </div>
-        </div>
+<section class="section" aria-label="Executive summary">
+  <div class="section-header">
+    <div class="section-title">
+      <div class="icon" aria-hidden="true"></div>
+      <div>
+        <h2>Summary</h2>
+        <p>Executive-level highlights for fast scanning.</p>
       </div>
+    </div>
 
-      <div class="editable" id="execSummaryBox" contenteditable="true" aria-label="Editable executive summary">
-        <ul id="execSummaryList"></ul>
-      </div>
-    </section>
+    <div class="pill" aria-label="Summary type">
+      <span class="pill-dot" aria-hidden="true"></span>
+      <span>Executive Highlights</span>
+    </div>
+  </div>
+
+  <div class="summary-shell">
+    <div class="summary-rail" aria-hidden="true"></div>
+
+    <div class="summary-card" id="execSummaryBox" contenteditable="true" aria-label="Editable executive summary">
+      <ul class="summary-list" id="execSummaryList"></ul>
+    </div>
+  </div>
+</section>
+
 
     <section class="section" aria-label="Quarter totals">
       <div class="section-header">
@@ -772,12 +903,23 @@
       `${bestReach.name} delivered the highest reach (${fmtInt(bestReach.pageReach)}; ${bestReach.pageReachDelta}), while ${bestClicks.name} led page clicks (${fmtInt(bestClicks.pageClicks)}; ${bestClicks.pageClicksDelta}).`
     ];
     const ul = byId("execSummaryList");
-    ul.innerHTML = "";
-    summary.forEach(s => {
-      const li = document.createElement("li");
-      li.textContent = s;
-      ul.appendChild(li);
-    });
+ul.innerHTML = "";
+summary.forEach(s => {
+  const li = document.createElement("li");
+
+  // Wrap ▲/▼ deltas in styled badges
+  const html = s
+    .replace(/(▲\s?\d+(\.\d+)?%)/g, `<span class="summary-badge positive">$1</span>`)
+    .replace(/(▼\s?\d+(\.\d+)?%)/g, `<span class="summary-badge negative">$1</span>`);
+
+  li.innerHTML = `
+    <span class="summary-dot" aria-hidden="true"></span>
+    <span class="summary-text">${html}</span>
+  `;
+
+  ul.appendChild(li);
+});
+
 
     // Platform cards
     function renderPlatforms(){
