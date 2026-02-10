@@ -744,6 +744,79 @@
       .pill{box-shadow:none !important}
       .container{padding:18px !important}
     }
+    /* =========================
+   MOBILE TOPBAR: full brand + small Q pill
+========================= */
+@media (max-width: 700px){
+
+  /* Make topbar a clean stacked header */
+  .topbar{
+    position:relative;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:8px;
+    margin-bottom:12px;
+    padding-right:86px; /* room so the corner pill never overlaps text */
+  }
+
+  /* Ensure brand never truncates */
+  .brand{min-width:100%; gap:10px;}
+  .brand-text{min-width:0;}
+  .brand-text strong,
+  .brand-text span{
+    white-space:normal !important;
+    overflow:visible !important;
+    text-overflow:clip !important;
+  }
+  .brand-text strong{
+    font-size:13px;
+    letter-spacing:.10em;
+  }
+  .brand-text span{
+    font-size:12px;
+    line-height:1.25;
+  }
+
+  /* Corner pill (dot + Q1 only) */
+  .topbar .pill[aria-label="Report period"]{
+    position:absolute;
+    top:0;
+    right:0;
+    width:auto;
+    padding:7px 10px;
+    border-radius:999px;
+    font-size:12px;
+    box-shadow:none;
+  }
+
+  /* Hide everything except the quarter label inside the pill */
+  .topbar .pill[aria-label="Report period"] > span:last-child{
+    display:inline-flex;
+    align-items:center;
+    gap:0;
+  }
+  /* Keep Q1, hide the range “• Sep–Nov 2025” */
+  #reportRangeLabel{display:none !important;}
+  .topbar .pill[aria-label="Report period"] strong#reportQuarterLabel{
+    font-weight:900;
+  }
+
+  /* Optional: shorten "Q1 (Placeholder)" to just "Q1" visually, CSS-only */
+  .topbar .pill[aria-label="Report period"] strong#reportQuarterLabel{
+    position:relative;
+    font-size:12px;
+  }
+  .topbar .pill[aria-label="Report period"] strong#reportQuarterLabel::after{
+    content:"Q1";
+  }
+  .topbar .pill[aria-label="Report period"] strong#reportQuarterLabel{
+    color:transparent;
+  }
+  .topbar .pill[aria-label="Report period"] strong#reportQuarterLabel::after{
+    color:rgba(11,18,32,.85);
+  }
+}
+
   </style>
 </head>
 
