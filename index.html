@@ -933,6 +933,13 @@
       quarterLabel: "Q1 (Placeholder)",
       rangeLabel: "Sep–Nov 2025",
       generatedLabel: "Feb 10, 2026",
+      execSummary: [
+  "Overall performance increased quarter-over-quarter: impressions ▲ 50.6%, reactions & likes ▲ 86.9%, and link clicks ▲ 122%.",
+  "Average post engagement rate finished at 5.51% (▲ 23.6% vs previous quarter).",
+  "LinkedIn led engagement rate at 6.97% (▲ 34.6%).",
+  "LinkedIn delivered the highest reach (14,337; ▲ 52.8%), while Facebook led page clicks (1,961; ▲ 326%)."
+],
+
 
       overall: {
         posts: 126,
@@ -1059,12 +1066,15 @@
     const bestReach = bestBy("pageReach");
     const bestClicks = bestBy("pageClicks");
 
-    const summary = [
+const summary = (REPORT.execSummary && REPORT.execSummary.length)
+  ? REPORT.execSummary
+  : [
       `Overall performance increased quarter-over-quarter: impressions ${REPORT.deltas.impressions}, reactions & likes ${REPORT.deltas.reactions}, and link clicks ${REPORT.deltas.linkClicks}.`,
       `Average post engagement rate finished at ${fmtPct(REPORT.overall.avgEngagementRate)} (${REPORT.deltas.avgEngagementRate} vs previous quarter).`,
       `${bestER.name} led engagement rate at ${fmtPct(bestER.engagementRate)} (${bestER.engagementRateDelta}).`,
       `${bestReach.name} delivered the highest reach (${fmtInt(bestReach.pageReach)}; ${bestReach.pageReachDelta}), while ${bestClicks.name} led page clicks (${fmtInt(bestClicks.pageClicks)}; ${bestClicks.pageClicksDelta}).`
     ];
+
     const ul = byId("execSummaryList");
 ul.innerHTML = "";
 summary.forEach(s => {
