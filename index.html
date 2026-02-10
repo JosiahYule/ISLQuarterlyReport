@@ -40,41 +40,11 @@
     body{
       font-family:var(--font);
       color:var(--text);
-      background:
-        radial-gradient(1200px 800px at 15% 10%, rgba(0,112,202,.14), transparent 55%),
-        radial-gradient(1000px 700px at 85% 20%, rgba(0,84,154,.14), transparent 55%),
-        radial-gradient(900px 600px at 70% 95%, rgba(77,163,232,.10), transparent 55%),
-        var(--bg);
+      background:#ffffff;
       line-height:1.55;
       overflow-x:hidden;
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
-    }
-
-    body::before{
-      content:"";
-      position:fixed; inset:0;
-      pointer-events:none;
-      background:
-        radial-gradient(circle at 30% 20%, rgba(255,255,255,.22) 0%, transparent 55%),
-        radial-gradient(circle at 80% 80%, rgba(255,255,255,.16) 0%, transparent 55%),
-        linear-gradient(120deg, rgba(0,84,154,.06), rgba(0,112,202,.06));
-      mix-blend-mode:soft-light;
-      opacity:.55;
-      animation:drift 18s ease-in-out infinite;
-      z-index:-2;
-    }
-    body::after{
-      content:"";
-      position:fixed; inset:0;
-      pointer-events:none;
-      background-image:repeating-linear-gradient(0deg, rgba(0,0,0,.02), rgba(0,0,0,.02) 1px, transparent 1px, transparent 3px);
-      opacity:.08;
-      z-index:-1;
-    }
-    @keyframes drift{
-      0%,100%{transform:translate3d(0,0,0)}
-      50%{transform:translate3d(-18px,-16px,0)}
     }
 
     .container{max-width:1320px;margin:0 auto;padding:34px 18px 70px}
@@ -713,7 +683,6 @@
 
     <div class="topbar">
       <div class="brand">
-        <div class="brand-mark" aria-hidden="true"></div>
         <div class="brand-text">
           <strong>Integrated Staffing</strong>
           <span>Quarterly Digital Media Performance Report</span>
