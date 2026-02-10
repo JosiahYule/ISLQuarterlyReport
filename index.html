@@ -336,6 +336,184 @@
   .summary-card{padding:16px}
   .summary-list li{padding:12px}
 }
+
+/* =========================
+   TOP POSTS (Condensed + Click-to-expand)
+========================= */
+.top-compact{
+  display:grid;
+  gap:12px;
+}
+
+.platform-acc{
+  background:rgba(255,255,255,.78);
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:var(--radius-xl);
+  box-shadow:0 10px 22px rgba(0,0,0,.06);
+  overflow:hidden;
+}
+
+.platform-acc > summary{
+  list-style:none;
+  cursor:pointer;
+  padding:14px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  user-select:none;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.55));
+}
+
+.platform-acc > summary::-webkit-details-marker{display:none}
+
+.platform-acc .sum-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+
+.platform-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:7px 10px;
+  border-radius:999px;
+  background:rgba(0,112,202,.10);
+  border:1px solid rgba(0,112,202,.18);
+  color:rgba(0,61,114,.95);
+  font-weight:900;
+  font-size:12px;
+  white-space:nowrap;
+}
+
+.platform-meta{
+  font-size:12px;
+  color:var(--muted);
+  white-space:nowrap;
+}
+
+.chev{
+  width:34px;height:34px;
+  border-radius:14px;
+  display:grid;place-items:center;
+  background:rgba(0,0,0,.04);
+  border:1px solid rgba(0,0,0,.06);
+  transition:transform .2s ease;
+  flex:0 0 auto;
+}
+.platform-acc[open] .chev{transform:rotate(180deg)}
+
+.platform-body{
+  padding:12px 12px 14px;
+  border-top:1px solid rgba(0,0,0,.06);
+  background:rgba(245,245,247,.55);
+}
+
+.post-mini{
+  background:rgba(255,255,255,.78);
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:18px;
+  overflow:hidden;
+}
+
+.post-mini + .post-mini{margin-top:10px}
+
+.post-mini > summary{
+  list-style:none;
+  cursor:pointer;
+  padding:12px 12px;
+  display:grid;
+  grid-template-columns: 54px 1fr auto;
+  gap:12px;
+  align-items:center;
+}
+.post-mini > summary::-webkit-details-marker{display:none}
+
+.rank{
+  width:44px;height:34px;
+  border-radius:999px;
+  display:grid;place-items:center;
+  font-weight:900;
+  font-size:12px;
+  color:rgba(0,61,114,.98);
+  background:rgba(0,112,202,.10);
+  border:1px solid rgba(0,112,202,.18);
+}
+
+.ptitle{
+  min-width:0;
+  font-weight:900;
+  font-size:13px;
+  color:rgba(0,61,114,.96);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.quick{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:rgba(11,18,32,.75);
+  font-size:12px;
+  white-space:nowrap;
+}
+.quick strong{font-weight:900;color:rgba(11,18,32,.90)}
+
+.post-mini[open] .ptitle{white-space:normal}
+
+.post-details{
+  border-top:1px solid rgba(0,0,0,.06);
+  padding:12px;
+  background:rgba(245,245,247,.60);
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap:10px;
+}
+
+.mini-stat{
+  background:rgba(255,255,255,.85);
+  border:1px solid rgba(0,0,0,.06);
+  border-radius:14px;
+  padding:10px 10px;
+}
+.mini-stat span{
+  display:block;
+  font-size:10px;
+  color:var(--muted);
+  letter-spacing:.10em;
+  text-transform:uppercase;
+  font-weight:900;
+  margin-bottom:6px;
+}
+.mini-stat strong{
+  display:block;
+  font-size:14px;
+  font-weight:900;
+  letter-spacing:-0.01em;
+}
+
+.math{
+  grid-column:1 / -1;
+  font-size:12px;
+  color:var(--muted);
+  padding:8px 10px;
+  border-radius:14px;
+  background:rgba(0,0,0,.03);
+  border:1px solid rgba(0,0,0,.06);
+}
+
+@media (max-width:700px){
+  .post-mini > summary{
+    grid-template-columns: 54px 1fr;
+    grid-auto-rows:auto;
+  }
+  .quick{grid-column:1 / -1;justify-content:flex-start}
+  .post-details{grid-template-columns: repeat(2, minmax(0,1fr))}
+}
     
     .kpi-grid{
       display:grid;
@@ -695,20 +873,21 @@
       </div>
     </section>
 
-    <section class="section" aria-label="Top posts">
-      <div class="section-header">
-        <div class="section-title">
-          <div class="icon" aria-hidden="true"></div>
-          <div>
-            <h2>Top Performing Posts</h2>
-            <p>Top posts are ranked by engagement rate internally, but only impressions, likes, and shares are shown for executive clarity.</p>
-          </div>
-        </div>
-        <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Top 3 × 3</span></div>
+<section class="section" aria-label="Top posts">
+  <div class="section-header">
+    <div class="section-title">
+      <div class="icon" aria-hidden="true"></div>
+      <div>
+        <h2>Top Performing Posts</h2>
+        <p>Compact view by platform. Click a post to see details.</p>
       </div>
+    </div>
+    <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Top 3 × 3</span></div>
+  </div>
 
-      <div class="top-groups" id="topGroups"></div>
-    </section>
+  <div class="top-compact" id="topCompact"></div>
+</section>
+
 
     <section class="section" aria-label="Insights and analysis">
       <div class="section-header">
@@ -973,48 +1152,74 @@ summary.forEach(s => {
     renderPlatforms();
 
     // Top posts (computed engagement rate)
-    function renderTopPosts(){
-      const wrap = byId("topGroups");
-      wrap.innerHTML = "";
-      const order = [
-        { key: "linkedin", label: "LinkedIn" },
-        { key: "facebook", label: "Facebook" },
-        { key: "instagram", label: "Instagram" }
-      ];
-      order.forEach(({key, label}) => {
-        const posts = (REPORT.topPostsByPlatform[key] || []).slice(0,3)
-          .map(p => ({...p, engagementRate: postEngRate(p)}))
-          .sort((a,b) => (b.engagementRate||0) - (a.engagementRate||0));
+function renderTopPosts(){
+  const wrap = byId("topCompact");
+  wrap.innerHTML = "";
 
-        const group = document.createElement("div");
-        const head = document.createElement("div");
-        head.className = "top-group-head";
-        head.innerHTML = `<h3>${label} • Top 3</h3><div class="hint">Eng. Rate = (likes + shares) ÷ impressions</div>`;
-        group.appendChild(head);
+  const order = [
+    { key: "linkedin", label: "LinkedIn" },
+    { key: "facebook", label: "Facebook" },
+    { key: "instagram", label: "Instagram" }
+  ];
 
-        const grid = document.createElement("div");
-        grid.className = "post-grid";
+  order.forEach(({key, label}) => {
+    const posts = (REPORT.topPostsByPlatform[key] || []).slice(0,3)
+      .map(p => ({...p, engagementRate: postEngRate(p)}))
+      .sort((a,b) => (b.engagementRate||0) - (a.engagementRate||0));
 
-        posts.forEach((p, idx) => {
-          const card = document.createElement("div");
-          card.className = "post";
-          card.innerHTML = `
-            <div class="post-title">#${idx+1} — ${p.title || (label + " Post")}</div>
-            <div class="post-desc">${p.description || ""}</div>
-            <div class="post-metrics">
-              <div class="pm"><strong>${fmtInt(p.impressions || 0)}</strong><span>Impressions</span></div>
-              <div class="pm"><strong>${fmtInt(p.likes || 0)}</strong><span>Likes</span></div>
-              <div class="pm"><strong>${fmtInt(p.shares || 0)}</strong><span>Shares</span></div>
-            </div>
-          `;
-          grid.appendChild(card);
-        });
+    const totalImpressions = posts.reduce((sum,p) => sum + (p.impressions||0), 0);
+    const avgER = posts.length ? (posts.reduce((sum,p)=>sum+(p.engagementRate||0),0) / posts.length) : 0;
 
-        group.appendChild(grid);
-        wrap.appendChild(group);
-      });
-    }
-    renderTopPosts();
+    const platform = document.createElement("details");
+    platform.className = "platform-acc";
+    platform.open = (key === "linkedin"); // optional: default open first
+
+    platform.innerHTML = `
+      <summary>
+        <div class="sum-left">
+          <span class="platform-pill">${label}</span>
+          <span class="platform-meta">Top 3 • ${fmtInt(totalImpressions)} impressions • Avg ER ${fmtPct(avgER)}</span>
+        </div>
+        <span class="chev" aria-hidden="true">⌄</span>
+      </summary>
+      <div class="platform-body"></div>
+    `;
+
+    const body = platform.querySelector(".platform-body");
+
+    posts.forEach((p, idx) => {
+      const mini = document.createElement("details");
+      mini.className = "post-mini";
+
+      const erText = fmtPct(p.engagementRate || 0);
+
+      mini.innerHTML = `
+        <summary>
+          <div class="rank">#${idx+1}</div>
+          <div class="ptitle">${p.title || (label + " Post")}</div>
+          <div class="quick">
+            <span><strong>${fmtInt(p.impressions || 0)}</strong> impr.</span>
+            <span><strong>${erText}</strong> ER</span>
+          </div>
+        </summary>
+
+        <div class="post-details">
+          <div class="mini-stat"><span>Impressions</span><strong>${fmtInt(p.impressions || 0)}</strong></div>
+          <div class="mini-stat"><span>Likes</span><strong>${fmtInt(p.likes || 0)}</strong></div>
+          <div class="mini-stat"><span>Shares</span><strong>${fmtInt(p.shares || 0)}</strong></div>
+          <div class="mini-stat"><span>Eng. Rate</span><strong>${erText}</strong></div>
+          <div class="math">Eng. Rate = (likes + shares) ÷ impressions = (${fmtInt(p.likes||0)} + ${fmtInt(p.shares||0)}) ÷ ${fmtInt(p.impressions||0)}</div>
+        </div>
+      `;
+
+      body.appendChild(mini);
+    });
+
+    wrap.appendChild(platform);
+  });
+}
+renderTopPosts();
+
 
     // Charts
     Chart.defaults.font.family = 'Gotham, Gotham SSm, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
