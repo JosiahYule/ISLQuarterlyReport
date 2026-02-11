@@ -1292,7 +1292,7 @@
       <div class="insight-grid">
         <div class="insight-card">
           <h3>What's Working</h3>
-          <div class="body" id="insightWorking" data-editable="true">
+          <div class="body" id="insWorking" data-editable="true">
             • Engagement is climbing quickly: reactions & likes increased 86.9% quarter-over-quarter.<br>
             • Link clicks rose 122%, showing stronger CTA performance and more traffic-driving content.
           </div>
@@ -1300,7 +1300,7 @@
 
         <div class="insight-card">
           <h3>What's Not Working</h3>
-          <div class="body" id="insightNotWorking" data-editable="true">
+          <div class="body" id="insNotWorking" data-editable="true">
             • Add 3–6 gaps or underperforming areas.<br>
             • Example: "Follower growth is positive but slower than engagement gains — we need more follow-driving formats."
           </div>
@@ -1308,7 +1308,7 @@
 
         <div class="insight-card">
           <h3>Actions From This Data</h3>
-          <div class="body" id="insightActions" data-editable="true">
+          <div class="body" id="insActions" data-editable="true">
             • Add 3–8 actions (clear, measurable).<br>
             • Example: "Standardize post CTAs and track clicks per 1,000 impressions weekly."
           </div>
@@ -1316,7 +1316,7 @@
 
         <div class="insight-card">
           <h3>Next Quarter Focus</h3>
-          <div class="body" id="insightNext" data-editable="true">
+          <div class="body" id="insNext" data-editable="true">
             • Add what you'll prioritize and how you'll measure it.<br>
             • Example: "Increase engagement rate while growing followers by improving distribution and repurposing top themes."
           </div>
@@ -1334,11 +1334,11 @@
 
   </div>
 
-  <script>
-  /* =========================
-     DATA (EDIT THIS ONLY)
-  ========================= */
-  let REPORT = null;
+ <script>
+/* =========================
+   LOAD JSON (report-data.json)
+========================= */
+let REPORT = null;
 
 async function loadReport(){
   const res = await fetch("./report-data.json", { cache: "no-store" });
@@ -1346,490 +1346,531 @@ async function loadReport(){
   return await res.json();
 }
 
-  /* =========================
-     HELPERS
-  ========================= */
-  const byId = (id) => document.getElementById(id);
-
-  const fmtInt = (n) => (typeof n === "number" ? n.toLocaleString() : "—");
-  const fmtCompact = (n) => {
-    if (typeof n !== "number" || Number.isNaN(n)) return "—";
-    if (Math.abs(n) >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
-    if (Math.abs(n) >= 1_000) return n.toLocaleString();
-    return String(n);
-  };
-  const fmtPct = (n) =>
-    typeof n === "number"
-      ? (n.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "%")
-      : "—";
-
-  function setText(id, value){
-    const el = byId(id);
-    if (el) el.textContent = value;
-  }
-
-  function setDelta(el, text){
-    if(!el) return;
-    el.textContent = text || "—";
-    el.classList.remove("positive","negative");
-    if(!text || text === "—") return;
-    const t = text.trim();
-    if(t.startsWith("▲") || t.startsWith("↑")) el.classList.add("positive");
-    if(t.startsWith("▼") || t.startsWith("↓")) el.classList.add("negative");
-  }
-
-  function postEngRate(p){
-    const imp = p.impressions || 0;
-    const eng = (p.likes || 0) + (p.shares || 0);
-    return imp > 0 ? (eng / imp) * 100 : 0;
-  }
-
-  function seriesColors(count){
-    return [
-      'rgba(0,112,202,0.9)',
-      'rgba(0,84,154,0.85)',
-      'rgba(77,163,232,0.8)'
-    ].slice(0, count);
-  }
-
-  /* =========================
-     HEADER + KPI + SUMMARY
-  ========================= */
-  function renderHeader(){
-    setText("reportQuarterLabel", REPORT.quarterLabel);
-    setText("reportRangeLabel", REPORT.rangeLabel);
-    setText("generatedLabel", REPORT.generatedLabel);
-  }
-
-  function renderKPIs(){
-    setText("kpiPosts", fmtInt(REPORT.overall.posts));
-    setText("kpiImpressions", fmtCompact(REPORT.overall.impressions));
-    setText("kpiShares", fmtInt(REPORT.overall.shares));
-    setText("kpiReactions", fmtInt(REPORT.overall.reactions));
-    setText("kpiFollowers", fmtInt(REPORT.overall.followers));
-    setText("kpiLinkClicks", fmtInt(REPORT.overall.linkClicks));
-    setText("kpiComments", fmtInt(REPORT.overall.comments));
-    setText("kpiAvgEngRate", fmtPct(REPORT.overall.avgEngagementRate));
-
-    setDelta(byId("deltaPosts"), REPORT.deltas.posts);
-    setDelta(byId("deltaImpressions"), REPORT.deltas.impressions);
-    setDelta(byId("deltaShares"), REPORT.deltas.shares);
-    setDelta(byId("deltaReactions"), REPORT.deltas.reactions);
-    setDelta(byId("deltaFollowers"), REPORT.deltas.followers);
-    setDelta(byId("deltaLinkClicks"), REPORT.deltas.linkClicks);
-    setDelta(byId("deltaComments"), REPORT.deltas.comments);
-    setDelta(byId("deltaAvgEngRate"), REPORT.deltas.avgEngagementRate);
-  }
-
-  function renderExecutiveSummary(){
-    const ul = byId("execSummaryList");
-    if(!ul) return;
-
-    ul.innerHTML = "";
-    (REPORT.execSummary || []).forEach(s => {
-      const li = document.createElement("li");
-      const html = String(s)
-        .replace(/(▲\s?\d+(\.\d+)?%)/g, `<span class="summary-badge positive">$1</span>`)
-        .replace(/(▼\s?\d+(\.\d+)?%)/g, `<span class="summary-badge negative">$1</span>`);
-
-      li.innerHTML = `
-        <span class="summary-dot" aria-hidden="true"></span>
-        <span class="summary-text">${html}</span>
-      `;
-      ul.appendChild(li);
-    });
-  }
-
-  /* =========================
-     PLATFORM CARDS
-  ========================= */
-  function renderPlatforms(){
-    const grid = byId("platformGrid");
-    if(!grid) return;
-
-    grid.innerHTML = "";
-    (REPORT.platforms || []).forEach(p => {
-      const card = document.createElement("div");
-      card.className = "platform";
-      card.innerHTML = `
-        <div class="platform-head">
-          <div class="platform-name">
-            <span class="platform-badge" aria-hidden="true">${p.badge || ""}</span>
-            ${p.name || ""}
-          </div>
-          <div class="platform-tag">${p.tag || ""}</div>
-        </div>
-
-        <div class="pstats">
-          <div class="pstat">
-            <span class="pstat-label">Followers</span>
-            <div class="pstat-row">
-              <strong>${fmtInt(p.followers)}</strong>
-              <span class="delta ${p.followersDelta?.trim().startsWith("▲") ? "positive" : (p.followersDelta?.trim().startsWith("▼") ? "negative" : "")}">
-                ${p.followersDelta || "—"}
-              </span>
-            </div>
-          </div>
-
-          <div class="pstat">
-            <span class="pstat-label">Post Engagement Rate</span>
-            <div class="pstat-row">
-              <strong>${fmtPct(p.engagementRate)}</strong>
-              <span class="delta ${p.engagementRateDelta?.trim().startsWith("▲") ? "positive" : (p.engagementRateDelta?.trim().startsWith("▼") ? "negative" : "")}">
-                ${p.engagementRateDelta || "—"}
-              </span>
-            </div>
-          </div>
-
-          <div class="pstat">
-            <span class="pstat-label">Page Reach</span>
-            <div class="pstat-row">
-              <strong>${fmtInt(p.pageReach)}</strong>
-              <span class="delta ${p.pageReachDelta?.trim().startsWith("▲") ? "positive" : (p.pageReachDelta?.trim().startsWith("▼") ? "negative" : "")}">
-                ${p.pageReachDelta || "—"}
-              </span>
-            </div>
-          </div>
-
-          <div class="pstat">
-            <span class="pstat-label">Page Clicks</span>
-            <div class="pstat-row">
-              <strong>${fmtInt(p.pageClicks)}</strong>
-              <span class="delta ${p.pageClicksDelta?.trim().startsWith("▲") ? "positive" : (p.pageClicksDelta?.trim().startsWith("▼") ? "negative" : "")}">
-                ${p.pageClicksDelta || "—"}
-              </span>
-            </div>
-          </div>
-        </div>
-      `;
-      grid.appendChild(card);
-    });
-  }
-
-  /* =========================
-     TOP POSTS (START CLOSED)
-  ========================= */
-  function renderTopPosts(){
-    const wrap = byId("topCompact");
-    if(!wrap) return;
-
-    wrap.innerHTML = "";
-
-    const order = [
-      { key: "linkedin", label: "LinkedIn" },
-      { key: "facebook", label: "Facebook" },
-      { key: "instagram", label: "Instagram" }
-    ];
-
-    order.forEach(({key, label}) => {
-      const posts = (REPORT.topPostsByPlatform?.[key] || [])
-        .slice(0,3)
-        .map(p => ({...p, engagementRate: postEngRate(p)}))
-        .sort((a,b) => (b.engagementRate||0) - (a.engagementRate||0));
-
-      const totalImpressions = posts.reduce((sum,p) => sum + (p.impressions||0), 0);
-      const avgER = posts.length ? (posts.reduce((sum,p)=>sum+(p.engagementRate||0),0) / posts.length) : 0;
-
-      const platform = document.createElement("details");
-      platform.className = "platform-acc";
-      platform.open = false;
-
-      platform.innerHTML = `
-        <summary>
-          <div class="sum-left">
-            <span class="platform-pill">${label}</span>
-            <span class="platform-meta">Top 3 • ${fmtInt(totalImpressions)} impressions • Avg ER ${fmtPct(avgER)}</span>
-          </div>
-          <span class="chev" aria-hidden="true">⌄</span>
-        </summary>
-        <div class="platform-body"></div>
-      `;
-
-      const body = platform.querySelector(".platform-body");
-
-      posts.forEach((p, idx) => {
-        const mini = document.createElement("details");
-        mini.className = "post-mini";
-
-        const erText = fmtPct(p.engagementRate || 0);
-
-        mini.innerHTML = `
-          <summary>
-            <div class="rank">#${idx+1}</div>
-            <div class="ptitle">${p.title || (label + " Post")}</div>
-            <div class="quick">
-              <span><strong>${fmtInt(p.impressions || 0)}</strong> impr.</span>
-              <span><strong>${erText}</strong> ER</span>
-            </div>
-          </summary>
-
-          <div class="post-details">
-            <div class="mini-stat"><span>Impressions</span><strong>${fmtInt(p.impressions || 0)}</strong></div>
-            <div class="mini-stat"><span>Likes</span><strong>${fmtInt(p.likes || 0)}</strong></div>
-            <div class="mini-stat"><span>Shares</span><strong>${fmtInt(p.shares || 0)}</strong></div>
-            <div class="mini-stat"><span>Eng. Rate</span><strong>${erText}</strong></div>
-            <div class="math">Eng. Rate = (likes + shares) ÷ impressions = (${fmtInt(p.likes||0)} + ${fmtInt(p.shares||0)}) ÷ ${fmtInt(p.impressions||0)}</div>
-          </div>
-        `;
-
-        body.appendChild(mini);
-      });
-
-      wrap.appendChild(platform);
-    });
-  }
-
-  /* =========================
-     CHARTS (BAR <-> PIE)
-  ========================= */
-  Chart.defaults.font.family = 'Gotham, Gotham SSm, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
-  Chart.defaults.color = '#64748B';
-
-  const commonTooltip = {
-    backgroundColor: 'rgba(0,61,114,0.95)',
-    padding: 14,
-    titleFont: { size: 13, weight: '700' },
-    bodyFont: { size: 12, weight: '500' },
-    cornerRadius: 10,
-    displayColors: false
-  };
-
-  let reachChart, engChart;
-
-  function getChartSeries(){
-    const labels = (REPORT.platforms || []).map(p => p.name);
-    const reach = (REPORT.platforms || []).map(p => p.pageReach || 0);
-    const er = (REPORT.platforms || []).map(p => p.engagementRate || 0);
-    return { labels, reach, er };
-  }
-
-  function buildReach(type){
-    const canvas = byId("reachChart");
-    if(!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if(reachChart) reachChart.destroy();
-
-    const { labels, reach } = getChartSeries();
-    const colors = seriesColors(labels.length);
-
-    reachChart = new Chart(ctx, {
-      type,
-      data: {
-        labels,
-        datasets: [{
-          label: "Page Reach",
-          data: reach,
-          backgroundColor: type === "pie" ? colors : colors,
-          borderColor: type === "pie" ? "#fff" : ['#0070CA', '#00549A', '#4DA3E8'],
-          borderWidth: type === "pie" ? 2 : 0,
-          borderRadius: type === "bar" ? 8 : 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: type === "pie", labels: { boxWidth: 10, boxHeight: 10 } },
-          tooltip: commonTooltip
-        },
-        scales: type === "bar" ? {
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-            ticks: { font: { size: 11, weight: '500' }, color: '#64748B' },
-            border: { display: false }
-          },
-          x: {
-            grid: { display: false, drawBorder: false },
-            ticks: { font: { size: 12, weight: '700' }, color: '#0B1220' },
-            border: { display: false }
-          }
-        } : {}
-      }
-    });
-  }
-
-  function buildEng(type){
-    const canvas = byId("engRateChart");
-    if(!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if(engChart) engChart.destroy();
-
-    const { labels, er } = getChartSeries();
-    const colors = seriesColors(labels.length);
-
-    engChart = new Chart(ctx, {
-      type,
-      data: {
-        labels,
-        datasets: [{
-          label: "Post Engagement Rate (%)",
-          data: er,
-          backgroundColor: type === "pie" ? colors : 'rgba(0,112,202,0.15)',
-          borderColor: type === "pie" ? "#fff" : "#0070CA",
-          borderWidth: type === "pie" ? 2 : 2,
-          borderRadius: type === "bar" ? 8 : 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: type === "pie", labels: { boxWidth: 10, boxHeight: 10 } },
-          tooltip: commonTooltip
-        },
-        scales: type === "bar" ? {
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-            ticks: {
-              font: { size: 11, weight: '500' },
-              color: '#64748B',
-              callback: (v) => v + "%"
-            },
-            border: { display: false }
-          },
-          x: {
-            grid: { display: false, drawBorder: false },
-            ticks: { font: { size: 12, weight: '700' }, color: '#0B1220' },
-            border: { display: false }
-          }
-        } : {}
-      }
-    });
-  }
-
-  function wireChartToggles(){
-    const btns = document.querySelectorAll(".ct-btn");
-    if(!btns.length) return;
-
-    btns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const chart = btn.getAttribute("data-chart"); // reach | eng
-        const type = btn.getAttribute("data-type");   // bar | pie
-
-        const group = btn.parentElement;
-        group.querySelectorAll(".ct-btn").forEach(b => b.classList.remove("is-active"));
-        btn.classList.add("is-active");
-
-        if(chart === "reach") buildReach(type);
-        if(chart === "eng") buildEng(type);
-      });
-    });
-  }
-
-  /* =========================
-     EDIT LOCK (?edit=1)
-  ========================= */
-  function lockEditing(){
-    const params = new URLSearchParams(window.location.search);
-    const canEdit = params.get("edit") === "1";
-    document.querySelectorAll('[data-editable="true"]').forEach(el => {
-      el.setAttribute("contenteditable", canEdit ? "true" : "false");
-    });
-  }
-
-  /* =========================
-     QUARTER DROPDOWN
-  ========================= */
-  function quarterDropdown(){
-    const wrap = document.querySelector(".pill-wrap");
-    const btn = document.getElementById("quarterBtn");
-    if(!wrap || !btn) return;
-
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      wrap.classList.toggle("open");
-      btn.setAttribute("aria-expanded", wrap.classList.contains("open") ? "true" : "false");
-    });
-
-    document.addEventListener("click", () => {
-      wrap.classList.remove("open");
-      btn.setAttribute("aria-expanded","false");
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if(e.key === "Escape"){
-        wrap.classList.remove("open");
-        btn.setAttribute("aria-expanded","false");
-      }
-    });
-  }
-
-  /* =========================
-   LOCAL SAVE (SUMMARY + INSIGHTS)
-   Saves per-quarter in this browser
+/* =========================
+   HELPERS
 ========================= */
-function storageKey(){
-  return `isl-report-notes:${REPORT?.quarterLabel || "Q?"}:${REPORT?.rangeLabel || ""}`;
-}
+const byId = (id) => document.getElementById(id);
 
-function loadNotes(){
-  try{
-    const raw = localStorage.getItem(storageKey());
-    return raw ? JSON.parse(raw) : null;
-  }catch(e){
-    return null;
+const toNumber = (v) => {
+  if (typeof v === "number") return Number.isFinite(v) ? v : null;
+  if (typeof v === "string"){
+    const t = v.trim();
+    if (!t) return null;
+    const n = Number(t.replace(/,/g,""));
+    return Number.isFinite(n) ? n : null;
   }
+  return null;
+};
+
+const fmtInt = (n) => (typeof n === "number" && Number.isFinite(n) ? n.toLocaleString() : "—");
+
+const fmtCompact = (n) => {
+  if (typeof n !== "number" || !Number.isFinite(n)) return "—";
+  if (Math.abs(n) >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+  if (Math.abs(n) >= 1_000) return n.toLocaleString();
+  return String(n);
+};
+
+const fmtPct = (n) =>
+  typeof n === "number" && Number.isFinite(n)
+    ? (n.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "%")
+    : "—";
+
+function setText(id, value){
+  const el = byId(id);
+  if (el) el.textContent = value;
 }
 
-function saveNotes(payload){
-  try{
-    localStorage.setItem(storageKey(), JSON.stringify(payload));
-  }catch(e){}
+function setHTML(id, value){
+  const el = byId(id);
+  if (!el) return;
+  el.innerHTML = (value && String(value).trim()) ? String(value) : "";
 }
 
-function wireNotesAutosave(){
-  const canEdit = new URLSearchParams(window.location.search).get("edit") === "1";
-  if(!canEdit) return; // only save when you're in edit mode
+function setDelta(el, text){
+  if(!el) return;
+  el.textContent = text || "—";
+  el.classList.remove("positive","negative");
+  if(!text || text === "—") return;
+  const t = String(text).trim();
+  if(t.startsWith("▲") || t.startsWith("↑")) el.classList.add("positive");
+  if(t.startsWith("▼") || t.startsWith("↓")) el.classList.add("negative");
+}
 
-  const execList = document.getElementById("execSummaryList");
-  const w = document.getElementById("insightWorking");
-  const nw = document.getElementById("insightNotWorking");
-  const a = document.getElementById("insightActions");
-  const n = document.getElementById("insightNext");
+function postEngRate(p){
+  const imp = toNumber(p?.impressions) || 0;
+  const likes = toNumber(p?.likes) || 0;
+  const shares = toNumber(p?.shares) || 0;
+  const eng = likes + shares;
+  return imp > 0 ? (eng / imp) * 100 : 0;
+}
 
-  // restore any saved notes
-  const saved = loadNotes();
-  if(saved){
-    if(execList && saved.execHtml) execList.innerHTML = saved.execHtml;
-    if(w && saved.working) w.innerHTML = saved.working;
-    if(nw && saved.notWorking) nw.innerHTML = saved.notWorking;
-    if(a && saved.actions) a.innerHTML = saved.actions;
-    if(n && saved.next) n.innerHTML = saved.next;
-  }
+function seriesColors(count){
+  return [
+    "rgba(0,112,202,0.9)",
+    "rgba(0,84,154,0.85)",
+    "rgba(77,163,232,0.8)"
+  ].slice(0, count);
+}
 
-  // save on input (debounced)
-  let t = null;
-  const scheduleSave = () => {
-    clearTimeout(t);
-    t = setTimeout(() => {
-      saveNotes({
-        execHtml: execList ? execList.innerHTML : "",
-        working: w ? w.innerHTML : "",
-        notWorking: nw ? nw.innerHTML : "",
-        actions: a ? a.innerHTML : "",
-        next: n ? n.innerHTML : ""
-      });
-    }, 250);
+/* =========================
+   NORMALIZE JSON KEYS (handles older sheets)
+========================= */
+function normalizeReport(raw){
+  const r = raw && typeof raw === "object" ? raw : {};
+
+  // overall: accept both camelCase and lowercase variants
+  const overallIn = r.overall && typeof r.overall === "object" ? r.overall : {};
+  const deltasIn  = r.deltas  && typeof r.deltas  === "object" ? r.deltas  : {};
+
+  const overall = {
+    posts: toNumber(overallIn.posts),
+    impressions: toNumber(overallIn.impressions),
+    shares: toNumber(overallIn.shares),
+    reactions: toNumber(overallIn.reactions),
+    followers: toNumber(overallIn.followers),
+    linkClicks: toNumber(overallIn.linkClicks ?? overallIn.linkclicks),
+    comments: toNumber(overallIn.comments),
+    avgEngagementRate: toNumber(overallIn.avgEngagementRate ?? overallIn.avgengagementrate)
   };
 
-  [execList, w, nw, a, n].filter(Boolean).forEach(el => {
-    el.addEventListener("input", scheduleSave);
-    el.addEventListener("blur", scheduleSave);
+  const deltas = {
+    posts: deltasIn.posts ?? "",
+    impressions: deltasIn.impressions ?? "",
+    shares: deltasIn.shares ?? "",
+    reactions: deltasIn.reactions ?? "",
+    followers: deltasIn.followers ?? "",
+    linkClicks: deltasIn.linkClicks ?? deltasIn.linkclicks ?? "",
+    comments: deltasIn.comments ?? "",
+    avgEngagementRate: deltasIn.avgEngagementRate ?? deltasIn.avgengagementrate ?? ""
+  };
+
+  // insights: accept either {working,notWorking,actions,next} OR {"What's Working": "..."}
+  const insightsIn = r.insights && typeof r.insights === "object" ? r.insights : {};
+  const insights = {
+    working: insightsIn.working ?? insightsIn["What's Working"] ?? "",
+    notWorking: insightsIn.notWorking ?? insightsIn["What's Not Working"] ?? "",
+    actions: insightsIn.actions ?? insightsIn["Actions From This Data"] ?? "",
+    next: insightsIn.next ?? insightsIn["Next Quarter Focus"] ?? ""
+  };
+
+  // platforms: ensure numbers are numbers
+  const platforms = Array.isArray(r.platforms) ? r.platforms.map(p => ({
+    key: p.key,
+    name: p.name,
+    badge: p.badge,
+    tag: p.tag,
+    followers: toNumber(p.followers),
+    followersDelta: p.followersDelta ?? "",
+    engagementRate: toNumber(p.engagementRate),
+    engagementRateDelta: p.engagementRateDelta ?? "",
+    pageReach: toNumber(p.pageReach),
+    pageReachDelta: p.pageReachDelta ?? "",
+    pageClicks: toNumber(p.pageClicks),
+    pageClicksDelta: p.pageClicksDelta ?? ""
+  })) : [];
+
+  const topPostsByPlatform = r.topPostsByPlatform && typeof r.topPostsByPlatform === "object" ? r.topPostsByPlatform : {
+    linkedin: [], facebook: [], instagram: []
+  };
+
+  return {
+    quarterLabel: r.quarterLabel ?? "Q1",
+    rangeLabel: r.rangeLabel ?? "",
+    generatedLabel: r.generatedLabel ?? "",
+    execSummary: Array.isArray(r.execSummary) ? r.execSummary : [],
+    insights,
+    overall,
+    deltas,
+    platforms,
+    topPostsByPlatform
+  };
+}
+
+/* =========================
+   RENDER: HEADER + KPIs + SUMMARY + INSIGHTS
+========================= */
+function renderHeader(){
+  setText("reportQuarterLabel", REPORT.quarterLabel);
+  setText("reportRangeLabel", REPORT.rangeLabel);
+  setText("generatedLabel", REPORT.generatedLabel);
+}
+
+function renderKPIs(){
+  setText("kpiPosts", fmtInt(REPORT.overall.posts));
+  setText("kpiImpressions", fmtCompact(REPORT.overall.impressions));
+  setText("kpiShares", fmtInt(REPORT.overall.shares));
+  setText("kpiReactions", fmtInt(REPORT.overall.reactions));
+  setText("kpiFollowers", fmtInt(REPORT.overall.followers));
+  setText("kpiLinkClicks", fmtInt(REPORT.overall.linkClicks));
+  setText("kpiComments", fmtInt(REPORT.overall.comments));
+  setText("kpiAvgEngRate", fmtPct(REPORT.overall.avgEngagementRate));
+
+  setDelta(byId("deltaPosts"), REPORT.deltas.posts);
+  setDelta(byId("deltaImpressions"), REPORT.deltas.impressions);
+  setDelta(byId("deltaShares"), REPORT.deltas.shares);
+  setDelta(byId("deltaReactions"), REPORT.deltas.reactions);
+  setDelta(byId("deltaFollowers"), REPORT.deltas.followers);
+  setDelta(byId("deltaLinkClicks"), REPORT.deltas.linkClicks);
+  setDelta(byId("deltaComments"), REPORT.deltas.comments);
+  setDelta(byId("deltaAvgEngRate"), REPORT.deltas.avgEngagementRate);
+}
+
+function renderExecutiveSummary(){
+  const ul = byId("execSummaryList");
+  if(!ul) return;
+
+  ul.innerHTML = "";
+  (REPORT.execSummary || []).forEach(s => {
+    const li = document.createElement("li");
+    const html = String(s)
+      .replace(/(▲\s?\d+(\.\d+)?%)/g, `<span class="summary-badge positive">$1</span>`)
+      .replace(/(▼\s?\d+(\.\d+)?%)/g, `<span class="summary-badge negative">$1</span>`);
+
+    li.innerHTML = `
+      <span class="summary-dot" aria-hidden="true"></span>
+      <span class="summary-text">${html}</span>
+    `;
+    ul.appendChild(li);
   });
 }
-    
-  /* =========================
-     INIT
-  ========================= */
- (async function init(){
+
+/* IMPORTANT:
+   These IDs must exist in your HTML (update them once, then this works):
+   - insWorking
+   - insNotWorking
+   - insActions
+   - insNext
+*/
+function renderInsights(){
+  setHTML("insWorking", REPORT.insights?.working);
+  setHTML("insNotWorking", REPORT.insights?.notWorking);
+  setHTML("insActions", REPORT.insights?.actions);
+  setHTML("insNext", REPORT.insights?.next);
+}
+
+/* =========================
+   PLATFORM CARDS
+========================= */
+function renderPlatforms(){
+  const grid = byId("platformGrid");
+  if(!grid) return;
+
+  grid.innerHTML = "";
+  (REPORT.platforms || []).forEach(p => {
+    const card = document.createElement("div");
+    card.className = "platform";
+    card.innerHTML = `
+      <div class="platform-head">
+        <div class="platform-name">
+          <span class="platform-badge" aria-hidden="true">${p.badge || ""}</span>
+          ${p.name || ""}
+        </div>
+        <div class="platform-tag">${p.tag || ""}</div>
+      </div>
+
+      <div class="pstats">
+        <div class="pstat">
+          <span class="pstat-label">Followers</span>
+          <div class="pstat-row">
+            <strong>${fmtInt(p.followers)}</strong>
+            <span class="delta ${String(p.followersDelta||"").trim().startsWith("▲") ? "positive" : (String(p.followersDelta||"").trim().startsWith("▼") ? "negative" : "")}">
+              ${p.followersDelta || "—"}
+            </span>
+          </div>
+        </div>
+
+        <div class="pstat">
+          <span class="pstat-label">Post Engagement Rate</span>
+          <div class="pstat-row">
+            <strong>${fmtPct(p.engagementRate)}</strong>
+            <span class="delta ${String(p.engagementRateDelta||"").trim().startsWith("▲") ? "positive" : (String(p.engagementRateDelta||"").trim().startsWith("▼") ? "negative" : "")}">
+              ${p.engagementRateDelta || "—"}
+            </span>
+          </div>
+        </div>
+
+        <div class="pstat">
+          <span class="pstat-label">Page Reach</span>
+          <div class="pstat-row">
+            <strong>${fmtInt(p.pageReach)}</strong>
+            <span class="delta ${String(p.pageReachDelta||"").trim().startsWith("▲") ? "positive" : (String(p.pageReachDelta||"").trim().startsWith("▼") ? "negative" : "")}">
+              ${p.pageReachDelta || "—"}
+            </span>
+          </div>
+        </div>
+
+        <div class="pstat">
+          <span class="pstat-label">Page Clicks</span>
+          <div class="pstat-row">
+            <strong>${fmtInt(p.pageClicks)}</strong>
+            <span class="delta ${String(p.pageClicksDelta||"").trim().startsWith("▲") ? "positive" : (String(p.pageClicksDelta||"").trim().startsWith("▼") ? "negative" : "")}">
+              ${p.pageClicksDelta || "—"}
+            </span>
+          </div>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+/* =========================
+   TOP POSTS (START CLOSED)
+========================= */
+function renderTopPosts(){
+  const wrap = byId("topCompact");
+  if(!wrap) return;
+
+  wrap.innerHTML = "";
+
+  const order = [
+    { key: "linkedin", label: "LinkedIn" },
+    { key: "facebook", label: "Facebook" },
+    { key: "instagram", label: "Instagram" }
+  ];
+
+  order.forEach(({key, label}) => {
+    const posts = (REPORT.topPostsByPlatform?.[key] || [])
+      .slice(0,3)
+      .map(p => ({...p, engagementRate: postEngRate(p)}))
+      .sort((a,b) => (b.engagementRate||0) - (a.engagementRate||0));
+
+    const totalImpressions = posts.reduce((sum,p) => sum + (toNumber(p.impressions)||0), 0);
+    const avgER = posts.length ? (posts.reduce((sum,p)=>sum+(p.engagementRate||0),0) / posts.length) : 0;
+
+    const platform = document.createElement("details");
+    platform.className = "platform-acc";
+    platform.open = false;
+
+    platform.innerHTML = `
+      <summary>
+        <div class="sum-left">
+          <span class="platform-pill">${label}</span>
+          <span class="platform-meta">Top 3 • ${fmtInt(totalImpressions)} impressions • Avg ER ${fmtPct(avgER)}</span>
+        </div>
+        <span class="chev" aria-hidden="true">⌄</span>
+      </summary>
+      <div class="platform-body"></div>
+    `;
+
+    const body = platform.querySelector(".platform-body");
+
+    posts.forEach((p, idx) => {
+      const mini = document.createElement("details");
+      mini.className = "post-mini";
+      const erText = fmtPct(p.engagementRate || 0);
+
+      mini.innerHTML = `
+        <summary>
+          <div class="rank">#${idx+1}</div>
+          <div class="ptitle">${p.title || (label + " Post")}</div>
+          <div class="quick">
+            <span><strong>${fmtInt(toNumber(p.impressions) || 0)}</strong> impr.</span>
+            <span><strong>${erText}</strong> ER</span>
+          </div>
+        </summary>
+
+        <div class="post-details">
+          <div class="mini-stat"><span>Impressions</span><strong>${fmtInt(toNumber(p.impressions) || 0)}</strong></div>
+          <div class="mini-stat"><span>Likes</span><strong>${fmtInt(toNumber(p.likes) || 0)}</strong></div>
+          <div class="mini-stat"><span>Shares</span><strong>${fmtInt(toNumber(p.shares) || 0)}</strong></div>
+          <div class="mini-stat"><span>Eng. Rate</span><strong>${erText}</strong></div>
+          <div class="math">Eng. Rate = (likes + shares) ÷ impressions = (${fmtInt(toNumber(p.likes)||0)} + ${fmtInt(toNumber(p.shares)||0)}) ÷ ${fmtInt(toNumber(p.impressions)||0)}</div>
+        </div>
+      `;
+      body.appendChild(mini);
+    });
+
+    wrap.appendChild(platform);
+  });
+}
+
+/* =========================
+   CHARTS (BAR <-> PIE)
+========================= */
+Chart.defaults.font.family = 'Gotham, Gotham SSm, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+Chart.defaults.color = "#64748B";
+
+const commonTooltip = {
+  backgroundColor: "rgba(0,61,114,0.95)",
+  padding: 14,
+  titleFont: { size: 13, weight: "700" },
+  bodyFont: { size: 12, weight: "500" },
+  cornerRadius: 10,
+  displayColors: false
+};
+
+let reachChart, engChart;
+
+function getChartSeries(){
+  const labels = (REPORT.platforms || []).map(p => p.name);
+  const reach = (REPORT.platforms || []).map(p => toNumber(p.pageReach) || 0);
+  const er = (REPORT.platforms || []).map(p => toNumber(p.engagementRate) || 0);
+  return { labels, reach, er };
+}
+
+function buildReach(type){
+  const canvas = byId("reachChart");
+  if(!canvas) return;
+  const ctx = canvas.getContext("2d");
+  if(reachChart) reachChart.destroy();
+
+  const { labels, reach } = getChartSeries();
+  const colors = seriesColors(labels.length);
+
+  reachChart = new Chart(ctx, {
+    type,
+    data: {
+      labels,
+      datasets: [{
+        label: "Page Reach",
+        data: reach,
+        backgroundColor: colors,
+        borderColor: type === "pie" ? "#fff" : ["#0070CA", "#00549A", "#4DA3E8"],
+        borderWidth: type === "pie" ? 2 : 0,
+        borderRadius: type === "bar" ? 8 : 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: type === "pie", labels: { boxWidth: 10, boxHeight: 10 } },
+        tooltip: commonTooltip
+      },
+      scales: type === "bar" ? {
+        y: {
+          beginAtZero: true,
+          grid: { color: "rgba(0,0,0,0.04)", drawBorder: false },
+          ticks: { font: { size: 11, weight: "500" }, color: "#64748B" },
+          border: { display: false }
+        },
+        x: {
+          grid: { display: false, drawBorder: false },
+          ticks: { font: { size: 12, weight: "700" }, color: "#0B1220" },
+          border: { display: false }
+        }
+      } : {}
+    }
+  });
+}
+
+function buildEng(type){
+  const canvas = byId("engRateChart");
+  if(!canvas) return;
+  const ctx = canvas.getContext("2d");
+  if(engChart) engChart.destroy();
+
+  const { labels, er } = getChartSeries();
+  const colors = seriesColors(labels.length);
+
+  engChart = new Chart(ctx, {
+    type,
+    data: {
+      labels,
+      datasets: [{
+        label: "Post Engagement Rate (%)",
+        data: er,
+        backgroundColor: type === "pie" ? colors : "rgba(0,112,202,0.15)",
+        borderColor: type === "pie" ? "#fff" : "#0070CA",
+        borderWidth: type === "pie" ? 2 : 2,
+        borderRadius: type === "bar" ? 8 : 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: type === "pie", labels: { boxWidth: 10, boxHeight: 10 } },
+        tooltip: commonTooltip
+      },
+      scales: type === "bar" ? {
+        y: {
+          beginAtZero: true,
+          grid: { color: "rgba(0,0,0,0.04)", drawBorder: false },
+          ticks: {
+            font: { size: 11, weight: "500" },
+            color: "#64748B",
+            callback: (v) => v + "%"
+          },
+          border: { display: false }
+        },
+        x: {
+          grid: { display: false, drawBorder: false },
+          ticks: { font: { size: 12, weight: "700" }, color: "#0B1220" },
+          border: { display: false }
+        }
+      } : {}
+    }
+  });
+}
+
+function wireChartToggles(){
+  document.querySelectorAll(".ct-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const chart = btn.getAttribute("data-chart"); // reach | eng
+      const type = btn.getAttribute("data-type");   // bar | pie
+
+      const group = btn.parentElement;
+      group.querySelectorAll(".ct-btn").forEach(b => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+
+      if(chart === "reach") buildReach(type);
+      if(chart === "eng") buildEng(type);
+    });
+  });
+}
+
+/* =========================
+   EDIT LOCK (?edit=1)
+========================= */
+function lockEditing(){
+  const canEdit = new URLSearchParams(window.location.search).get("edit") === "1";
+  document.querySelectorAll('[data-editable="true"]').forEach(el => {
+    el.setAttribute("contenteditable", canEdit ? "true" : "false");
+  });
+}
+
+/* =========================
+   QUARTER DROPDOWN
+========================= */
+function quarterDropdown(){
+  const wrap = document.querySelector(".pill-wrap");
+  const btn = document.getElementById("quarterBtn");
+  if(!wrap || !btn) return;
+
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    wrap.classList.toggle("open");
+    btn.setAttribute("aria-expanded", wrap.classList.contains("open") ? "true" : "false");
+  });
+
+  document.addEventListener("click", () => {
+    wrap.classList.remove("open");
+    btn.setAttribute("aria-expanded","false");
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if(e.key === "Escape"){
+      wrap.classList.remove("open");
+      btn.setAttribute("aria-expanded","false");
+    }
+  });
+}
+
+/* =========================
+   INIT
+========================= */
+(async function init(){
   try{
-    REPORT = await loadReport();
+    const raw = await loadReport();
+    REPORT = normalizeReport(raw);
 
     renderHeader();
     renderKPIs();
     renderExecutiveSummary();
+    renderInsights();          // ✅ pulls from REPORT.insights.*
     renderPlatforms();
     renderTopPosts();
 
@@ -1839,14 +1880,13 @@ function wireNotesAutosave(){
 
     lockEditing();
     quarterDropdown();
-    wireNotesAutosave();
 
   } catch(err){
     console.error(err);
     alert("Report data failed to load. Check that report-data.json is in the same folder as this page.");
   }
 })();
-  </script>
+</script>
 </body>
 </html>
 
