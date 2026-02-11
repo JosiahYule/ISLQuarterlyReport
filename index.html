@@ -1059,6 +1059,28 @@ body{ font-weight: 400; }
   box-shadow:0 2px 8px rgba(0,0,0,.08);
   border:1px solid rgba(0,0,0,.06);
 }  
+
+  /* =========================
+   CHARTS – FIX BOTTOM CLIP
+   (paste at END of <style>)
+========================= */
+
+/* Let Chart.js labels/ticks render fully */
+.chart-card{
+  overflow: visible;          /* was hidden (clips x-axis labels) */
+  height: auto;               /* stop forcing a too-short card */
+  padding-bottom: 30px;       /* give labels breathing room */
+}
+
+/* Make the canvas area tall enough for labels */
+.chart-wrap{
+  height: 310px;              /* was 270px (too tight) */
+}
+
+/* Optional: when stacked in 1 column (mobile), keep it comfy */
+@media (max-width:1100px){
+  .chart-wrap{ height: 320px; }
+}  
   </style>
 </head>
 
