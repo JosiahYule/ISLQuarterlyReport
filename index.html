@@ -1574,13 +1574,16 @@ function renderPlatforms(){
     const card = document.createElement("div");
     card.className = "platform";
     card.innerHTML = `
+card.innerHTML = `
   <div class="platform-head">
     <div class="platform-name">
-      <span class="platform-badge" aria-hidden="true">${p.badge || ""}</span>
+      <span class="platform-badge" aria-hidden="true">
+        ${PLATFORM_ICONS[p.key] || ""}
+      </span>
       ${p.name || ""}
     </div>
   </div>
-
+`;
 
       <div class="pstats">
         <div class="pstat">
