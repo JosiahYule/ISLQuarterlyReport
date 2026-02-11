@@ -46,6 +46,7 @@
       overflow-x:hidden;
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
+      font-weight:400;
     }
 
     .container{max-width:1240px;margin:0 auto;padding:32px 24px 48px}
@@ -58,6 +59,7 @@
       gap:20px;
       margin-bottom:24px;
       padding:16px 0;
+      position:relative;
     }
     .brand{display:flex;align-items:center;gap:14px;min-width:0}
     .brand-mark{
@@ -91,7 +93,7 @@
     .brand-text span{
       font-size:13px;
       color:var(--muted);
-      font-weight:500;
+      font-weight:400;
       white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
     }
 
@@ -117,7 +119,45 @@
       border-radius:99px;
       background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
       box-shadow:0 0 0 3px rgba(0,112,202,.15);
+      flex:0 0 auto;
     }
+
+    /* ============= QUARTER DROPDOWN MENU ============= */
+    .pill-wrap{ position:relative; display:inline-flex; }
+    .pill-trigger{
+      border:none;
+      cursor:pointer;
+      appearance:none;
+      -webkit-appearance:none;
+      font: inherit;
+      background: var(--card);
+    }
+    .pill-caret{ margin-left:10px; font-size:12px; opacity:.7; }
+    .pill-range{ display:none; } /* ✅ hide range in the top pill */
+    .pill-menu{
+      position:absolute;
+      right:0;
+      top:calc(100% + 10px);
+      min-width:240px;
+      background:#fff;
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:14px;
+      box-shadow:0 14px 30px rgba(0,0,0,.14);
+      padding:8px;
+      display:none;
+      z-index:100;
+    }
+    .pill-wrap.open .pill-menu{ display:block; }
+    .pill-item{
+      display:block;
+      padding:10px 12px;
+      border-radius:12px;
+      text-decoration:none;
+      font-size:13px;
+      font-weight:600;
+      color:var(--text);
+    }
+    .pill-item:hover{ background:rgba(0,112,202,.08); }
 
     /* ============= HERO ============= */
     .hero{
@@ -184,10 +224,7 @@
       font-weight:600;
       transition:var(--transition);
     }
-    .hero-chip:hover{
-      background:rgba(255,255,255,.22);
-      transform:translateY(-1px);
-    }
+    .hero-chip:hover{ background:rgba(255,255,255,.22); transform:translateY(-1px); }
     .hero-chip strong{font-weight:700}
 
     /* ============= SECTIONS ============= */
@@ -199,6 +236,7 @@
       padding:32px;
       margin-bottom:24px;
       transition:var(--transition);
+      overflow:hidden; /* ✅ prevents any accidental overflow */
     }
     .section:hover{
       box-shadow:0 4px 12px rgba(0,0,0,.06), 0 16px 32px rgba(0,0,0,.08);
@@ -221,9 +259,9 @@
     }
     .section-title p{
       font-size:14px;
-      color:var(--muted);
+      color:#6B7A90;
       margin-top:4px;
-      font-weight:500;
+      font-weight:400;
     }
 
     /* ============= EXECUTIVE SUMMARY ============= */
@@ -234,7 +272,6 @@
       gap:20px;
       align-items:stretch;
     }
-
     .summary-rail{
       border-radius:999px;
       background:linear-gradient(
@@ -246,81 +283,68 @@
       );
       box-shadow:0 0 12px rgba(0,112,202,.2);
     }
-
     .summary-card{
       background:var(--card);
-      border:1px solid var(--border);
+      border:1px solid rgba(0,0,0,.05);
       border-radius:var(--radius-lg);
-      padding:24px;
-      box-shadow:0 2px 8px rgba(0,0,0,.04);
+      padding:18px;
+      box-shadow:none;
       transition:var(--transition);
     }
-
-    .summary-card:hover{
-      box-shadow:0 8px 24px rgba(0,0,0,.08);
-    }
-
     .summary-card[contenteditable="true"]:focus{
       outline:none;
       border-color:rgba(0,112,202,.4);
       box-shadow:0 0 0 4px rgba(0,112,202,.1), 0 8px 24px rgba(0,0,0,.08);
     }
-
     .summary-list{
       list-style:none;
       display:grid;
-      gap:16px;
+      gap:10px;
       position:relative;
       z-index:1;
     }
-
     .summary-list li{
       display:grid;
       grid-template-columns: 20px 1fr;
-      gap:14px;
+      gap:12px;
       align-items:flex-start;
-      padding:16px;
+      padding:12px 14px;
       border-radius:var(--radius-md);
-      background:rgba(245,248,250,.6);
-      border:1px solid rgba(0,112,202,.06);
+      background:#fff;
+      border:1px solid rgba(0,0,0,.05);
       transition:var(--transition);
     }
-
     .summary-list li:hover{
-      background:rgba(245,248,250,.9);
-      border-color:rgba(0,112,202,.12);
-      transform:translateX(4px);
+      transform:none;
+      background:#fff;
+      border-color:rgba(0,0,0,.07);
     }
-
     .summary-dot{
-      width:12px;height:12px;
+      width:10px;height:10px;
       border-radius:999px;
-      margin-top:4px;
+      margin-top:5px;
       background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
-      box-shadow:0 0 0 4px rgba(0,112,202,.12);
+      box-shadow:0 0 0 3px rgba(0,112,202,.10);
     }
-
     .summary-text{
       font-size:14px;
       color:var(--text);
       line-height:1.6;
-      font-weight:500;
+      font-weight:400;
     }
-
     .summary-badge{
       display:inline-flex;
       align-items:center;
       gap:4px;
-      padding:4px 10px;
-      border-radius:6px;
-      font-size:12px;
+      padding:3px 8px;
+      border-radius:999px;
+      font-size:11px;
       font-weight:700;
       border:1px solid;
       white-space:nowrap;
       vertical-align:baseline;
       margin:0 2px;
     }
-
     .summary-badge.positive{
       background:rgba(16,185,129,.1);
       color:#059669;
@@ -335,7 +359,7 @@
     /* ============= KPI TILES ============= */
     .kpi-grid{
       display:grid;
-      grid-template-columns:repeat(4,1fr);
+      grid-template-columns:repeat(4, minmax(0,1fr));
       gap:16px;
     }
     .kpi-card{
@@ -351,6 +375,7 @@
       flex-direction:column;
       justify-content:space-between;
       min-height:130px;
+      min-width:0;
     }
     .kpi-card::before{
       content:"";
@@ -381,12 +406,7 @@
       line-height:1.1;
       margin-bottom:12px;
     }
-    .kpi-sub{
-      margin-top:auto;
-      display:flex;
-      justify-content:flex-start;
-      gap:8px;
-    }
+    .kpi-sub{ margin-top:auto; display:flex; justify-content:flex-start; gap:8px; }
 
     .delta{
       display:inline-flex;
@@ -413,7 +433,7 @@
     /* ============= PLATFORM CARDS ============= */
     .platform-grid{
       display:grid;
-      grid-template-columns:repeat(3,1fr);
+      grid-template-columns:repeat(3, minmax(0,1fr));
       gap:16px;
     }
     .platform{
@@ -423,6 +443,7 @@
       padding:24px;
       box-shadow:0 1px 3px rgba(0,0,0,.04);
       transition:var(--transition);
+      min-width:0;
     }
     .platform:hover{
       transform:translateY(-4px);
@@ -435,6 +456,7 @@
       justify-content:space-between;
       gap:12px;
       margin-bottom:20px;
+      min-width:0;
     }
     .platform-name{
       display:flex;
@@ -443,6 +465,7 @@
       font-weight:800;
       font-size:16px;
       color:var(--isl-navy);
+      min-width:0;
     }
     .platform-badge{
       width:40px;height:40px;
@@ -452,7 +475,9 @@
       border:1px solid rgba(0,112,202,.2);
       color:var(--isl-primary);
       font-size:18px;
-      font-weight:700;
+      font-weight:800;
+      letter-spacing:-0.02em;
+      flex:0 0 auto;
     }
     .platform-tag{
       font-size:11px;
@@ -464,11 +489,13 @@
       color:var(--isl-primary);
       text-transform:uppercase;
       letter-spacing:.05em;
+      flex:0 0 auto;
     }
     .pstats{
       display:grid;
-      grid-template-columns:repeat(2,1fr);
+      grid-template-columns:repeat(2, minmax(0,1fr));
       gap:12px;
+      min-width:0;
     }
     .pstat{
       background:rgba(245,248,250,.7);
@@ -476,10 +503,7 @@
       border-radius:var(--radius-md);
       padding:14px;
       transition:var(--transition);
-    }
-    .pstat:hover{
-      background:rgba(245,248,250,1);
-      box-shadow:0 2px 8px rgba(0,0,0,.06);
+      min-width:0;
     }
     .pstat-label{
       display:block;
@@ -495,6 +519,7 @@
       align-items:baseline;
       justify-content:space-between;
       gap:8px;
+      min-width:0;
     }
     .pstat-row strong{
       font-size:18px;
@@ -514,15 +539,23 @@
       background:var(--card);
       border:1px solid var(--border);
       border-radius:var(--radius-lg);
-      padding:24px;
+      padding:22px;
       box-shadow:0 1px 3px rgba(0,0,0,.04);
-      height:340px;
-      position:relative;
-      overflow:hidden;
       transition:var(--transition);
+
+      /* ✅ fixes “cut off bottom” by letting the canvas area flex */
+      display:flex;
+      flex-direction:column;
+      min-height:360px;
     }
-    .chart-card:hover{
-      box-shadow:0 8px 20px rgba(0,0,0,.08);
+    .chart-card:hover{ box-shadow:0 8px 20px rgba(0,0,0,.08); }
+
+    .chart-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
     }
     .chart-title{
       font-size:13px;
@@ -530,9 +563,48 @@
       letter-spacing:.05em;
       text-transform:uppercase;
       color:var(--muted);
-      margin-bottom:16px;
     }
-    .chart-wrap{height:270px}
+    .chart-wrap{
+      flex:1;
+      min-height:260px;
+      position:relative;
+    }
+    .chart-wrap canvas{
+      width:100% !important;
+      height:100% !important;
+      display:block;
+    }
+
+    /* Chart toggle (Bar/Pie) */
+    .chart-toggle{
+      display:inline-flex;
+      padding:4px;
+      border-radius:999px;
+      background:rgba(0,0,0,.03);
+      border:1px solid rgba(0,0,0,.06);
+      flex:0 0 auto;
+    }
+    .ct-btn{
+      appearance:none;
+      -webkit-appearance:none;
+      border:0;
+      background:transparent;
+      font:inherit;
+      cursor:pointer;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      color:var(--muted);
+      transition:var(--transition);
+    }
+    .ct-btn:hover{ color:var(--text); }
+    .ct-btn.is-active{
+      background:#fff;
+      color:var(--isl-navy);
+      box-shadow:0 2px 8px rgba(0,0,0,.08);
+      border:1px solid rgba(0,0,0,.06);
+    }
 
     /* ============= TOP POSTS ============= */
     .top-compact{display:grid;gap:16px}
@@ -545,9 +617,7 @@
       overflow:hidden;
       transition:var(--transition);
     }
-    .platform-acc:hover{
-      box-shadow:0 4px 12px rgba(0,0,0,.08);
-    }
+    .platform-acc:hover{ box-shadow:0 4px 12px rgba(0,0,0,.08); }
 
     .platform-acc > summary{
       list-style:none;
@@ -561,10 +631,7 @@
       background:var(--card);
       transition:var(--transition);
     }
-    .platform-acc > summary:hover{
-      background:rgba(245,248,250,.5);
-    }
-
+    .platform-acc > summary:hover{ background:rgba(245,248,250,.5); }
     .platform-acc > summary::-webkit-details-marker{display:none}
 
     .sum-left{
@@ -573,7 +640,6 @@
       gap:12px;
       min-width:0;
     }
-
     .platform-pill{
       display:inline-flex;
       align-items:center;
@@ -583,18 +649,20 @@
       background:linear-gradient(135deg,rgba(0,112,202,.1),rgba(0,112,202,.15));
       border:1px solid rgba(0,112,202,.2);
       color:var(--isl-navy);
-      font-weight:700;
+      font-weight:800;
       font-size:13px;
       white-space:nowrap;
+      flex:0 0 auto;
     }
-
     .platform-meta{
       font-size:13px;
       color:var(--muted);
-      font-weight:500;
+      font-weight:400;
       white-space:nowrap;
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
-
     .chev{
       width:36px;height:36px;
       border-radius:var(--radius-md);
@@ -602,14 +670,11 @@
       background:rgba(0,112,202,.08);
       border:1px solid rgba(0,112,202,.12);
       color:var(--isl-primary);
-      font-weight:700;
+      font-weight:900;
       transition:var(--transition);
       flex:0 0 auto;
     }
-    .platform-acc[open] .chev{
-      transform:rotate(180deg);
-      background:rgba(0,112,202,.12);
-    }
+    .platform-acc[open] .chev{ transform:rotate(180deg); background:rgba(0,112,202,.12); }
 
     .platform-body{
       padding:16px;
@@ -624,12 +689,7 @@
       overflow:hidden;
       transition:var(--transition);
     }
-    .post-mini:hover{
-      box-shadow:0 2px 8px rgba(0,0,0,.06);
-    }
-
     .post-mini + .post-mini{margin-top:12px}
-
     .post-mini > summary{
       list-style:none;
       cursor:pointer;
@@ -640,46 +700,38 @@
       align-items:center;
       transition:var(--transition);
     }
-    .post-mini > summary:hover{
-      background:rgba(245,248,250,.5);
-    }
+    .post-mini > summary:hover{ background:rgba(245,248,250,.5); }
     .post-mini > summary::-webkit-details-marker{display:none}
 
     .rank{
       width:48px;height:36px;
       border-radius:8px;
       display:grid;place-items:center;
-      font-weight:800;
+      font-weight:900;
       font-size:13px;
       color:var(--isl-navy);
       background:linear-gradient(135deg,rgba(0,112,202,.1),rgba(0,112,202,.15));
       border:1px solid rgba(0,112,202,.2);
     }
-
     .ptitle{
       min-width:0;
-      font-weight:700;
+      font-weight:800;
       font-size:14px;
       color:var(--text);
       overflow:hidden;
       text-overflow:ellipsis;
       white-space:nowrap;
     }
-
     .quick{
       display:flex;
       align-items:center;
       gap:12px;
       color:var(--muted);
       font-size:12px;
-      font-weight:500;
+      font-weight:400;
       white-space:nowrap;
     }
-    .quick strong{
-      font-weight:700;
-      color:var(--text);
-    }
-
+    .quick strong{ font-weight:800; color:var(--text); }
     .post-mini[open] .ptitle{white-space:normal}
 
     .post-details{
@@ -690,16 +742,13 @@
       grid-template-columns: repeat(4, minmax(0,1fr));
       gap:12px;
     }
-
     .mini-stat{
       background:var(--card);
       border:1px solid var(--border);
       border-radius:var(--radius-md);
       padding:12px;
       transition:var(--transition);
-    }
-    .mini-stat:hover{
-      box-shadow:0 2px 8px rgba(0,0,0,.06);
+      min-width:0;
     }
     .mini-stat span{
       display:block;
@@ -707,22 +756,21 @@
       color:var(--muted);
       letter-spacing:.08em;
       text-transform:uppercase;
-      font-weight:700;
+      font-weight:800;
       margin-bottom:8px;
     }
     .mini-stat strong{
       display:block;
       font-size:16px;
-      font-weight:800;
+      font-weight:900;
       letter-spacing:-0.01em;
       color:var(--text);
     }
-
     .math{
       grid-column:1 / -1;
       font-size:12px;
       color:var(--muted);
-      font-weight:500;
+      font-weight:400;
       padding:12px 14px;
       border-radius:var(--radius-md);
       background:rgba(0,112,202,.05);
@@ -732,7 +780,7 @@
     /* ============= INSIGHTS ============= */
     .insight-grid{
       display:grid;
-      grid-template-columns:repeat(2,1fr);
+      grid-template-columns:repeat(2, minmax(0,1fr));
       gap:16px;
     }
     .insight-card{
@@ -742,14 +790,11 @@
       padding:24px;
       box-shadow:0 1px 3px rgba(0,0,0,.04);
       transition:var(--transition);
-    }
-    .insight-card:hover{
-      box-shadow:0 8px 20px rgba(0,0,0,.08);
-      transform:translateY(-2px);
+      min-width:0;
     }
     .insight-card h3{
       font-size:13px;
-      font-weight:700;
+      font-weight:800;
       letter-spacing:.05em;
       text-transform:uppercase;
       color:var(--muted);
@@ -759,7 +804,8 @@
       color:var(--text);
       font-size:14px;
       line-height:1.7;
-      font-weight:500;
+      font-weight:400;
+      overflow-wrap:anywhere;
     }
     .insight-card .body[contenteditable="true"]:focus{
       outline:none;
@@ -788,7 +834,7 @@
     }
     .footer a{
       color:var(--isl-primary);
-      font-weight:700;
+      font-weight:800;
       text-decoration:none;
       transition:var(--transition);
     }
@@ -797,351 +843,89 @@
       text-decoration:underline;
     }
 
-    /* ============= RESPONSIVE ============= */
+    /* ============= RESPONSIVE (FIXED + CLEAN) ============= */
     @media (max-width:1100px){
       .hero-grid{grid-template-columns:1fr}
       .hero-meta{justify-content:flex-start}
-      .kpi-grid{grid-template-columns:repeat(2,1fr)}
+      .kpi-grid{grid-template-columns:repeat(2, minmax(0,1fr))}
       .platform-grid{grid-template-columns:1fr}
       .charts{grid-template-columns:1fr}
       .insight-grid{grid-template-columns:1fr}
     }
-    
+
     @media (max-width:700px){
       .container{padding:24px 16px}
       .hero{padding:32px 24px}
       .hero h1{font-size:32px}
       .section{padding:24px 20px}
-      .kpi-grid{grid-template-columns:1fr}
-      .summary-shell{grid-template-columns:4px 1fr;gap:14px}
-      
+
       .topbar{
         flex-direction:column;
         align-items:flex-start;
         gap:12px;
-        padding-right:90px;
+        padding-right:90px; /* keeps space for pill on the right */
       }
-      .brand{min-width:100%;gap:12px}
-      .brand-text strong{font-size:14px}
-      .brand-text span{font-size:12px}
-      
-.pill-wrap{
-  position:absolute;
-  top:0;
-  right:0;
-}
 
-.pill-trigger{
-  padding:8px 12px;
-  font-size:12px;
-}
-
-}
-
-      #reportRangeLabel{display:none}
-      
-      .post-mini > summary{
-        grid-template-columns: 60px 1fr;
+      .pill-wrap{
+        position:absolute;
+        top:0;
+        right:0;
       }
-      .quick{grid-column:1 / -1;justify-content:flex-start}
+      .pill-trigger{
+        padding:8px 12px;
+        font-size:12px;
+      }
+
+      /* platform breakdown cards: keep everything inside, no weird overlaps */
+      .platform{padding:18px}
+      .platform-head{flex-wrap:wrap}
+      .pstats{grid-template-columns:1fr}
+
+      /* top posts headers wrap nicely on mobile */
+      .sum-left{flex-wrap:wrap}
+      .platform-meta{white-space:normal; overflow:visible; text-overflow:clip}
+
+      .post-mini > summary{grid-template-columns: 60px 1fr;}
+      .quick{grid-column:1 / -1;justify-content:flex-start; white-space:normal}
       .post-details{grid-template-columns: repeat(2, minmax(0,1fr))}
     }
 
     @media print{
       body{background:#fff}
-      .section,.hero,.chart-card,.kpi-card,.platform,.insight-card{
-        box-shadow:none;
-        page-break-inside:avoid;
-      }
+      .section,.hero,.chart-card,.kpi-card,.platform,.insight-card{ box-shadow:none; page-break-inside:avoid; }
       .container{padding:20px}
     }
-
-    /* =========================
-   READABILITY OVERRIDES
-   (paste at end of <style>)
-========================= */
-
-body{ font-weight: 400; }
-
-/* Section helper text */
-.section-title p{
-  font-weight: 400;
-  color: #6B7A90; /* slightly softer than your current muted */
-}
-
-/* Summary line text */
-.summary-text{
-  font-weight: 400;
-  color: #0B1220;
-}
-
-/* Insight paragraphs */
-.insight-card .body{
-  font-weight: 400;
-}
-
-/* Small meta lines */
-.platform-meta,
-.quick{
-  font-weight: 400;
-}
-
-    /* =========================
-   CLEANER SUMMARY
-========================= */
-
-/* Reduce “card within card” feel */
-.summary-card{
-  padding: 18px;
-  box-shadow: none;
-  border-color: rgba(0,0,0,.05);
-}
-
-/* Tighter list spacing */
-.summary-list{
-  gap: 10px;
-}
-
-/* Make each bullet row cleaner */
-.summary-list li{
-  background: #fff;
-  border: 1px solid rgba(0,0,0,.05);
-  padding: 12px 14px;
-  gap: 12px;
-}
-
-/* Remove the slide-on-hover (it adds visual noise) */
-.summary-list li:hover{
-  transform: none;
-  background: #fff;
-  border-color: rgba(0,0,0,.07);
-}
-
-/* Smaller, calmer dot */
-.summary-dot{
-  width: 10px;
-  height: 10px;
-  margin-top: 5px;
-  box-shadow: 0 0 0 3px rgba(0,112,202,.10);
-}
-
-/* Badges: a bit less chunky */
-.summary-badge{
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-    /* =========================
-   QUARTER DROPDOWN MENU
-========================= */
-
-.pill-wrap{
-  position:relative;
-  display:inline-flex;
-}
-
-.pill-trigger{
-  border:none;
-  cursor:pointer;
-}
-
-.pill-caret{
-  margin-left:10px;
-  font-size:12px;
-  opacity:.7;
-}
-
-.pill-menu{
-  position:absolute;
-  right:0;
-  top:calc(100% + 10px);
-  min-width:240px;
-  background:#fff;
-  border:1px solid rgba(0,0,0,.08);
-  border-radius:14px;
-  box-shadow:0 14px 30px rgba(0,0,0,.14);
-  padding:8px;
-  display:none;
-  z-index:100;
-}
-
-.pill-wrap.open .pill-menu{
-  display:block;
-}
-
-.pill-item{
-  display:block;
-  padding:10px 12px;
-  border-radius:12px;
-  text-decoration:none;
-  font-size:13px;
-  font-weight:600;
-  color:var(--text);
-}
-
-.pill-item:hover{
-  background:rgba(0,112,202,.08);
-}
-
- .pill-trigger{
-  appearance:none;
-  -webkit-appearance:none;
-  font: inherit;
-  background: var(--card);
-}   
-
-  /* =========================
-   PLATFORM GRID OVERFLOW FIX
-========================= */
-
-/* Clip any accidental overflow inside rounded sections */
-.section{
-  overflow:hidden;
-}
-
-/* Make the grid truly responsive and prevent items from forcing overflow */
-.platform-grid{
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-/* Allow cards to shrink instead of pushing the grid wider */
-.platform{
-  min-width:0;
-}
-
-/* Also make inner stats shrink safely */
-.pstats,
-.pstat{
-  min-width:0;
-}  
-
-  /* =========================
-   CHART TOGGLE (BAR/PIE)
-========================= */
-.chart-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:12px;
-}
-
-.chart-toggle{
-  display:inline-flex;
-  padding:4px;
-  border-radius:999px;
-  background:rgba(0,0,0,.03);
-  border:1px solid rgba(0,0,0,.06);
-}
-
-.ct-btn{
-  appearance:none;
-  -webkit-appearance:none;
-  border:0;
-  background:transparent;
-  font:inherit;
-  cursor:pointer;
-  padding:6px 10px;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:700;
-  color:var(--muted);
-  transition:var(--transition);
-}
-
-.ct-btn:hover{ color:var(--text); }
-
-.ct-btn.is-active{
-  background:#fff;
-  color:var(--isl-navy);
-  box-shadow:0 2px 8px rgba(0,0,0,.08);
-  border:1px solid rgba(0,0,0,.06);
-}  
-
-  /* =========================
-   CHARTS – FIX BOTTOM CLIP
-   (paste at END of <style>)
-========================= */
-
-/* Let Chart.js labels/ticks render fully */
-.chart-card{
-  overflow: visible;          /* was hidden (clips x-axis labels) */
-  height: auto;               /* stop forcing a too-short card */
-  padding-bottom: 30px;       /* give labels breathing room */
-}
-
-/* Make the canvas area tall enough for labels */
-.chart-wrap{
-  height: 310px;              /* was 270px (too tight) */
-}
-
-/* Optional: when stacked in 1 column (mobile), keep it comfy */
-@media (max-width:1100px){
-  .chart-wrap{ height: 320px; }
-}  
-
-/* =========================
-   QUARTER PILL – MINIMAL CLOSED STATE
-========================= */
-
-.pill-quarter{
-  gap:6px;
-  padding:10px 14px;
-}
-
-/* Hide the dot + range completely */
-.pill-quarter .pill-dot,
-#reportRangeLabel{
-  display:none !important;
-}
-
-/* Make Q1 bold + clean */
-.pill-quarter strong{
-  font-size:13px;
-  font-weight:800;
-  letter-spacing:.02em;
-}
-
-/* Caret tighter */
-.pill-quarter .pill-caret{
-  margin-left:4px;
-  opacity:.65;
-}
   </style>
 </head>
 
 <body>
   <div class="container">
 
- <div class="topbar">
-  <div class="brand">
-    <div class="brand-mark" aria-label="Integrated Staffing logo"></div>
-    <div class="brand-text">
-      <strong>Integrated Staffing</strong>
-      <span>Quarterly Digital Media Performance Report</span>
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-label="Integrated Staffing logo"></div>
+        <div class="brand-text">
+          <strong>Integrated Staffing</strong>
+          <span>Quarterly Digital Media Performance Report</span>
+        </div>
+      </div>
+
+      <div class="pill-wrap" aria-label="Report period selector">
+        <button class="pill pill-trigger" id="quarterBtn" type="button" aria-haspopup="menu" aria-expanded="false">
+          <span class="pill-dot" aria-hidden="true"></span>
+          <span>
+            <strong id="reportQuarterLabel">Q1</strong>
+            <span class="pill-range"> <span id="reportRangeLabel">Sep–Nov 2025</span></span>
+          </span>
+          <span class="pill-caret" aria-hidden="true">▾</span>
+        </button>
+
+        <div class="pill-menu" id="quarterMenu" role="menu" aria-label="Choose quarter">
+          <a class="pill-item" role="menuitem" href="/q1.html">Q1 • Sep–Nov 2025</a>
+          <a class="pill-item" role="menuitem" href="/q2.html">Q2 • Dec–Feb 2026</a>
+        </div>
+      </div>
     </div>
-  </div>
-
-  <div class="pill-wrap" aria-label="Report period selector">
-<button class="pill pill-trigger pill-quarter" id="quarterBtn" type="button"
-  aria-haspopup="menu" aria-expanded="false">
-
-  <strong id="reportQuarterLabel">Q1</strong>
-  <span class="pill-caret" aria-hidden="true">▾</span>
-
-</button>
-
-
-    <div class="pill-menu" id="quarterMenu" role="menu" aria-label="Choose quarter">
-      <a class="pill-item" role="menuitem" href="/q1.html">Q1 • Sep–Nov 2025</a>
-      <a class="pill-item" role="menuitem" href="/q2.html">Q2 • Dec–Feb 2026</a>
-    </div>
-  </div>
-</div>
-
-
 
     <section class="hero" aria-label="Report header">
       <div class="hero-grid">
@@ -1162,12 +946,9 @@ body{ font-weight: 400; }
     <section class="section" aria-label="Executive summary">
       <div class="section-header">
         <div class="section-title">
-          <div>
-            <h2>Summary</h2>
-            <p>Executive-level highlights for fast scanning.</p>
-          </div>
+          <h2>Summary</h2>
+          <p>Executive-level highlights for fast scanning.</p>
         </div>
-
         <div class="pill" aria-label="Summary type">
           <span class="pill-dot" aria-hidden="true"></span>
           <span>Executive Highlights</span>
@@ -1176,7 +957,6 @@ body{ font-weight: 400; }
 
       <div class="summary-shell">
         <div class="summary-rail" aria-hidden="true"></div>
-
         <div class="summary-card" id="execSummaryBox" data-editable="true" aria-label="Editable executive summary">
           <ul class="summary-list" id="execSummaryList"></ul>
         </div>
@@ -1186,10 +966,8 @@ body{ font-weight: 400; }
     <section class="section" aria-label="Quarter totals">
       <div class="section-header">
         <div class="section-title">
-          <div>
-            <h2>Quarter Totals</h2>
-            <p>Hootsuite totals across all platforms.</p>
-          </div>
+          <h2>Quarter Totals</h2>
+          <p>Hootsuite totals across all platforms.</p>
         </div>
         <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Totals</span></div>
       </div>
@@ -1245,52 +1023,48 @@ body{ font-weight: 400; }
       </div>
     </section>
 
+    <!-- ✅ Platform Breakdown is its own card, and is CLOSED properly before Top Posts -->
     <section class="section" aria-label="Platform breakdown">
       <div class="section-header">
         <div class="section-title">
-          <div>
-            <h2>Platform Breakdown</h2>
-            <p>For each platform: Followers, Post Engagement Rate, Page Reach, Page Clicks.</p>
-          </div>
+          <h2>Platform Breakdown</h2>
+          <p>For each platform: Followers, Post Engagement Rate, Page Reach, Page Clicks.</p>
         </div>
         <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>By platform</span></div>
       </div>
 
       <div class="platform-grid" id="platformGrid"></div>
 
-<div class="charts">
-  <div class="chart-card" aria-label="Reach chart">
-    <div class="chart-head">
-      <div class="chart-title">Page Reach by Platform</div>
-      <div class="chart-toggle" role="group" aria-label="Reach chart type">
-        <button type="button" class="ct-btn is-active" data-chart="reach" data-type="bar">Bar</button>
-        <button type="button" class="ct-btn" data-chart="reach" data-type="pie">Pie</button>
-      </div>
-    </div>
-    <div class="chart-wrap"><canvas id="reachChart"></canvas></div>
-  </div>
+      <div class="charts">
+        <div class="chart-card" aria-label="Reach chart">
+          <div class="chart-head">
+            <div class="chart-title">Page Reach by Platform</div>
+            <div class="chart-toggle" role="group" aria-label="Reach chart type">
+              <button type="button" class="ct-btn is-active" data-chart="reach" data-type="bar">Bar</button>
+              <button type="button" class="ct-btn" data-chart="reach" data-type="pie">Pie</button>
+            </div>
+          </div>
+          <div class="chart-wrap"><canvas id="reachChart"></canvas></div>
+        </div>
 
-  <div class="chart-card" aria-label="Engagement rate chart">
-    <div class="chart-head">
-      <div class="chart-title">Post Engagement Rate by Platform</div>
-      <div class="chart-toggle" role="group" aria-label="Engagement chart type">
-        <button type="button" class="ct-btn is-active" data-chart="eng" data-type="bar">Bar</button>
-        <button type="button" class="ct-btn" data-chart="eng" data-type="pie">Pie</button>
+        <div class="chart-card" aria-label="Engagement rate chart">
+          <div class="chart-head">
+            <div class="chart-title">Post Engagement Rate by Platform</div>
+            <div class="chart-toggle" role="group" aria-label="Engagement chart type">
+              <button type="button" class="ct-btn is-active" data-chart="eng" data-type="bar">Bar</button>
+              <button type="button" class="ct-btn" data-chart="eng" data-type="pie">Pie</button>
+            </div>
+          </div>
+          <div class="chart-wrap"><canvas id="engRateChart"></canvas></div>
+        </div>
       </div>
-    </div>
-    <div class="chart-wrap"><canvas id="engRateChart"></canvas></div>
-  </div>
-</div>
-</section>
-
+    </section>
 
     <section class="section" aria-label="Top posts">
       <div class="section-header">
         <div class="section-title">
-          <div>
-            <h2>Top Performing Posts</h2>
-            <p>Compact view by platform. Click a post to see details.</p>
-          </div>
+          <h2>Top Performing Posts</h2>
+          <p>Compact view by platform. Click a post to see details.</p>
         </div>
         <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Top 3 × 3</span></div>
       </div>
@@ -1301,10 +1075,8 @@ body{ font-weight: 400; }
     <section class="section" aria-label="Insights and analysis">
       <div class="section-header">
         <div class="section-title">
-          <div>
-            <h2>Insights, Analysis, and Actions</h2>
-            <p>Write what we're doing right/wrong and the actions management should approve. These boxes are editable.</p>
-          </div>
+          <h2>Insights, Analysis, and Actions</h2>
+          <p>Write what we're doing right/wrong and the actions management should approve. These boxes are editable.</p>
         </div>
         <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Notes</span></div>
       </div>
@@ -1348,511 +1120,510 @@ body{ font-weight: 400; }
       <div class="divider" aria-hidden="true"></div>
       <p><strong>Prepared by:</strong> Josiah Yule</p>
       <p style="margin-top:10px;">
-        <a href="https://integratedstaffing.ca" target="_blank" rel="noopener">
-          Integrated Staffing
-        </a>
+        <a href="https://integratedstaffing.ca" target="_blank" rel="noopener">Integrated Staffing</a>
       </p>
     </div>
 
   </div>
 
-<script>
-/* =========================
-   DATA (EDIT THIS ONLY)
-========================= */
-const REPORT = {
-  quarterLabel: "Q1",
-  rangeLabel: "Sep–Nov 2025",
-  generatedLabel: "Feb 10, 2026",
-  execSummary: [
-    "Overall performance increased quarter-over-quarter: impressions ▲ 50.6%, reactions & likes ▲ 86.9%, and link clicks ▲ 122%.",
-    "Average post engagement rate finished at 5.51% (▲ 23.6% vs previous quarter).",
-    "LinkedIn led engagement rate at 6.97% (▲ 34.6%).",
-    "LinkedIn delivered the highest reach (14,337; ▲ 52.8%), while Facebook led page clicks (1,961; ▲ 326%)."
-  ],
-
-  overall: {
-    posts: 126,
-    impressions: 62690,
-    shares: 166,
-    reactions: 785,
-    followers: 4928,
-    linkClicks: 1597,
-    comments: 35,
-    avgEngagementRate: 5.51
-  },
-
-  deltas: {
-    posts: "▲ 55.6%",
-    impressions: "▲ 50.6%",
-    shares: "▲ 13.6%",
-    reactions: "▲ 86.9%",
-    followers: "▲ 3.9%",
-    linkClicks: "▲ 122%",
-    comments: "▲ 52.2%",
-    avgEngagementRate: "▲ 23.6%"
-  },
-
-  platforms: [
-    { key:"linkedin", name:"LinkedIn", badge:"in", tag:"Primary",
-      followers:2644, followersDelta:"▲ 6.3%",
-      engagementRate:6.97, engagementRateDelta:"▲ 34.6%",
-      pageReach:14337, pageReachDelta:"▲ 52.8%",
-      pageClicks:1476, pageClicksDelta:"▲ 106%" },
-
-    { key:"facebook", name:"Facebook", badge:"f", tag:"Community",
-      followers:1775, followersDelta:"▲ 1.5%",
-      engagementRate:5.38, engagementRateDelta:"▲ 22.2%",
-      pageReach:11447, pageReachDelta:"▲ 108%",
-      pageClicks:1961, pageClicksDelta:"▲ 326%" },
-
-    { key:"instagram", name:"Instagram", badge:"IG", tag:"Visual",
-      followers:509, followersDelta:"▲ 0.6%",
-      engagementRate:4.48, engagementRateDelta:"▲ 14.1%",
-      pageReach:4172, pageReachDelta:"▲ 30.6%",
-      pageClicks:178, pageClicksDelta:"▲ 78%" }
-  ],
-
-  topPostsByPlatform: {
-    linkedin: [
-      { title:"Celebrating Lisa's 10 years", description:"", impressions:2235, likes:52, shares:4 },
-      { title:"Welcoming Crystal", description:"", impressions:2613, likes:42, shares:8 },
-      { title:"Chance and Megan 2 Years", description:"", impressions:1549, likes:31, shares:3 }
+  <script>
+  /* =========================
+     DATA (EDIT THIS ONLY)
+  ========================= */
+  const REPORT = {
+    quarterLabel: "Q1",
+    rangeLabel: "Sep–Nov 2025",
+    generatedLabel: "Feb 10, 2026",
+    execSummary: [
+      "Overall performance increased quarter-over-quarter: impressions ▲ 50.6%, reactions & likes ▲ 86.9%, and link clicks ▲ 122%.",
+      "Average post engagement rate finished at 5.51% (▲ 23.6% vs previous quarter).",
+      "LinkedIn led engagement rate at 6.97% (▲ 34.6%).",
+      "LinkedIn delivered the highest reach (14,337; ▲ 52.8%), while Facebook led page clicks (1,961; ▲ 326%)."
     ],
-    facebook: [
-      { title:"Welcoming Crystal", description:"", impressions:2100, likes:27, shares:3 },
-      { title:"Celebrating Lisa's 10 Years", description:"", impressions:828, likes:26, shares:3 },
-      { title:"Celebrating Chance and Megan 2 years", description:"", impressions:636, likes:14, shares:3 }
+    overall: {
+      posts: 126,
+      impressions: 62690,
+      shares: 166,
+      reactions: 785,
+      followers: 4928,
+      linkClicks: 1597,
+      comments: 35,
+      avgEngagementRate: 5.51
+    },
+    deltas: {
+      posts: "▲ 55.6%",
+      impressions: "▲ 50.6%",
+      shares: "▲ 13.6%",
+      reactions: "▲ 86.9%",
+      followers: "▲ 3.9%",
+      linkClicks: "▲ 122%",
+      comments: "▲ 52.2%",
+      avgEngagementRate: "▲ 23.6%"
+    },
+    platforms: [
+      { key:"linkedin", name:"LinkedIn", badge:"in", tag:"Primary",
+        followers:2644, followersDelta:"▲ 6.3%",
+        engagementRate:6.97, engagementRateDelta:"▲ 34.6%",
+        pageReach:14337, pageReachDelta:"▲ 52.8%",
+        pageClicks:1476, pageClicksDelta:"▲ 106%" },
+      { key:"facebook", name:"Facebook", badge:"f", tag:"Community",
+        followers:1775, followersDelta:"▲ 1.5%",
+        engagementRate:5.38, engagementRateDelta:"▲ 22.2%",
+        pageReach:11447, pageReachDelta:"▲ 108%",
+        pageClicks:1961, pageClicksDelta:"▲ 326%" },
+      { key:"instagram", name:"Instagram", badge:"IG", tag:"Visual",
+        followers:509, followersDelta:"▲ 0.6%",
+        engagementRate:4.48, engagementRateDelta:"▲ 14.1%",
+        pageReach:4172, pageReachDelta:"▲ 30.6%",
+        pageClicks:178, pageClicksDelta:"▲ 78%" }
     ],
-    instagram: [
-      { title:"Celebrating Lisa's 10 Years", description:"", impressions:510, likes:14, shares:2 },
-      { title:"Gear Up Team Video 1", description:"", impressions:743, likes:12, shares:2 },
-      { title:"Chance and Megan 2 years", description:"", impressions:347, likes:12, shares:0 }
-    ]
+    topPostsByPlatform: {
+      linkedin: [
+        { title:"Celebrating Lisa's 10 years", description:"", impressions:2235, likes:52, shares:4 },
+        { title:"Welcoming Crystal", description:"", impressions:2613, likes:42, shares:8 },
+        { title:"Chance and Megan 2 Years", description:"", impressions:1549, likes:31, shares:3 }
+      ],
+      facebook: [
+        { title:"Welcoming Crystal", description:"", impressions:2100, likes:27, shares:3 },
+        { title:"Celebrating Lisa's 10 Years", description:"", impressions:828, likes:26, shares:3 },
+        { title:"Celebrating Chance and Megan 2 years", description:"", impressions:636, likes:14, shares:3 }
+      ],
+      instagram: [
+        { title:"Celebrating Lisa's 10 Years", description:"", impressions:510, likes:14, shares:2 },
+        { title:"Gear Up Team Video 1", description:"", impressions:743, likes:12, shares:2 },
+        { title:"Chance and Megan 2 years", description:"", impressions:347, likes:12, shares:0 }
+      ]
+    }
+  };
+
+  /* =========================
+     HELPERS
+  ========================= */
+  const byId = (id) => document.getElementById(id);
+
+  const fmtInt = (n) => (typeof n === "number" ? n.toLocaleString() : "—");
+  const fmtCompact = (n) => {
+    if (typeof n !== "number" || Number.isNaN(n)) return "—";
+    if (Math.abs(n) >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+    if (Math.abs(n) >= 1_000) return n.toLocaleString();
+    return String(n);
+  };
+  const fmtPct = (n) =>
+    typeof n === "number"
+      ? (n.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "%")
+      : "—";
+
+  function setText(id, value){
+    const el = byId(id);
+    if (el) el.textContent = value;
   }
-};
 
-/* =========================
-   HELPERS
-========================= */
-const byId = (id) => document.getElementById(id);
+  function setDelta(el, text){
+    if(!el) return;
+    el.textContent = text || "—";
+    el.classList.remove("positive","negative");
+    if(!text || text === "—") return;
+    const t = text.trim();
+    if(t.startsWith("▲") || t.startsWith("↑")) el.classList.add("positive");
+    if(t.startsWith("▼") || t.startsWith("↓")) el.classList.add("negative");
+  }
 
-const fmtInt = (n) => (typeof n === "number" ? n.toLocaleString() : "—");
-const fmtCompact = (n) => {
-  if (typeof n !== "number" || Number.isNaN(n)) return "—";
-  if (Math.abs(n) >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
-  if (Math.abs(n) >= 1_000) return n.toLocaleString();
-  return String(n);
-};
-const fmtPct = (n) =>
-  typeof n === "number"
-    ? (n.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "%")
-    : "—";
+  function postEngRate(p){
+    const imp = p.impressions || 0;
+    const eng = (p.likes || 0) + (p.shares || 0);
+    return imp > 0 ? (eng / imp) * 100 : 0;
+  }
 
-function setText(id, value){
-  const el = byId(id);
-  if (el) el.textContent = value;
-}
+  function seriesColors(count){
+    return [
+      'rgba(0,112,202,0.9)',
+      'rgba(0,84,154,0.85)',
+      'rgba(77,163,232,0.8)'
+    ].slice(0, count);
+  }
 
-function setDelta(el, text){
-  if(!el) return;
-  el.textContent = text || "—";
-  el.classList.remove("positive","negative");
-  if(!text || text === "—") return;
-  const t = text.trim();
-  if(t.startsWith("▲") || t.startsWith("↑")) el.classList.add("positive");
-  if(t.startsWith("▼") || t.startsWith("↓")) el.classList.add("negative");
-}
+  /* =========================
+     HEADER + KPI + SUMMARY
+  ========================= */
+  function renderHeader(){
+    setText("reportQuarterLabel", REPORT.quarterLabel);
+    setText("reportRangeLabel", REPORT.rangeLabel);
+    setText("generatedLabel", REPORT.generatedLabel);
+  }
 
-function postEngRate(p){
-  const imp = p.impressions || 0;
-  const eng = (p.likes || 0) + (p.shares || 0);
-  return imp > 0 ? (eng / imp) * 100 : 0;
-}
+  function renderKPIs(){
+    setText("kpiPosts", fmtInt(REPORT.overall.posts));
+    setText("kpiImpressions", fmtCompact(REPORT.overall.impressions));
+    setText("kpiShares", fmtInt(REPORT.overall.shares));
+    setText("kpiReactions", fmtInt(REPORT.overall.reactions));
+    setText("kpiFollowers", fmtInt(REPORT.overall.followers));
+    setText("kpiLinkClicks", fmtInt(REPORT.overall.linkClicks));
+    setText("kpiComments", fmtInt(REPORT.overall.comments));
+    setText("kpiAvgEngRate", fmtPct(REPORT.overall.avgEngagementRate));
 
-function barColors(count){
-  return [
-    'rgba(0,112,202,0.9)',
-    'rgba(0,84,154,0.85)',
-    'rgba(77,163,232,0.8)'
-  ].slice(0, count);
-}
+    setDelta(byId("deltaPosts"), REPORT.deltas.posts);
+    setDelta(byId("deltaImpressions"), REPORT.deltas.impressions);
+    setDelta(byId("deltaShares"), REPORT.deltas.shares);
+    setDelta(byId("deltaReactions"), REPORT.deltas.reactions);
+    setDelta(byId("deltaFollowers"), REPORT.deltas.followers);
+    setDelta(byId("deltaLinkClicks"), REPORT.deltas.linkClicks);
+    setDelta(byId("deltaComments"), REPORT.deltas.comments);
+    setDelta(byId("deltaAvgEngRate"), REPORT.deltas.avgEngagementRate);
+  }
 
-/* =========================
-   HEADER + KPI + SUMMARY
-========================= */
-function renderHeader(){
-  setText("reportQuarterLabel", REPORT.quarterLabel);
-  setText("reportRangeLabel", REPORT.rangeLabel);
-  setText("generatedLabel", REPORT.generatedLabel);
-}
+  function renderExecutiveSummary(){
+    const ul = byId("execSummaryList");
+    if(!ul) return;
 
-function renderKPIs(){
-  setText("kpiPosts", fmtInt(REPORT.overall.posts));
-  setText("kpiImpressions", fmtCompact(REPORT.overall.impressions));
-  setText("kpiShares", fmtInt(REPORT.overall.shares));
-  setText("kpiReactions", fmtInt(REPORT.overall.reactions));
-  setText("kpiFollowers", fmtInt(REPORT.overall.followers));
-  setText("kpiLinkClicks", fmtInt(REPORT.overall.linkClicks));
-  setText("kpiComments", fmtInt(REPORT.overall.comments));
-  setText("kpiAvgEngRate", fmtPct(REPORT.overall.avgEngagementRate));
+    ul.innerHTML = "";
+    (REPORT.execSummary || []).forEach(s => {
+      const li = document.createElement("li");
+      const html = String(s)
+        .replace(/(▲\s?\d+(\.\d+)?%)/g, `<span class="summary-badge positive">$1</span>`)
+        .replace(/(▼\s?\d+(\.\d+)?%)/g, `<span class="summary-badge negative">$1</span>`);
 
-  setDelta(byId("deltaPosts"), REPORT.deltas.posts);
-  setDelta(byId("deltaImpressions"), REPORT.deltas.impressions);
-  setDelta(byId("deltaShares"), REPORT.deltas.shares);
-  setDelta(byId("deltaReactions"), REPORT.deltas.reactions);
-  setDelta(byId("deltaFollowers"), REPORT.deltas.followers);
-  setDelta(byId("deltaLinkClicks"), REPORT.deltas.linkClicks);
-  setDelta(byId("deltaComments"), REPORT.deltas.comments);
-  setDelta(byId("deltaAvgEngRate"), REPORT.deltas.avgEngagementRate);
-}
+      li.innerHTML = `
+        <span class="summary-dot" aria-hidden="true"></span>
+        <span class="summary-text">${html}</span>
+      `;
+      ul.appendChild(li);
+    });
+  }
 
-function renderExecutiveSummary(){
-  const ul = byId("execSummaryList");
-  if(!ul) return;
+  /* =========================
+     PLATFORM CARDS
+  ========================= */
+  function renderPlatforms(){
+    const grid = byId("platformGrid");
+    if(!grid) return;
 
-  ul.innerHTML = "";
-  (REPORT.execSummary || []).forEach(s => {
-    const li = document.createElement("li");
-    const html = String(s)
-      .replace(/(▲\s?\d+(\.\d+)?%)/g, `<span class="summary-badge positive">$1</span>`)
-      .replace(/(▼\s?\d+(\.\d+)?%)/g, `<span class="summary-badge negative">$1</span>`);
-
-    li.innerHTML = `
-      <span class="summary-dot" aria-hidden="true"></span>
-      <span class="summary-text">${html}</span>
-    `;
-    ul.appendChild(li);
-  });
-}
-
-/* =========================
-   PLATFORM CARDS
-========================= */
-function renderPlatforms(){
-  const grid = byId("platformGrid");
-  if(!grid) return;
-
-  grid.innerHTML = "";
-  (REPORT.platforms || []).forEach(p => {
-    const card = document.createElement("div");
-    card.className = "platform";
-    card.innerHTML = `
-      <div class="platform-head">
-        <div class="platform-name">
-          <span class="platform-badge" aria-hidden="true">${p.badge || ""}</span>
-          ${p.name || ""}
-        </div>
-        <div class="platform-tag">${p.tag || ""}</div>
-      </div>
-
-      <div class="pstats">
-        <div class="pstat">
-          <span class="pstat-label">Followers</span>
-          <div class="pstat-row">
-            <strong>${fmtInt(p.followers)}</strong>
-            <span class="delta ${p.followersDelta?.trim().startsWith("▲") ? "positive" : (p.followersDelta?.trim().startsWith("▼") ? "negative" : "")}">
-              ${p.followersDelta || "—"}
-            </span>
+    grid.innerHTML = "";
+    (REPORT.platforms || []).forEach(p => {
+      const card = document.createElement("div");
+      card.className = "platform";
+      card.innerHTML = `
+        <div class="platform-head">
+          <div class="platform-name">
+            <span class="platform-badge" aria-hidden="true">${p.badge || ""}</span>
+            ${p.name || ""}
           </div>
+          <div class="platform-tag">${p.tag || ""}</div>
         </div>
 
-        <div class="pstat">
-          <span class="pstat-label">Post Engagement Rate</span>
-          <div class="pstat-row">
-            <strong>${fmtPct(p.engagementRate)}</strong>
-            <span class="delta ${p.engagementRateDelta?.trim().startsWith("▲") ? "positive" : (p.engagementRateDelta?.trim().startsWith("▼") ? "negative" : "")}">
-              ${p.engagementRateDelta || "—"}
-            </span>
+        <div class="pstats">
+          <div class="pstat">
+            <span class="pstat-label">Followers</span>
+            <div class="pstat-row">
+              <strong>${fmtInt(p.followers)}</strong>
+              <span class="delta ${p.followersDelta?.trim().startsWith("▲") ? "positive" : (p.followersDelta?.trim().startsWith("▼") ? "negative" : "")}">
+                ${p.followersDelta || "—"}
+              </span>
+            </div>
           </div>
-        </div>
 
-        <div class="pstat">
-          <span class="pstat-label">Page Reach</span>
-          <div class="pstat-row">
-            <strong>${fmtInt(p.pageReach)}</strong>
-            <span class="delta ${p.pageReachDelta?.trim().startsWith("▲") ? "positive" : (p.pageReachDelta?.trim().startsWith("▼") ? "negative" : "")}">
-              ${p.pageReachDelta || "—"}
-            </span>
+          <div class="pstat">
+            <span class="pstat-label">Post Engagement Rate</span>
+            <div class="pstat-row">
+              <strong>${fmtPct(p.engagementRate)}</strong>
+              <span class="delta ${p.engagementRateDelta?.trim().startsWith("▲") ? "positive" : (p.engagementRateDelta?.trim().startsWith("▼") ? "negative" : "")}">
+                ${p.engagementRateDelta || "—"}
+              </span>
+            </div>
           </div>
-        </div>
 
-        <div class="pstat">
-          <span class="pstat-label">Page Clicks</span>
-          <div class="pstat-row">
-            <strong>${fmtInt(p.pageClicks)}</strong>
-            <span class="delta ${p.pageClicksDelta?.trim().startsWith("▲") ? "positive" : (p.pageClicksDelta?.trim().startsWith("▼") ? "negative" : "")}">
-              ${p.pageClicksDelta || "—"}
-            </span>
+          <div class="pstat">
+            <span class="pstat-label">Page Reach</span>
+            <div class="pstat-row">
+              <strong>${fmtInt(p.pageReach)}</strong>
+              <span class="delta ${p.pageReachDelta?.trim().startsWith("▲") ? "positive" : (p.pageReachDelta?.trim().startsWith("▼") ? "negative" : "")}">
+                ${p.pageReachDelta || "—"}
+              </span>
+            </div>
           </div>
-        </div>
-      </div>
-    `;
-    grid.appendChild(card);
-  });
-}
 
-/* =========================
-   TOP POSTS (START CLOSED)
-========================= */
-function renderTopPosts(){
-  const wrap = byId("topCompact");
-  if(!wrap) return;
-
-  wrap.innerHTML = "";
-
-  const order = [
-    { key: "linkedin", label: "LinkedIn" },
-    { key: "facebook", label: "Facebook" },
-    { key: "instagram", label: "Instagram" }
-  ];
-
-  order.forEach(({key, label}) => {
-    const posts = (REPORT.topPostsByPlatform?.[key] || [])
-      .slice(0,3)
-      .map(p => ({...p, engagementRate: postEngRate(p)}))
-      .sort((a,b) => (b.engagementRate||0) - (a.engagementRate||0));
-
-    const totalImpressions = posts.reduce((sum,p) => sum + (p.impressions||0), 0);
-    const avgER = posts.length ? (posts.reduce((sum,p)=>sum+(p.engagementRate||0),0) / posts.length) : 0;
-
-    const platform = document.createElement("details");
-    platform.className = "platform-acc";
-    platform.open = false; // ✅ start closed
-
-    platform.innerHTML = `
-      <summary>
-        <div class="sum-left">
-          <span class="platform-pill">${label}</span>
-          <span class="platform-meta">Top 3 • ${fmtInt(totalImpressions)} impressions • Avg ER ${fmtPct(avgER)}</span>
-        </div>
-        <span class="chev" aria-hidden="true">⌄</span>
-      </summary>
-      <div class="platform-body"></div>
-    `;
-
-    const body = platform.querySelector(".platform-body");
-
-    posts.forEach((p, idx) => {
-      const mini = document.createElement("details");
-      mini.className = "post-mini";
-
-      const erText = fmtPct(p.engagementRate || 0);
-
-      mini.innerHTML = `
-        <summary>
-          <div class="rank">#${idx+1}</div>
-          <div class="ptitle">${p.title || (label + " Post")}</div>
-          <div class="quick">
-            <span><strong>${fmtInt(p.impressions || 0)}</strong> impr.</span>
-            <span><strong>${erText}</strong> ER</span>
+          <div class="pstat">
+            <span class="pstat-label">Page Clicks</span>
+            <div class="pstat-row">
+              <strong>${fmtInt(p.pageClicks)}</strong>
+              <span class="delta ${p.pageClicksDelta?.trim().startsWith("▲") ? "positive" : (p.pageClicksDelta?.trim().startsWith("▼") ? "negative" : "")}">
+                ${p.pageClicksDelta || "—"}
+              </span>
+            </div>
           </div>
-        </summary>
-
-        <div class="post-details">
-          <div class="mini-stat"><span>Impressions</span><strong>${fmtInt(p.impressions || 0)}</strong></div>
-          <div class="mini-stat"><span>Likes</span><strong>${fmtInt(p.likes || 0)}</strong></div>
-          <div class="mini-stat"><span>Shares</span><strong>${fmtInt(p.shares || 0)}</strong></div>
-          <div class="mini-stat"><span>Eng. Rate</span><strong>${erText}</strong></div>
-          <div class="math">Eng. Rate = (likes + shares) ÷ impressions = (${fmtInt(p.likes||0)} + ${fmtInt(p.shares||0)}) ÷ ${fmtInt(p.impressions||0)}</div>
         </div>
       `;
-
-      body.appendChild(mini);
+      grid.appendChild(card);
     });
+  }
 
-    wrap.appendChild(platform);
-  });
-}
+  /* =========================
+     TOP POSTS (START CLOSED)
+  ========================= */
+  function renderTopPosts(){
+    const wrap = byId("topCompact");
+    if(!wrap) return;
 
-/* =========================
-   CHARTS (BAR <-> PIE)
-   Requires your HTML toggle buttons
-========================= */
-Chart.defaults.font.family = 'Gotham, Gotham SSm, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
-Chart.defaults.color = '#64748B';
+    wrap.innerHTML = "";
 
-const commonTooltip = {
-  backgroundColor: 'rgba(0,61,114,0.95)',
-  padding: 14,
-  titleFont: { size: 13, weight: '700' },
-  bodyFont: { size: 12, weight: '500' },
-  cornerRadius: 10,
-  displayColors: false
-};
+    const order = [
+      { key: "linkedin", label: "LinkedIn" },
+      { key: "facebook", label: "Facebook" },
+      { key: "instagram", label: "Instagram" }
+    ];
 
-let reachChart, engChart;
+    order.forEach(({key, label}) => {
+      const posts = (REPORT.topPostsByPlatform?.[key] || [])
+        .slice(0,3)
+        .map(p => ({...p, engagementRate: postEngRate(p)}))
+        .sort((a,b) => (b.engagementRate||0) - (a.engagementRate||0));
 
-function getChartSeries(){
-  const labels = (REPORT.platforms || []).map(p => p.name);
-  const reach = (REPORT.platforms || []).map(p => p.pageReach || 0);
-  const er = (REPORT.platforms || []).map(p => p.engagementRate || 0);
-  return { labels, reach, er };
-}
+      const totalImpressions = posts.reduce((sum,p) => sum + (p.impressions||0), 0);
+      const avgER = posts.length ? (posts.reduce((sum,p)=>sum+(p.engagementRate||0),0) / posts.length) : 0;
 
-function buildReach(type){
-  const canvas = byId("reachChart");
-  if(!canvas) return;
-  const ctx = canvas.getContext("2d");
-  if(reachChart) reachChart.destroy();
+      const platform = document.createElement("details");
+      platform.className = "platform-acc";
+      platform.open = false;
 
-  const { labels, reach } = getChartSeries();
+      platform.innerHTML = `
+        <summary>
+          <div class="sum-left">
+            <span class="platform-pill">${label}</span>
+            <span class="platform-meta">Top 3 • ${fmtInt(totalImpressions)} impressions • Avg ER ${fmtPct(avgER)}</span>
+          </div>
+          <span class="chev" aria-hidden="true">⌄</span>
+        </summary>
+        <div class="platform-body"></div>
+      `;
 
-  reachChart = new Chart(ctx, {
-    type,
-    data: {
-      labels,
-      datasets: [{
-        label: "Page Reach",
-        data: reach,
-        backgroundColor: type === "pie" ? barColors(labels.length) : barColors(labels.length),
-        borderColor: type === "pie" ? "#fff" : ['#0070CA', '#00549A', '#4DA3E8'],
-        borderWidth: type === "pie" ? 2 : 0,
-        borderRadius: type === "bar" ? 8 : 0
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: type === "pie", labels: { boxWidth: 10, boxHeight: 10 } },
-        tooltip: commonTooltip
+      const body = platform.querySelector(".platform-body");
+
+      posts.forEach((p, idx) => {
+        const mini = document.createElement("details");
+        mini.className = "post-mini";
+
+        const erText = fmtPct(p.engagementRate || 0);
+
+        mini.innerHTML = `
+          <summary>
+            <div class="rank">#${idx+1}</div>
+            <div class="ptitle">${p.title || (label + " Post")}</div>
+            <div class="quick">
+              <span><strong>${fmtInt(p.impressions || 0)}</strong> impr.</span>
+              <span><strong>${erText}</strong> ER</span>
+            </div>
+          </summary>
+
+          <div class="post-details">
+            <div class="mini-stat"><span>Impressions</span><strong>${fmtInt(p.impressions || 0)}</strong></div>
+            <div class="mini-stat"><span>Likes</span><strong>${fmtInt(p.likes || 0)}</strong></div>
+            <div class="mini-stat"><span>Shares</span><strong>${fmtInt(p.shares || 0)}</strong></div>
+            <div class="mini-stat"><span>Eng. Rate</span><strong>${erText}</strong></div>
+            <div class="math">Eng. Rate = (likes + shares) ÷ impressions = (${fmtInt(p.likes||0)} + ${fmtInt(p.shares||0)}) ÷ ${fmtInt(p.impressions||0)}</div>
+          </div>
+        `;
+
+        body.appendChild(mini);
+      });
+
+      wrap.appendChild(platform);
+    });
+  }
+
+  /* =========================
+     CHARTS (BAR <-> PIE)
+  ========================= */
+  Chart.defaults.font.family = 'Gotham, Gotham SSm, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+  Chart.defaults.color = '#64748B';
+
+  const commonTooltip = {
+    backgroundColor: 'rgba(0,61,114,0.95)',
+    padding: 14,
+    titleFont: { size: 13, weight: '700' },
+    bodyFont: { size: 12, weight: '500' },
+    cornerRadius: 10,
+    displayColors: false
+  };
+
+  let reachChart, engChart;
+
+  function getChartSeries(){
+    const labels = (REPORT.platforms || []).map(p => p.name);
+    const reach = (REPORT.platforms || []).map(p => p.pageReach || 0);
+    const er = (REPORT.platforms || []).map(p => p.engagementRate || 0);
+    return { labels, reach, er };
+  }
+
+  function buildReach(type){
+    const canvas = byId("reachChart");
+    if(!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if(reachChart) reachChart.destroy();
+
+    const { labels, reach } = getChartSeries();
+    const colors = seriesColors(labels.length);
+
+    reachChart = new Chart(ctx, {
+      type,
+      data: {
+        labels,
+        datasets: [{
+          label: "Page Reach",
+          data: reach,
+          backgroundColor: type === "pie" ? colors : colors,
+          borderColor: type === "pie" ? "#fff" : ['#0070CA', '#00549A', '#4DA3E8'],
+          borderWidth: type === "pie" ? 2 : 0,
+          borderRadius: type === "bar" ? 8 : 0
+        }]
       },
-      scales: type === "bar" ? {
-        y: {
-          beginAtZero: true,
-          grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-          ticks: { font: { size: 11, weight: '500' }, color: '#64748B' },
-          border: { display: false }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: type === "pie", labels: { boxWidth: 10, boxHeight: 10 } },
+          tooltip: commonTooltip
         },
-        x: {
-          grid: { display: false, drawBorder: false },
-          ticks: { font: { size: 12, weight: '700' }, color: '#0B1220' },
-          border: { display: false }
-        }
-      } : {}
-    }
-  });
-}
-
-function buildEng(type){
-  const canvas = byId("engRateChart");
-  if(!canvas) return;
-  const ctx = canvas.getContext("2d");
-  if(engChart) engChart.destroy();
-
-  const { labels, er } = getChartSeries();
-
-  engChart = new Chart(ctx, {
-    type,
-    data: {
-      labels,
-      datasets: [{
-        label: "Post Engagement Rate (%)",
-        data: er,
-        backgroundColor: type === "pie" ? barColors(labels.length) : 'rgba(0,112,202,0.15)',
-        borderColor: type === "pie" ? "#fff" : "#0070CA",
-        borderWidth: type === "pie" ? 2 : 2,
-        borderRadius: type === "bar" ? 8 : 0
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: type === "pie", labels: { boxWidth: 10, boxHeight: 10 } },
-        tooltip: commonTooltip
-      },
-      scales: type === "bar" ? {
-        y: {
-          beginAtZero: true,
-          grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-          ticks: {
-            font: { size: 11, weight: '500' },
-            color: '#64748B',
-            callback: (v) => v + "%"
+        scales: type === "bar" ? {
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+            ticks: { font: { size: 11, weight: '500' }, color: '#64748B' },
+            border: { display: false }
           },
-          border: { display: false }
-        },
-        x: {
-          grid: { display: false, drawBorder: false },
-          ticks: { font: { size: 12, weight: '700' }, color: '#0B1220' },
-          border: { display: false }
-        }
-      } : {}
-    }
-  });
-}
-
-function wireChartToggles(){
-  // If the toggle buttons aren't present, charts still render as bars.
-  const btns = document.querySelectorAll(".ct-btn");
-  if(!btns.length) return;
-
-  btns.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const chart = btn.getAttribute("data-chart"); // reach | eng
-      const type = btn.getAttribute("data-type");   // bar | pie
-
-      const group = btn.parentElement;
-      group.querySelectorAll(".ct-btn").forEach(b => b.classList.remove("is-active"));
-      btn.classList.add("is-active");
-
-      if(chart === "reach") buildReach(type);
-      if(chart === "eng") buildEng(type);
+          x: {
+            grid: { display: false, drawBorder: false },
+            ticks: { font: { size: 12, weight: '700' }, color: '#0B1220' },
+            border: { display: false }
+          }
+        } : {}
+      }
     });
-  });
-}
+  }
 
-/* =========================
-   EDIT LOCK (?edit=1)
-========================= */
-function lockEditing(){
-  const params = new URLSearchParams(window.location.search);
-  const canEdit = params.get("edit") === "1";
-  document.querySelectorAll('[data-editable="true"]').forEach(el => {
-    el.setAttribute("contenteditable", canEdit ? "true" : "false");
-  });
-}
+  function buildEng(type){
+    const canvas = byId("engRateChart");
+    if(!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if(engChart) engChart.destroy();
 
-/* =========================
-   QUARTER DROPDOWN
-========================= */
-function quarterDropdown(){
-  const wrap = document.querySelector(".pill-wrap");
-  const btn = document.getElementById("quarterBtn");
-  if(!wrap || !btn) return;
+    const { labels, er } = getChartSeries();
+    const colors = seriesColors(labels.length);
 
-  btn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    wrap.classList.toggle("open");
-  });
+    engChart = new Chart(ctx, {
+      type,
+      data: {
+        labels,
+        datasets: [{
+          label: "Post Engagement Rate (%)",
+          data: er,
+          backgroundColor: type === "pie" ? colors : 'rgba(0,112,202,0.15)',
+          borderColor: type === "pie" ? "#fff" : "#0070CA",
+          borderWidth: type === "pie" ? 2 : 2,
+          borderRadius: type === "bar" ? 8 : 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: type === "pie", labels: { boxWidth: 10, boxHeight: 10 } },
+          tooltip: commonTooltip
+        },
+        scales: type === "bar" ? {
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+            ticks: {
+              font: { size: 11, weight: '500' },
+              color: '#64748B',
+              callback: (v) => v + "%"
+            },
+            border: { display: false }
+          },
+          x: {
+            grid: { display: false, drawBorder: false },
+            ticks: { font: { size: 12, weight: '700' }, color: '#0B1220' },
+            border: { display: false }
+          }
+        } : {}
+      }
+    });
+  }
 
-  document.addEventListener("click", () => wrap.classList.remove("open"));
+  function wireChartToggles(){
+    const btns = document.querySelectorAll(".ct-btn");
+    if(!btns.length) return;
 
-  document.addEventListener("keydown", (e) => {
-    if(e.key === "Escape") wrap.classList.remove("open");
-  });
-}
+    btns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const chart = btn.getAttribute("data-chart"); // reach | eng
+        const type = btn.getAttribute("data-type");   // bar | pie
 
-/* =========================
-   INIT
-========================= */
-(function init(){
-  renderHeader();
-  renderKPIs();
-  renderExecutiveSummary();
-  renderPlatforms();
-  renderTopPosts();
+        const group = btn.parentElement;
+        group.querySelectorAll(".ct-btn").forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
 
-  // default charts: bar
-  buildReach("bar");
-  buildEng("bar");
-  wireChartToggles();
+        if(chart === "reach") buildReach(type);
+        if(chart === "eng") buildEng(type);
+      });
+    });
+  }
 
-  lockEditing();
-  quarterDropdown();
-})();
-</script>
+  /* =========================
+     EDIT LOCK (?edit=1)
+  ========================= */
+  function lockEditing(){
+    const params = new URLSearchParams(window.location.search);
+    const canEdit = params.get("edit") === "1";
+    document.querySelectorAll('[data-editable="true"]').forEach(el => {
+      el.setAttribute("contenteditable", canEdit ? "true" : "false");
+    });
+  }
+
+  /* =========================
+     QUARTER DROPDOWN
+  ========================= */
+  function quarterDropdown(){
+    const wrap = document.querySelector(".pill-wrap");
+    const btn = document.getElementById("quarterBtn");
+    if(!wrap || !btn) return;
+
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      wrap.classList.toggle("open");
+      btn.setAttribute("aria-expanded", wrap.classList.contains("open") ? "true" : "false");
+    });
+
+    document.addEventListener("click", () => {
+      wrap.classList.remove("open");
+      btn.setAttribute("aria-expanded","false");
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if(e.key === "Escape"){
+        wrap.classList.remove("open");
+        btn.setAttribute("aria-expanded","false");
+      }
+    });
+  }
+
+  /* =========================
+     INIT
+  ========================= */
+  (function init(){
+    renderHeader();
+    renderKPIs();
+    renderExecutiveSummary();
+    renderPlatforms();
+    renderTopPosts();
+
+    buildReach("bar");
+    buildEng("bar");
+    wireChartToggles();
+
+    lockEditing();
+    quarterDropdown();
+  })();
+  </script>
 </body>
 </html>
+
