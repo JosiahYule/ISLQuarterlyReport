@@ -1158,7 +1158,7 @@
       <div class="summary-shell">
         <div class="summary-rail" aria-hidden="true"></div>
         <div class="summary-card" id="execSummaryBox" data-editable="true" aria-label="Editable executive summary">
-          <ul class="summary-list" id="execSummaryList"></ul>
+           <ul class="summary-list" id="execSummaryList" data-editable="true"></ul>
         </div>
       </div>
     </section>
@@ -1292,7 +1292,7 @@
       <div class="insight-grid">
         <div class="insight-card">
           <h3>What's Working</h3>
-          <div class="body" data-editable="true">
+          <div class="body" id="insightWorking" data-editable="true">
             • Engagement is climbing quickly: reactions & likes increased 86.9% quarter-over-quarter.<br>
             • Link clicks rose 122%, showing stronger CTA performance and more traffic-driving content.
           </div>
@@ -1300,7 +1300,7 @@
 
         <div class="insight-card">
           <h3>What's Not Working</h3>
-          <div class="body" data-editable="true">
+          <div class="body" id="insightNotWorking" data-editable="true">
             • Add 3–6 gaps or underperforming areas.<br>
             • Example: "Follower growth is positive but slower than engagement gains — we need more follow-driving formats."
           </div>
@@ -1308,7 +1308,7 @@
 
         <div class="insight-card">
           <h3>Actions From This Data</h3>
-          <div class="body" data-editable="true">
+          <div class="body" id="insightActions" data-editable="true">
             • Add 3–8 actions (clear, measurable).<br>
             • Example: "Standardize post CTAs and track clicks per 1,000 impressions weekly."
           </div>
@@ -1316,7 +1316,7 @@
 
         <div class="insight-card">
           <h3>Next Quarter Focus</h3>
-          <div class="body" data-editable="true">
+          <div class="body" id="insightNext" data-editable="true">
             • Add what you'll prioritize and how you'll measure it.<br>
             • Example: "Increase engagement rate while growing followers by improving distribution and repurposing top themes."
           </div>
@@ -1757,6 +1757,70 @@ async function loadReport(){
   }
 
   /* =========================
+   LOCAL SAVE (SUMMARY + INSIGHTS)
+   Saves per-quarter in this browser
+========================= */
+function storageKey(){
+  return `isl-report-notes:${REPORT?.quarterLabel || "Q?"}:${REPORT?.rangeLabel || ""}`;
+}
+
+function loadNotes(){
+  try{
+    const raw = localStorage.getItem(storageKey());
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){
+    return null;
+  }
+}
+
+function saveNotes(payload){
+  try{
+    localStorage.setItem(storageKey(), JSON.stringify(payload));
+  }catch(e){}
+}
+
+function wireNotesAutosave(){
+  const canEdit = new URLSearchParams(window.location.search).get("edit") === "1";
+  if(!canEdit) return; // only save when you're in edit mode
+
+  const execList = document.getElementById("execSummaryList");
+  const w = document.getElementById("insightWorking");
+  const nw = document.getElementById("insightNotWorking");
+  const a = document.getElementById("insightActions");
+  const n = document.getElementById("insightNext");
+
+  // restore any saved notes
+  const saved = loadNotes();
+  if(saved){
+    if(execList && saved.execHtml) execList.innerHTML = saved.execHtml;
+    if(w && saved.working) w.innerHTML = saved.working;
+    if(nw && saved.notWorking) nw.innerHTML = saved.notWorking;
+    if(a && saved.actions) a.innerHTML = saved.actions;
+    if(n && saved.next) n.innerHTML = saved.next;
+  }
+
+  // save on input (debounced)
+  let t = null;
+  const scheduleSave = () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      saveNotes({
+        execHtml: execList ? execList.innerHTML : "",
+        working: w ? w.innerHTML : "",
+        notWorking: nw ? nw.innerHTML : "",
+        actions: a ? a.innerHTML : "",
+        next: n ? n.innerHTML : ""
+      });
+    }, 250);
+  };
+
+  [execList, w, nw, a, n].filter(Boolean).forEach(el => {
+    el.addEventListener("input", scheduleSave);
+    el.addEventListener("blur", scheduleSave);
+  });
+}
+    
+  /* =========================
      INIT
   ========================= */
  (async function init(){
@@ -1775,6 +1839,7 @@ async function loadReport(){
 
     lockEditing();
     quarterDropdown();
+    wireNotesAutosave();
 
   } catch(err){
     console.error(err);
