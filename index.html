@@ -825,12 +825,19 @@
       .brand-text strong{font-size:14px}
       .brand-text span{font-size:12px}
       
-      .topbar .pill[aria-label="Report period"]{
-        position:absolute;
-        top:0;right:0;
-        padding:8px 12px;
-        font-size:12px;
-      }
+@media (max-width:700px){
+  .pill-wrap{
+    position:absolute;
+    top:0;
+    right:0;
+  }
+
+  .pill-trigger{
+    padding:8px 12px;
+    font-size:12px;
+  }
+}
+
       #reportRangeLabel{display:none}
       
       .post-mini > summary{
@@ -977,6 +984,13 @@ body{ font-weight: 400; }
 .pill-item:hover{
   background:rgba(0,112,202,.08);
 }
+
+ .pill-trigger{
+  appearance:none;
+  -webkit-appearance:none;
+  font: inherit;
+  background: var(--card);
+}   
   </style>
 </head>
 
