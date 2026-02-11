@@ -1338,71 +1338,13 @@
   /* =========================
      DATA (EDIT THIS ONLY)
   ========================= */
-  const REPORT = {
-    quarterLabel: "Q1",
-    rangeLabel: "Sep–Nov 2025",
-    generatedLabel: "Feb 10, 2026",
-    execSummary: [
-      "Overall performance increased quarter-over-quarter: impressions ▲ 50.6%, reactions & likes ▲ 86.9%, and link clicks ▲ 122%.",
-      "Average post engagement rate finished at 5.51% (▲ 23.6% vs previous quarter).",
-      "LinkedIn led engagement rate at 6.97% (▲ 34.6%).",
-      "LinkedIn delivered the highest reach (14,337; ▲ 52.8%), while Facebook led page clicks (1,961; ▲ 326%)."
-    ],
-    overall: {
-      posts: 126,
-      impressions: 62690,
-      shares: 166,
-      reactions: 785,
-      followers: 4928,
-      linkClicks: 1597,
-      comments: 35,
-      avgEngagementRate: 5.51
-    },
-    deltas: {
-      posts: "▲ 55.6%",
-      impressions: "▲ 50.6%",
-      shares: "▲ 13.6%",
-      reactions: "▲ 86.9%",
-      followers: "▲ 3.9%",
-      linkClicks: "▲ 122%",
-      comments: "▲ 52.2%",
-      avgEngagementRate: "▲ 23.6%"
-    },
-    platforms: [
-      { key:"linkedin", name:"LinkedIn", badge:"in", tag:"Primary",
-        followers:2644, followersDelta:"▲ 6.3%",
-        engagementRate:6.97, engagementRateDelta:"▲ 34.6%",
-        pageReach:14337, pageReachDelta:"▲ 52.8%",
-        pageClicks:1476, pageClicksDelta:"▲ 106%" },
-      { key:"facebook", name:"Facebook", badge:"f", tag:"Community",
-        followers:1775, followersDelta:"▲ 1.5%",
-        engagementRate:5.38, engagementRateDelta:"▲ 22.2%",
-        pageReach:11447, pageReachDelta:"▲ 108%",
-        pageClicks:1961, pageClicksDelta:"▲ 326%" },
-      { key:"instagram", name:"Instagram", badge:"IG", tag:"Visual",
-        followers:509, followersDelta:"▲ 0.6%",
-        engagementRate:4.48, engagementRateDelta:"▲ 14.1%",
-        pageReach:4172, pageReachDelta:"▲ 30.6%",
-        pageClicks:178, pageClicksDelta:"▲ 78%" }
-    ],
-    topPostsByPlatform: {
-      linkedin: [
-        { title:"Celebrating Lisa's 10 years", description:"", impressions:2235, likes:52, shares:4 },
-        { title:"Welcoming Crystal", description:"", impressions:2613, likes:42, shares:8 },
-        { title:"Chance and Megan 2 Years", description:"", impressions:1549, likes:31, shares:3 }
-      ],
-      facebook: [
-        { title:"Welcoming Crystal", description:"", impressions:2100, likes:27, shares:3 },
-        { title:"Celebrating Lisa's 10 Years", description:"", impressions:828, likes:26, shares:3 },
-        { title:"Celebrating Chance and Megan 2 years", description:"", impressions:636, likes:14, shares:3 }
-      ],
-      instagram: [
-        { title:"Celebrating Lisa's 10 Years", description:"", impressions:510, likes:14, shares:2 },
-        { title:"Gear Up Team Video 1", description:"", impressions:743, likes:12, shares:2 },
-        { title:"Chance and Megan 2 years", description:"", impressions:347, likes:12, shares:0 }
-      ]
-    }
-  };
+  let REPORT = null;
+
+async function loadReport(){
+  const res = await fetch("./report-data.json", { cache: "no-store" });
+  if(!res.ok) throw new Error("Could not load report-data.json");
+  return await res.json();
+}
 
   /* =========================
      HELPERS
@@ -1817,7 +1759,10 @@
   /* =========================
      INIT
   ========================= */
-  (function init(){
+ (async function init(){
+  try{
+    REPORT = await loadReport();
+
     renderHeader();
     renderKPIs();
     renderExecutiveSummary();
@@ -1830,7 +1775,12 @@
 
     lockEditing();
     quarterDropdown();
-  })();
+
+  } catch(err){
+    console.error(err);
+    alert("Report data failed to load. Check that report-data.json is in the same folder as this page.");
+  }
+})();
   </script>
 </body>
 </html>
