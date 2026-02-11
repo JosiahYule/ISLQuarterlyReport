@@ -9,10 +9,24 @@
     "What's Working": "Engagement is climbing quickly across LinkedIn and Facebook."
   },
   "overall": {
-    "posts": 126
+    "posts": 126,
+    "impressions": "",
+    "shares": "",
+    "reactions": "",
+    "followers": "",
+    "linkclicks": "",
+    "comments": "",
+    "avgengagementrate": ""
   },
   "deltas": {
-    "posts": "▲ 55.6%"
+    "posts": "▲ 55.6%",
+    "impressions": "",
+    "shares": "",
+    "reactions": "",
+    "followers": "",
+    "linkclicks": "",
+    "comments": "",
+    "avgengagementrate": ""
   },
   "platforms": [
     {
