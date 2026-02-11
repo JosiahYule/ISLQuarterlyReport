@@ -1167,62 +1167,50 @@
         <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Totals</span></div>
       </div>
 
-<div class="kpi-grid" aria-label="Total KPI cards">
-  <div class="kpi-card" style="--tone: var(--success);" tabindex="0"
-       data-tip="The number of posts published to our accounts during the time frame.">
-    <div class="kpi-label">Posts</div>
-    <div class="kpi-value" id="kpiPosts">—</div>
-    <div class="kpi-sub"><span class="delta" id="deltaPosts">—</span></div>
+<div class="kpi-grid" aria-label="Website KPI cards">
+
+  <div class="kpi-card" tabindex="0"
+       data-tip="Sessions are total visits to the website during the selected time period.">
+    <div class="kpi-label">Sessions</div>
+    <div class="kpi-value" id="kpiSessions">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaSessions">—</span></div>
   </div>
 
-  <div class="kpi-card" style="--tone: var(--isl-accent);" tabindex="0"
-       data-tip="The number of times posts on our Facebook, Instagram, and LinkedIn appeared on someone’s screen.">
-    <div class="kpi-label">Post Impressions</div>
-    <div class="kpi-value" id="kpiImpressions">—</div>
-    <div class="kpi-sub"><span class="delta" id="deltaImpressions">—</span></div>
+  <div class="kpi-card" tabindex="0"
+       data-tip="Users are unique visitors during the selected time period.">
+    <div class="kpi-label">Users</div>
+    <div class="kpi-value" id="kpiUsers">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaUsers">—</span></div>
   </div>
 
-  <div class="kpi-card" style="--tone: var(--warning);" tabindex="0"
-       data-tip="The number of reactions or likes to posts on our pages.">
-    <div class="kpi-label">Reactions & Likes</div>
-    <div class="kpi-value" id="kpiReactions">—</div>
-    <div class="kpi-sub"><span class="delta" id="deltaReactions">—</span></div>
+  <div class="kpi-card" tabindex="0"
+       data-tip="Engagement Rate is the % of sessions that were engaged (GA4).">
+    <div class="kpi-label">Engagement Rate</div>
+    <div class="kpi-value" id="kpiEngRate">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaEngRate">—</span></div>
   </div>
 
-  <div class="kpi-card" style="--tone: var(--isl-primary);" tabindex="0"
-       data-tip="The number of times people shared our Facebook, Instagram, and LinkedIn posts.">
-    <div class="kpi-label">Post Shares</div>
-    <div class="kpi-value" id="kpiShares">—</div>
-    <div class="kpi-sub"><span class="delta" id="deltaShares">—</span></div>
+  <div class="kpi-card" tabindex="0"
+       data-tip="Average engagement time per session (GA4).">
+    <div class="kpi-label">Avg Engagement Time</div>
+    <div class="kpi-value" id="kpiAvgEngTime">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaAvgEngTime">—</span></div>
   </div>
 
-  <div class="kpi-card" style="--tone: var(--danger);" tabindex="0"
-       data-tip="The number of people who followed our accounts.">
-    <div class="kpi-label">Followers (Total)</div>
-    <div class="kpi-value" id="kpiFollowers">—</div>
-    <div class="kpi-sub"><span class="delta" id="deltaFollowers">—</span></div>
+  <div class="kpi-card" tabindex="0"
+       data-tip="Conversions are the total key events recorded during the time period (GA4).">
+    <div class="kpi-label">Conversions</div>
+    <div class="kpi-value" id="kpiConversions">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaConversions">—</span></div>
   </div>
 
-  <div class="kpi-card" style="--tone: var(--isl-accent-bright);" tabindex="0"
-       data-tip="The number of times people clicked on the links in our posts.">
-    <div class="kpi-label">Post Link Clicks</div>
-    <div class="kpi-value" id="kpiLinkClicks">—</div>
-    <div class="kpi-sub"><span class="delta" id="deltaLinkClicks">—</span></div>
+  <div class="kpi-card" tabindex="0"
+       data-tip="Conversion Rate is conversions ÷ sessions (shown as a %).">
+    <div class="kpi-label">Conversion Rate</div>
+    <div class="kpi-value" id="kpiConvRate">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaConvRate">—</span></div>
   </div>
 
-  <div class="kpi-card" style="--tone: var(--warning);" tabindex="0"
-       data-tip="The number of comments and replies on our posts during the time frame.">
-    <div class="kpi-label">Comments & Replies</div>
-    <div class="kpi-value" id="kpiComments">—</div>
-    <div class="kpi-sub"><span class="delta" id="deltaComments">—</span></div>
-  </div>
-
-  <div class="kpi-card" style="--tone: var(--success);" tabindex="0"
-       data-tip="The average engagement rate for the posts published to our accounts.">
-    <div class="kpi-label">Avg Engagement Rate</div>
-    <div class="kpi-value" id="kpiAvgEngRate">—</div>
-    <div class="kpi-sub"><span class="delta" id="deltaAvgEngRate">—</span></div>
-  </div>
 </div>
     </section>
 
@@ -1336,7 +1324,7 @@
 let REPORT = null;
 
 async function loadReport(){
-  const res = await fetch("./report-data.json", { cache: "no-store" });
+  const res = await fetch("./web-data.json", { cache: "no-store" });
   if(!res.ok) throw new Error("Could not load report-data.json");
   return await res.json();
 }
