@@ -991,6 +991,31 @@ body{ font-weight: 400; }
   font: inherit;
   background: var(--card);
 }   
+
+  /* =========================
+   PLATFORM GRID OVERFLOW FIX
+========================= */
+
+/* Clip any accidental overflow inside rounded sections */
+.section{
+  overflow:hidden;
+}
+
+/* Make the grid truly responsive and prevent items from forcing overflow */
+.platform-grid{
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Allow cards to shrink instead of pushing the grid wider */
+.platform{
+  min-width:0;
+}
+
+/* Also make inner stats shrink safely */
+.pstats,
+.pstat{
+  min-width:0;
+}  
   </style>
 </head>
 
@@ -1271,7 +1296,7 @@ body{ font-weight: 400; }
           pageReach:11447, pageReachDelta:"▲ 108%",
           pageClicks:1961, pageClicksDelta:"▲ 326%" },
 
-        { key:"instagram", name:"Instagram", badge:"⦿", tag:"Visual",
+        { key:"instagram", name:"Instagram", badge:"IG", tag:"Visual",
           followers:509, followersDelta:"▲ 0.6%",
           engagementRate:4.48, engagementRateDelta:"▲ 14.1%",
           pageReach:4172, pageReachDelta:"▲ 30.6%",
