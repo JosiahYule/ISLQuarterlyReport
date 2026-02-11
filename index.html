@@ -983,6 +983,94 @@
   line-height:1;
   white-space:nowrap;
 }
+
+ /* =========================
+   KPI HOVER DEFINITIONS (TOOLTIPS)
+   paste at END of <style>
+========================= */
+
+/* Tooltips need overflow visible (your earlier overflow:hidden clips them) */
+.section{ overflow: visible !important; }
+/* Keep Platform Breakdown clipped, but allow others (like Quarter Totals) to show tooltips */
+.section[aria-label="Platform breakdown"]{ overflow: hidden !important; }
+
+.kpi-card{
+  position: relative;
+}
+
+/* Tooltip bubble */
+.kpi-card::after{
+  content: attr(data-tip);
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: calc(100% + 10px);
+  z-index: 50;
+
+  background: rgba(0, 61, 114, 0.96);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 14px;
+  box-shadow: 0 14px 34px rgba(0,0,0,.18);
+
+  padding: 12px 12px;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 500;
+
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition: opacity .16s ease, transform .16s ease;
+}
+
+/* Tooltip arrow */
+.kpi-card::before{
+  content: "";
+  position: absolute;
+  left: 28px;
+  bottom: calc(100% + 4px);
+  z-index: 51;
+
+  width: 10px;
+  height: 10px;
+  background: rgba(0, 61, 114, 0.96);
+  border-left: 1px solid rgba(255,255,255,.14);
+  border-top: 1px solid rgba(255,255,255,.14);
+  transform: rotate(45deg);
+
+  opacity: 0;
+  transition: opacity .16s ease;
+  pointer-events: none;
+}
+
+/* Show on hover + keyboard focus */
+.kpi-card:hover::after,
+.kpi-card:hover::before,
+.kpi-card:focus::after,
+.kpi-card:focus::before,
+.kpi-card:focus-within::after,
+.kpi-card:focus-within::before{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Make cards focusable (for accessibility) */
+.kpi-card{
+  outline: none;
+}
+.kpi-card:focus{
+  box-shadow: 0 0 0 4px rgba(0,112,202,.16), 0 12px 24px rgba(0,0,0,.10);
+  border-color: rgba(0,112,202,.22);
+}
+
+/* Mobile: don’t show huge hover popups */
+@media (max-width: 700px){
+  .kpi-card::after,
+  .kpi-card::before{
+    display: none;
+  }
+}   
   </style>
 </head>
 
@@ -1060,55 +1148,63 @@
         <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Totals</span></div>
       </div>
 
-      <div class="kpi-grid" aria-label="Total KPI cards">
-        <div class="kpi-card" style="--tone: var(--success);">
-          <div class="kpi-label">Posts</div>
-          <div class="kpi-value" id="kpiPosts">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaPosts">—</span></div>
-        </div>
+<div class="kpi-grid" aria-label="Total KPI cards">
+  <div class="kpi-card" style="--tone: var(--success);" tabindex="0"
+       data-tip="The number of posts published to our accounts during the time frame.">
+    <div class="kpi-label">Posts</div>
+    <div class="kpi-value" id="kpiPosts">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaPosts">—</span></div>
+  </div>
 
-        <div class="kpi-card" style="--tone: var(--isl-accent);">
-          <div class="kpi-label">Post Impressions</div>
-          <div class="kpi-value" id="kpiImpressions">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaImpressions">—</span></div>
-        </div>
+  <div class="kpi-card" style="--tone: var(--isl-accent);" tabindex="0"
+       data-tip="The number of times posts on our Facebook, Instagram, and LinkedIn appeared on someone’s screen.">
+    <div class="kpi-label">Post Impressions</div>
+    <div class="kpi-value" id="kpiImpressions">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaImpressions">—</span></div>
+  </div>
 
-        <div class="kpi-card" style="--tone: var(--warning);">
-          <div class="kpi-label">Reactions & Likes</div>
-          <div class="kpi-value" id="kpiReactions">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaReactions">—</span></div>
-        </div>
+  <div class="kpi-card" style="--tone: var(--warning);" tabindex="0"
+       data-tip="The number of reactions or likes to posts on our pages.">
+    <div class="kpi-label">Reactions & Likes</div>
+    <div class="kpi-value" id="kpiReactions">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaReactions">—</span></div>
+  </div>
 
-        <div class="kpi-card" style="--tone: var(--isl-primary);">
-          <div class="kpi-label">Post Shares</div>
-          <div class="kpi-value" id="kpiShares">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaShares">—</span></div>
-        </div>
+  <div class="kpi-card" style="--tone: var(--isl-primary);" tabindex="0"
+       data-tip="The number of times people shared our Facebook, Instagram, and LinkedIn posts.">
+    <div class="kpi-label">Post Shares</div>
+    <div class="kpi-value" id="kpiShares">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaShares">—</span></div>
+  </div>
 
-        <div class="kpi-card" style="--tone: var(--danger);">
-          <div class="kpi-label">Followers (Total)</div>
-          <div class="kpi-value" id="kpiFollowers">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaFollowers">—</span></div>
-        </div>
+  <div class="kpi-card" style="--tone: var(--danger);" tabindex="0"
+       data-tip="The number of people who followed our accounts.">
+    <div class="kpi-label">Followers (Total)</div>
+    <div class="kpi-value" id="kpiFollowers">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaFollowers">—</span></div>
+  </div>
 
-        <div class="kpi-card" style="--tone: var(--isl-accent-bright);">
-          <div class="kpi-label">Post Link Clicks</div>
-          <div class="kpi-value" id="kpiLinkClicks">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaLinkClicks">—</span></div>
-        </div>
+  <div class="kpi-card" style="--tone: var(--isl-accent-bright);" tabindex="0"
+       data-tip="The number of times people clicked on the links in our posts.">
+    <div class="kpi-label">Post Link Clicks</div>
+    <div class="kpi-value" id="kpiLinkClicks">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaLinkClicks">—</span></div>
+  </div>
 
-        <div class="kpi-card" style="--tone: var(--warning);">
-          <div class="kpi-label">Comments & Replies</div>
-          <div class="kpi-value" id="kpiComments">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaComments">—</span></div>
-        </div>
+  <div class="kpi-card" style="--tone: var(--warning);" tabindex="0"
+       data-tip="The number of comments and replies on our posts during the time frame.">
+    <div class="kpi-label">Comments & Replies</div>
+    <div class="kpi-value" id="kpiComments">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaComments">—</span></div>
+  </div>
 
-        <div class="kpi-card" style="--tone: var(--success);">
-          <div class="kpi-label">Avg Engagement Rate</div>
-          <div class="kpi-value" id="kpiAvgEngRate">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaAvgEngRate">—</span></div>
-        </div>
-      </div>
+  <div class="kpi-card" style="--tone: var(--success);" tabindex="0"
+       data-tip="The average engagement rate for the posts published to our accounts.">
+    <div class="kpi-label">Avg Engagement Rate</div>
+    <div class="kpi-value" id="kpiAvgEngRate">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaAvgEngRate">—</span></div>
+  </div>
+</div>
     </section>
 
     <!-- ✅ Platform Breakdown is its own card, and is CLOSED properly before Top Posts -->
