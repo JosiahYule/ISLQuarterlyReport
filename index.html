@@ -15,23 +15,24 @@
       --isl-accent:#0070CA;
       --isl-accent-bright:#4DA3E8;
 
-      --bg:#F5F5F7;
-      --card:rgba(255,255,255,.74);
-      --border:rgba(0,0,0,.08);
-      --shadow:0 10px 28px rgba(0,0,0,.08);
+      --bg:#FAFBFC;
+      --card:#FFFFFF;
+      --border:rgba(0,0,0,.06);
+      --shadow:0 2px 8px rgba(0,0,0,.04), 0 12px 24px rgba(0,0,0,.06);
 
       --text:#0B1220;
-      --muted:rgba(11,18,32,.62);
+      --muted:#64748B;
 
-      --success:#06D6A0;
-      --warning:#FFB703;
-      --danger:#EF476F;
+      --success:#10B981;
+      --warning:#F59E0B;
+      --danger:#EF4444;
 
-      --radius-xl:28px;
-      --radius-lg:20px;
+      --radius-xl:24px;
+      --radius-lg:16px;
+      --radius-md:12px;
 
       --font:"Gotham","Gotham SSm",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-      --blur:18px;
+      --transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     *{margin:0;padding:0;box-sizing:border-box}
@@ -40,783 +41,813 @@
     body{
       font-family:var(--font);
       color:var(--text);
-      background:#ffffff;
-      line-height:1.55;
+      background:var(--bg);
+      line-height:1.6;
       overflow-x:hidden;
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
     }
 
-    .container{max-width:1220px;margin:0 auto;padding:22px 18px 40px}
+    .container{max-width:1240px;margin:0 auto;padding:32px 24px 48px}
 
-    .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
-    .brand{display:flex;align-items:center;gap:12px;min-width:0}
+    /* ============= TOPBAR ============= */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+      margin-bottom:24px;
+      padding:16px 0;
+    }
+    .brand{display:flex;align-items:center;gap:14px;min-width:0}
     .brand-mark{
-      width:40px;height:40px;border-radius:14px;
+      width:48px;height:48px;
+      border-radius:12px;
       background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
-      box-shadow:0 12px 26px rgba(0,84,154,.22);
+      box-shadow:0 4px 12px rgba(0,84,154,.2), inset 0 1px 0 rgba(255,255,255,.2);
       position:relative;overflow:hidden;
+      display:grid;place-items:center;
+      font-size:20px;font-weight:900;color:#fff;
     }
     .brand-mark::before{
+      content:"IS";
+      position:relative;
+      z-index:1;
+      letter-spacing:-0.02em;
+    }
+    .brand-mark::after{
       content:"";position:absolute;inset:-40%;
-      background:radial-gradient(circle, rgba(255,255,255,.35), transparent 60%);
+      background:radial-gradient(circle, rgba(255,255,255,.3), transparent 60%);
       transform:rotate(25deg);
     }
-    .brand-text{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+    .brand-text{display:flex;flex-direction:column;line-height:1.3;min-width:0}
     .brand-text strong{
-      font-size:14px;letter-spacing:.12em;text-transform:uppercase;
-      white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+      font-size:15px;
+      letter-spacing:.05em;
+      text-transform:uppercase;
+      font-weight:800;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
     }
     .brand-text span{
-      font-size:13px;color:var(--muted);
-      white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+      font-size:13px;
+      color:var(--muted);
+      font-weight:500;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
     }
 
     .pill{
       display:inline-flex;align-items:center;gap:8px;
-      padding:10px 14px;border-radius:999px;
-      background:rgba(255,255,255,.75);
+      padding:10px 16px;
+      border-radius:999px;
+      background:var(--card);
       border:1px solid var(--border);
-      backdrop-filter:blur(var(--blur));
-      box-shadow:0 10px 20px rgba(0,0,0,.06);
-      font-size:13px;color:rgba(11,18,32,.75);
+      box-shadow:0 1px 3px rgba(0,0,0,.06);
+      font-size:13px;
+      font-weight:600;
+      color:var(--text);
       white-space:nowrap;
+      transition:var(--transition);
+    }
+    .pill:hover{
+      box-shadow:0 4px 12px rgba(0,0,0,.08);
+      transform:translateY(-1px);
     }
     .pill-dot{
-      width:8px;height:8px;border-radius:99px;
+      width:8px;height:8px;
+      border-radius:99px;
       background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
-      box-shadow:0 0 0 4px rgba(0,112,202,.12);
+      box-shadow:0 0 0 3px rgba(0,112,202,.15);
     }
 
+    /* ============= HERO ============= */
     .hero{
       border-radius:var(--radius-xl);
-      padding:30px 26px;
+      padding:48px 40px;
       background:
-        radial-gradient(900px 500px at 20% 0%, rgba(255,255,255,.50), transparent 60%),
-        linear-gradient(135deg, rgba(0,84,154,.92), rgba(0,112,202,.92));
+        radial-gradient(ellipse 1200px 600px at 30% -10%, rgba(77,163,232,.18), transparent 70%),
+        linear-gradient(135deg, #003D72 0%, #00549A 50%, #0070CA 100%);
       color:#fff;
       position:relative;overflow:hidden;
-      box-shadow:0 22px 60px rgba(0,84,154,.22);
-      border:1px solid rgba(255,255,255,.20);
-      margin-bottom:18px;
+      box-shadow:0 20px 40px rgba(0,84,154,.2), inset 0 1px 0 rgba(255,255,255,.15);
+      border:1px solid rgba(255,255,255,.1);
+      margin-bottom:32px;
     }
     .hero::before{
       content:"";
       position:absolute;
-      inset:-120px -180px auto auto;
-      width:520px;height:520px;
-      background:radial-gradient(circle, rgba(77,163,232,.50), transparent 65%);
-      filter:blur(10px);
-      opacity:.9;
-      transform:rotate(12deg);
+      inset:-150px -200px auto auto;
+      width:600px;height:600px;
+      background:radial-gradient(circle, rgba(77,163,232,.4), transparent 70%);
+      filter:blur(80px);
+      opacity:.5;
+      animation:heroGlow 10s ease-in-out infinite alternate;
+    }
+    @keyframes heroGlow{
+      0%{opacity:.5;transform:rotate(0deg) scale(1)}
+      100%{opacity:.3;transform:rotate(20deg) scale(1.15)}
     }
     .hero-grid{
       display:grid;
-      grid-template-columns:1.2fr .8fr;
-      gap:22px;
+      grid-template-columns:1.3fr .7fr;
+      gap:32px;
       position:relative;z-index:1;
       align-items:end;
     }
-    .hero h1{font-size:40px;font-weight:800;letter-spacing:-0.03em;margin-bottom:10px}
-    .hero .subtitle{font-size:14px;opacity:.95;color:rgba(255,255,255,.92);max-width:90ch}
-    .hero-meta{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+    .hero h1{
+      font-size:42px;
+      font-weight:800;
+      letter-spacing:-0.03em;
+      margin-bottom:12px;
+      line-height:1.1;
+    }
+    .hero .subtitle{
+      font-size:15px;
+      opacity:.92;
+      color:rgba(255,255,255,.9);
+      line-height:1.6;
+      font-weight:400;
+    }
+    .hero-meta{
+      display:flex;
+      justify-content:flex-end;
+      gap:12px;
+      flex-wrap:wrap;
+    }
     .hero-chip{
       display:inline-flex;align-items:center;gap:8px;
-      padding:10px 14px;border-radius:999px;
-      background:rgba(255,255,255,.16);
-      border:1px solid rgba(255,255,255,.22);
-      backdrop-filter:blur(var(--blur));
-      font-size:13px;font-weight:600;
+      padding:10px 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.15);
+      border:1px solid rgba(255,255,255,.2);
+      backdrop-filter:blur(10px);
+      font-size:13px;
+      font-weight:600;
+      transition:var(--transition);
     }
-    .hero-chip strong{font-weight:800}
+    .hero-chip:hover{
+      background:rgba(255,255,255,.22);
+      transform:translateY(-1px);
+    }
+    .hero-chip strong{font-weight:700}
 
+    /* ============= SECTIONS ============= */
     .section{
       background:var(--card);
       border:1px solid var(--border);
       border-radius:var(--radius-xl);
       box-shadow:var(--shadow);
-      backdrop-filter:blur(var(--blur));
-      padding:28px;
-      margin-bottom:18px;
+      padding:32px;
+      margin-bottom:24px;
+      transition:var(--transition);
+    }
+    .section:hover{
+      box-shadow:0 4px 12px rgba(0,0,0,.06), 0 16px 32px rgba(0,0,0,.08);
     }
     .section-header{
-      display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
-      padding-bottom:12px;border-bottom:1px solid rgba(0,0,0,.06);margin-bottom:14px
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:20px;
+      padding-bottom:16px;
+      border-bottom:2px solid rgba(0,112,202,.08);
+      margin-bottom:24px;
     }
-    .section-title{display:flex;align-items:flex-start;gap:12px;min-width:0}
-.section-title .icon{ display:none !important; }
-.section-title{ gap:0; } /* optional: removes the empty space where the icon was */
+    .section-title h2{
+      font-size:20px;
+      font-weight:800;
+      letter-spacing:-0.02em;
+      line-height:1.3;
+      color:var(--isl-navy);
+    }
+    .section-title p{
+      font-size:14px;
+      color:var(--muted);
+      margin-top:4px;
+      font-weight:500;
+    }
 
+    /* ============= EXECUTIVE SUMMARY ============= */
+    .summary-shell{
+      position:relative;
+      display:grid;
+      grid-template-columns: 6px 1fr;
+      gap:20px;
+      align-items:stretch;
+    }
 
-    .section-title h2{font-size:18px;font-weight:800;letter-spacing:-0.02em;line-height:1.2}
-    .section-title p{font-size:13px;color:var(--muted);margin-top:4px;max-width:92ch}
+    .summary-rail{
+      border-radius:999px;
+      background:linear-gradient(
+        180deg,
+        rgba(0,112,202,.0),
+        rgba(0,112,202,.5),
+        rgba(0,84,154,.4),
+        rgba(0,112,202,.0)
+      );
+      box-shadow:0 0 12px rgba(0,112,202,.2);
+    }
 
-    .editable{
-      background:rgba(255,255,255,.78);
-      border:1px solid rgba(0,0,0,.08);
+    .summary-card{
+      background:var(--card);
+      border:1px solid var(--border);
       border-radius:var(--radius-lg);
-      padding:16px;
-      box-shadow:0 10px 22px rgba(0,0,0,.06);
+      padding:24px;
+      box-shadow:0 2px 8px rgba(0,0,0,.04);
+      transition:var(--transition);
     }
-    .editable[contenteditable="true"]:focus{
+
+    .summary-card:hover{
+      box-shadow:0 8px 24px rgba(0,0,0,.08);
+    }
+
+    .summary-card[contenteditable="true"]:focus{
       outline:none;
-      border-color:rgba(0,112,202,.35);
-      box-shadow:0 0 0 4px rgba(0,112,202,.10), 0 10px 22px rgba(0,0,0,.06);
+      border-color:rgba(0,112,202,.4);
+      box-shadow:0 0 0 4px rgba(0,112,202,.1), 0 8px 24px rgba(0,0,0,.08);
     }
-    .editable h3{
-      font-size:13px;letter-spacing:.08em;text-transform:uppercase;
-      color:rgba(11,18,32,.70);margin-bottom:10px;font-weight:900
+
+    .summary-list{
+      list-style:none;
+      display:grid;
+      gap:16px;
+      position:relative;
+      z-index:1;
     }
-    .editable ul{list-style:none;display:grid;gap:10px}
-    .editable li{padding-left:14px;position:relative;color:rgba(11,18,32,.86);font-size:13px}
-    .editable li::before{content:"•";position:absolute;left:0;top:0;color:rgba(0,112,202,.9);font-weight:900}
 
-     /* =========================
-   SUMMARY (Executive Highlights)
-========================= */
-.summary-shell{
-  position:relative;
-  display:grid;
-  grid-template-columns: 10px 1fr;
-  gap:14px;
-  align-items:stretch;
-}
+    .summary-list li{
+      display:grid;
+      grid-template-columns: 20px 1fr;
+      gap:14px;
+      align-items:flex-start;
+      padding:16px;
+      border-radius:var(--radius-md);
+      background:rgba(245,248,250,.6);
+      border:1px solid rgba(0,112,202,.06);
+      transition:var(--transition);
+    }
 
-.summary-rail{
-  border-radius:999px;
-  background:linear-gradient(
-    180deg,
-    rgba(0,112,202,.0),
-    rgba(0,112,202,.45),
-    rgba(0,84,154,.30),
-    rgba(0,112,202,.0)
-  );
-  box-shadow:0 0 0 1px rgba(0,112,202,.10);
-}
+    .summary-list li:hover{
+      background:rgba(245,248,250,.9);
+      border-color:rgba(0,112,202,.12);
+      transform:translateX(4px);
+    }
 
-.summary-card{
-  background:
-    radial-gradient(900px 260px at 20% 0%, rgba(0,112,202,.08), transparent 55%),
-    rgba(255,255,255,.82);
-  border:1px solid rgba(0,0,0,.08);
-  border-radius:var(--radius-xl);
-  padding:18px 18px;
-  box-shadow:0 12px 26px rgba(0,0,0,.07);
-  position:relative;
-  overflow:hidden;
-}
+    .summary-dot{
+      width:12px;height:12px;
+      border-radius:999px;
+      margin-top:4px;
+      background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
+      box-shadow:0 0 0 4px rgba(0,112,202,.12);
+    }
 
-.summary-card::before{
-  content:"";
-  position:absolute;
-  inset:-80px -120px auto auto;
-  width:340px;height:340px;
-  background:radial-gradient(circle, rgba(77,163,232,.22), transparent 62%);
-  filter:blur(8px);
-  opacity:.9;
-  transform:rotate(10deg);
-  pointer-events:none;
-}
+    .summary-text{
+      font-size:14px;
+      color:var(--text);
+      line-height:1.6;
+      font-weight:500;
+    }
 
-.summary-card[contenteditable="true"]:focus{
-  outline:none;
-  border-color:rgba(0,112,202,.35);
-  box-shadow:0 0 0 4px rgba(0,112,202,.10), 0 12px 26px rgba(0,0,0,.07);
-}
+    .summary-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      padding:4px 10px;
+      border-radius:6px;
+      font-size:12px;
+      font-weight:700;
+      border:1px solid;
+      white-space:nowrap;
+      vertical-align:baseline;
+      margin:0 2px;
+    }
 
-.summary-list{
-  list-style:none;
-  display:grid;
-  gap:12px;
-  position:relative;
-  z-index:1;
-}
+    .summary-badge.positive{
+      background:rgba(16,185,129,.1);
+      color:#059669;
+      border-color:rgba(16,185,129,.25);
+    }
+    .summary-badge.negative{
+      background:rgba(239,68,68,.1);
+      color:#DC2626;
+      border-color:rgba(239,68,68,.25);
+    }
 
-.summary-list li{
-  display:grid;
-  grid-template-columns: 18px 1fr;
-  gap:10px;
-  align-items:flex-start;
-
-  padding:12px 12px;
-  border-radius:18px;
-  background:rgba(245,245,247,.70);
-  border:1px solid rgba(0,0,0,.06);
-}
-
-.summary-dot{
-  width:10px;height:10px;
-  border-radius:999px;
-  margin-top:5px;
-  background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
-  box-shadow:0 0 0 4px rgba(0,112,202,.10);
-}
-
-.summary-text{
-  font-size:13px;
-  color:rgba(11,18,32,.86);
-  line-height:1.55;
-}
-
-.summary-badge{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:5px 10px;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:900;
-  border:1px solid rgba(0,0,0,.06);
-  background:rgba(0,0,0,.04);
-  color:rgba(11,18,32,.72);
-  white-space:nowrap;
-  vertical-align:baseline;
-  margin:0 2px;
-}
-
-.summary-badge.positive{
-  background:rgba(6,214,160,.14);
-  color:#047a5c;
-  border-color:rgba(6,214,160,.28);
-}
-.summary-badge.negative{
-  background:rgba(239,71,111,.14);
-  color:#9b1c3e;
-  border-color:rgba(239,71,111,.28);
-}
-
-@media (max-width:560px){
-  .summary-shell{grid-template-columns:8px 1fr;gap:12px}
-  .summary-card{padding:16px}
-  .summary-list li{padding:12px}
-}
-
-/* =========================
-   TOP POSTS (Condensed + Click-to-expand)
-========================= */
-.top-compact{
-  display:grid;
-  gap:12px;
-}
-
-.platform-acc{
-  background:rgba(255,255,255,.78);
-  border:1px solid rgba(0,0,0,.08);
-  border-radius:var(--radius-xl);
-  box-shadow:0 10px 22px rgba(0,0,0,.06);
-  overflow:hidden;
-}
-
-.platform-acc > summary{
-  list-style:none;
-  cursor:pointer;
-  padding:10px 12px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  user-select:none;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.55));
-}
-
-.platform-acc > summary::-webkit-details-marker{display:none}
-
-.platform-acc .sum-left{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  min-width:0;
-}
-
-.platform-pill{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:7px 10px;
-  border-radius:999px;
-  background:rgba(0,112,202,.10);
-  border:1px solid rgba(0,112,202,.18);
-  color:rgba(0,61,114,.95);
-  font-weight:900;
-  font-size:12px;
-  white-space:nowrap;
-}
-
-.platform-meta{
-  font-size:12px;
-  color:var(--muted);
-  white-space:nowrap;
-}
-
-.chev{
-  width:34px;height:34px;
-  border-radius:14px;
-  display:grid;place-items:center;
-  background:rgba(0,0,0,.04);
-  border:1px solid rgba(0,0,0,.06);
-  transition:transform .2s ease;
-  flex:0 0 auto;
-}
-.platform-acc[open] .chev{transform:rotate(180deg)}
-
-.platform-body{
-  padding:10px 10px 12px;
-  border-top:1px solid rgba(0,0,0,.06);
-  background:rgba(245,245,247,.55);
-}
-
-.post-mini{
-  background:rgba(255,255,255,.78);
-  border:1px solid rgba(0,0,0,.08);
-  border-radius:18px;
-  overflow:hidden;
-}
-
-.post-mini + .post-mini{margin-top:10px}
-
-.post-mini > summary{
-  list-style:none;
-  cursor:pointer;
-  padding:10px 10px;
-  display:grid;
-  grid-template-columns: 54px 1fr auto;
-  gap:12px;
-  align-items:center;
-}
-.post-mini > summary::-webkit-details-marker{display:none}
-
-.rank{
-  width:44px;height:34px;
-  border-radius:999px;
-  display:grid;place-items:center;
-  font-weight:900;
-  font-size:12px;
-  color:rgba(0,61,114,.98);
-  background:rgba(0,112,202,.10);
-  border:1px solid rgba(0,112,202,.18);
-}
-
-.ptitle{
-  min-width:0;
-  font-weight:900;
-  font-size:13px;
-  color:rgba(0,61,114,.96);
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-
-.quick{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  color:rgba(11,18,32,.75);
-  font-size:12px;
-  white-space:nowrap;
-}
-.quick strong{font-weight:900;color:rgba(11,18,32,.90)}
-
-.post-mini[open] .ptitle{white-space:normal}
-
-.post-details{
-  border-top:1px solid rgba(0,0,0,.06);
-  padding:10px;
-  background:rgba(245,245,247,.60);
-  display:grid;
-  grid-template-columns: repeat(4, minmax(0,1fr));
-  gap:8px;
-}
-
-.mini-stat{
-  background:rgba(255,255,255,.85);
-  border:1px solid rgba(0,0,0,.06);
-  border-radius:12px;
-  padding:8px 8px;
-}
-.mini-stat span{
-  display:block;
-  font-size:10px;
-  color:var(--muted);
-  letter-spacing:.10em;
-  text-transform:uppercase;
-  font-weight:900;
-  margin-bottom:6px;
-}
-.mini-stat strong{
-  display:block;
-  font-size:14px;
-  font-weight:900;
-  letter-spacing:-0.01em;
-}
-
-.math{
-  grid-column:1 / -1;
-  font-size:12px;
-  color:var(--muted);
-  padding:8px 10px;
-  border-radius:14px;
-  background:rgba(0,0,0,.03);
-  border:1px solid rgba(0,0,0,.06);
-}
-
-@media (max-width:700px){
-  .post-mini > summary{
-    grid-template-columns: 54px 1fr;
-    grid-auto-rows:auto;
-  }
-  .quick{grid-column:1 / -1;justify-content:flex-start}
-  .post-details{grid-template-columns: repeat(2, minmax(0,1fr))}
-}
-    
+    /* ============= KPI TILES ============= */
     .kpi-grid{
       display:grid;
       grid-template-columns:repeat(4,1fr);
-      gap:10px;
+      gap:16px;
     }
     .kpi-card{
-      background:rgba(255,255,255,.78);
-      border:1px solid rgba(0,0,0,.08);
+      background:var(--card);
+      border:1px solid var(--border);
       border-radius:var(--radius-lg);
-      padding:12px;
-      box-shadow:0 10px 22px rgba(0,0,0,.06);
-      position:relative;overflow:hidden;
-      transition:transform .25s ease, box-shadow .25s ease;
+      padding:20px;
+      box-shadow:0 1px 3px rgba(0,0,0,.04);
+      position:relative;
+      overflow:hidden;
+      transition:var(--transition);
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      min-height:130px;
     }
-    .kpi-card:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(0,0,0,.10)}
     .kpi-card::before{
-      content:"";position:absolute;inset:0 0 auto 0;height:4px;
-      background:linear-gradient(90deg,var(--tone,var(--isl-accent)),rgba(0,0,0,0));
+      content:"";
+      position:absolute;
+      inset:0 0 auto 0;
+      height:3px;
+      background:linear-gradient(90deg,var(--tone,var(--isl-accent)),transparent);
+      opacity:.7;
+    }
+    .kpi-card:hover{
+      transform:translateY(-4px);
+      box-shadow:0 12px 24px rgba(0,0,0,.1);
+      border-color:rgba(0,112,202,.15);
     }
     .kpi-label{
-      font-size:10px;font-weight:900;letter-spacing:.10em;text-transform:uppercase;
-      color:rgba(11,18,32,.70);margin-bottom:6px
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:8px;
     }
     .kpi-value{
-      font-size:22px;font-weight:900;letter-spacing:-0.03em;
-      color:rgba(11,18,32,.92);line-height:1.05
+      font-size:28px;
+      font-weight:800;
+      letter-spacing:-0.03em;
+      color:var(--text);
+      line-height:1.1;
+      margin-bottom:12px;
     }
     .kpi-sub{
-      margin-top:8px;color:var(--muted);font-size:11px;
-      display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap
-    }/* Hide the "Total / End of period / Overall" text in KPI tiles */
-.kpi-sub span:last-child{
-  display:none !important;
-}
-
-/* Optional: keep the delta nicely aligned after removing the right-side text */
-.kpi-sub{
-  justify-content:flex-start !important;
-}
-
-    /* =========================
-   KPI TILES — TIGHT + PROPORTIONAL
-========================= */
-
-/* Grid spacing tighter */
-.kpi-grid{
-  gap:10px !important;
-}
-
-/* Tile shape + padding */
-.kpi-card{
-  padding:14px 16px !important;
-  border-radius:16px !important;
-  min-height:110px !important;
-
-  box-shadow:none !important;
-  border:1px solid rgba(0,0,0,.10) !important;
-  background:#fff !important;
-}
-
-/* Remove the top gradient stripe */
-.kpi-card::before{
-  display:none !important;
-}
-
-/* Label smaller + tighter */
-.kpi-label{
-  font-size:10px !important;
-  margin-bottom:6px !important;
-  letter-spacing:.08em !important;
-}
-
-/* Main number more proportional */
-.kpi-value{
-  font-size:22px !important;
-  line-height:1.15 !important;
-  margin-bottom:8px !important;
-}
-
-/* Delta row tighter */
-.kpi-sub{
-  margin-top:0 !important;
-  justify-content:flex-start !important;
-}
-
-/* Delta pill smaller + cleaner */
-.delta{
-  padding:5px 10px !important;
-  font-size:11px !important;
-  border-radius:999px !important;
-}
-
-/* Make KPI tiles feel aligned */
-.kpi-card{
-  display:flex !important;
-  flex-direction:column !important;
-  justify-content:space-between !important;
-}
+      margin-top:auto;
+      display:flex;
+      justify-content:flex-start;
+      gap:8px;
+    }
 
     .delta{
       display:inline-flex;
       align-items:center;
-      justify-content:center;
-      padding:2px 8px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:800;
-      line-height:1.2;
-      margin-left:6px;
-
-      display:inline-flex;align-items:center;gap:6px;
-      padding:6px 10px;border-radius:999px;
-      font-size:12px;font-weight:900;
-      border:1px solid rgba(0,0,0,.06);
-      background:rgba(0,0,0,.05);
-      color:rgba(11,18,32,.72);
+      gap:4px;
+      padding:6px 10px;
+      border-radius:6px;
+      font-size:12px;
+      font-weight:700;
+      border:1px solid;
       white-space:nowrap;
     }
-    .delta.positive{background:rgba(6,214,160,.12);color:#047a5c;border-color:rgba(6,214,160,.25)}
-    .delta.negative{background:rgba(239,71,111,.12);color:#9b1c3e;border-color:rgba(239,71,111,.25)}
-
-    .platform-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    .platform{
-      background:rgba(255,255,255,.78);
-      border:1px solid rgba(0,0,0,.08);
-      border-radius:var(--radius-lg);
-      padding:16px;
-      box-shadow:0 10px 22px rgba(0,0,0,.06);
-      transition:transform .25s ease, box-shadow .25s ease;
+    .delta.positive{
+      background:rgba(16,185,129,.1);
+      color:#059669;
+      border-color:rgba(16,185,129,.25);
     }
-    .platform:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(0,0,0,.10)}
-    .platform-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
-    .platform-name{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:-0.01em}
-    .platform-badge{
-      width:34px;height:34px;border-radius:14px;display:grid;place-items:center;
-      background:rgba(0,112,202,.10);
-      border:1px solid rgba(0,112,202,.18);
-      color:var(--isl-primary);
+    .delta.negative{
+      background:rgba(239,68,68,.1);
+      color:#DC2626;
+      border-color:rgba(239,68,68,.25);
+    }
+
+    /* ============= PLATFORM CARDS ============= */
+    .platform-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+    }
+    .platform{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+      padding:24px;
+      box-shadow:0 1px 3px rgba(0,0,0,.04);
+      transition:var(--transition);
+    }
+    .platform:hover{
+      transform:translateY(-4px);
+      box-shadow:0 12px 24px rgba(0,0,0,.1);
+      border-color:rgba(0,112,202,.15);
+    }
+    .platform-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:20px;
+    }
+    .platform-name{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:800;
       font-size:16px;
+      color:var(--isl-navy);
+    }
+    .platform-badge{
+      width:40px;height:40px;
+      border-radius:10px;
+      display:grid;place-items:center;
+      background:linear-gradient(135deg,rgba(0,112,202,.1),rgba(0,112,202,.15));
+      border:1px solid rgba(0,112,202,.2);
+      color:var(--isl-primary);
+      font-size:18px;
+      font-weight:700;
     }
     .platform-tag{
-      font-size:12px;font-weight:900;padding:6px 10px;border-radius:999px;
-      background:rgba(0,112,202,.10);
-      border:1px solid rgba(0,112,202,.18);
-      color:rgba(0,61,114,.95);
-      white-space:nowrap;
+      font-size:11px;
+      font-weight:700;
+      padding:6px 12px;
+      border-radius:6px;
+      background:rgba(0,112,202,.08);
+      border:1px solid rgba(0,112,202,.15);
+      color:var(--isl-primary);
+      text-transform:uppercase;
+      letter-spacing:.05em;
     }
-    .pstats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .pstats{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+    }
     .pstat{
-      background:rgba(245,245,247,.82);
-      border:1px solid rgba(0,0,0,.06);
-      border-radius:14px;
-      padding:10px 12px;
+      background:rgba(245,248,250,.7);
+      border:1px solid var(--border);
+      border-radius:var(--radius-md);
+      padding:14px;
+      transition:var(--transition);
     }
-    .pstat strong{display:block;font-size:15px;font-weight:900;letter-spacing:-0.02em}
+    .pstat:hover{
+      background:rgba(245,248,250,1);
+      box-shadow:0 2px 8px rgba(0,0,0,.06);
+    }
     .pstat-label{
       display:block;
-      font-size:10.5px;
+      font-size:10px;
       color:var(--muted);
       text-transform:uppercase;
-      letter-spacing:.10em;
-      margin-bottom:8px;
-      font-weight:900;
+      letter-spacing:.08em;
+      margin-bottom:10px;
+      font-weight:700;
     }
     .pstat-row{
       display:flex;
       align-items:baseline;
       justify-content:space-between;
-      gap:10px;
+      gap:8px;
     }
     .pstat-row strong{
-      font-size:15px;
-      font-weight:900;
+      font-size:18px;
+      font-weight:800;
       letter-spacing:-0.02em;
+      color:var(--text);
     }
 
-    .charts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    /* ============= CHARTS ============= */
+    .charts{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+      margin-top:16px;
+    }
     .chart-card{
-      background:rgba(255,255,255,.78);
-      border:1px solid rgba(0,0,0,.08);
+      background:var(--card);
+      border:1px solid var(--border);
       border-radius:var(--radius-lg);
-      padding:16px;
-      box-shadow:0 10px 22px rgba(0,0,0,.06);
-      height:320px;position:relative;overflow:hidden;
+      padding:24px;
+      box-shadow:0 1px 3px rgba(0,0,0,.04);
+      height:340px;
+      position:relative;
+      overflow:hidden;
+      transition:var(--transition);
+    }
+    .chart-card:hover{
+      box-shadow:0 8px 20px rgba(0,0,0,.08);
     }
     .chart-title{
-      font-size:12px;font-weight:900;letter-spacing:.10em;text-transform:uppercase;
-      color:rgba(11,18,32,.70);margin-bottom:10px
+      font-size:13px;
+      font-weight:700;
+      letter-spacing:.05em;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:16px;
     }
-    .chart-wrap{height:265px}
+    .chart-wrap{height:270px}
 
-    .top-groups{display:grid;gap:14px}
-    .top-group-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:8px}
-    .top-group-head h3{font-size:14px;font-weight:900;letter-spacing:-0.02em;color:rgba(0,61,114,.96)}
-    .top-group-head .hint{font-size:12px;color:var(--muted);white-space:nowrap}
-    .post-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    .post{
-      background:rgba(255,255,255,.78);
-      border:1px solid rgba(0,0,0,.08);
+    /* ============= TOP POSTS ============= */
+    .top-compact{display:grid;gap:16px}
+
+    .platform-acc{
+      background:var(--card);
+      border:1px solid var(--border);
       border-radius:var(--radius-lg);
-      padding:16px;
-      box-shadow:0 10px 22px rgba(0,0,0,.06);
-      transition:transform .25s ease, box-shadow .25s ease;
-      position:relative;overflow:hidden;
+      box-shadow:0 1px 3px rgba(0,0,0,.04);
+      overflow:hidden;
+      transition:var(--transition);
     }
-    .post:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(0,0,0,.10)}
-    .post::before{
-      content:"";position:absolute;inset:0 0 auto 0;height:4px;
-      background:linear-gradient(90deg,var(--isl-accent),rgba(0,0,0,0));
+    .platform-acc:hover{
+      box-shadow:0 4px 12px rgba(0,0,0,.08);
     }
-    .post-title{font-size:14px;font-weight:900;letter-spacing:-0.02em;color:rgba(0,61,114,.96);margin-bottom:6px}
-    .post-desc{color:var(--muted);font-size:12.5px;line-height:1.5;margin-bottom:12px;min-height:38px}
-    .post-metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-    .pm{
-      background:rgba(245,245,247,.82);
-      border:1px solid rgba(0,0,0,.06);
-      border-radius:14px;
-      padding:10px 10px;
-    }
-    .pm strong{display:block;font-size:13px;font-weight:900;letter-spacing:-0.01em}
-    .pm span{display:block;font-size:10px;color:var(--muted);letter-spacing:.10em;text-transform:uppercase;margin-top:3px}
 
-    .insight-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .platform-acc > summary{
+      list-style:none;
+      cursor:pointer;
+      padding:16px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      user-select:none;
+      background:var(--card);
+      transition:var(--transition);
+    }
+    .platform-acc > summary:hover{
+      background:rgba(245,248,250,.5);
+    }
+
+    .platform-acc > summary::-webkit-details-marker{display:none}
+
+    .sum-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .platform-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 14px;
+      border-radius:8px;
+      background:linear-gradient(135deg,rgba(0,112,202,.1),rgba(0,112,202,.15));
+      border:1px solid rgba(0,112,202,.2);
+      color:var(--isl-navy);
+      font-weight:700;
+      font-size:13px;
+      white-space:nowrap;
+    }
+
+    .platform-meta{
+      font-size:13px;
+      color:var(--muted);
+      font-weight:500;
+      white-space:nowrap;
+    }
+
+    .chev{
+      width:36px;height:36px;
+      border-radius:var(--radius-md);
+      display:grid;place-items:center;
+      background:rgba(0,112,202,.08);
+      border:1px solid rgba(0,112,202,.12);
+      color:var(--isl-primary);
+      font-weight:700;
+      transition:var(--transition);
+      flex:0 0 auto;
+    }
+    .platform-acc[open] .chev{
+      transform:rotate(180deg);
+      background:rgba(0,112,202,.12);
+    }
+
+    .platform-body{
+      padding:16px;
+      border-top:1px solid var(--border);
+      background:rgba(245,248,250,.4);
+    }
+
+    .post-mini{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius-md);
+      overflow:hidden;
+      transition:var(--transition);
+    }
+    .post-mini:hover{
+      box-shadow:0 2px 8px rgba(0,0,0,.06);
+    }
+
+    .post-mini + .post-mini{margin-top:12px}
+
+    .post-mini > summary{
+      list-style:none;
+      cursor:pointer;
+      padding:14px 16px;
+      display:grid;
+      grid-template-columns: 60px 1fr auto;
+      gap:14px;
+      align-items:center;
+      transition:var(--transition);
+    }
+    .post-mini > summary:hover{
+      background:rgba(245,248,250,.5);
+    }
+    .post-mini > summary::-webkit-details-marker{display:none}
+
+    .rank{
+      width:48px;height:36px;
+      border-radius:8px;
+      display:grid;place-items:center;
+      font-weight:800;
+      font-size:13px;
+      color:var(--isl-navy);
+      background:linear-gradient(135deg,rgba(0,112,202,.1),rgba(0,112,202,.15));
+      border:1px solid rgba(0,112,202,.2);
+    }
+
+    .ptitle{
+      min-width:0;
+      font-weight:700;
+      font-size:14px;
+      color:var(--text);
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .quick{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:500;
+      white-space:nowrap;
+    }
+    .quick strong{
+      font-weight:700;
+      color:var(--text);
+    }
+
+    .post-mini[open] .ptitle{white-space:normal}
+
+    .post-details{
+      border-top:1px solid var(--border);
+      padding:16px;
+      background:rgba(245,248,250,.5);
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap:12px;
+    }
+
+    .mini-stat{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius-md);
+      padding:12px;
+      transition:var(--transition);
+    }
+    .mini-stat:hover{
+      box-shadow:0 2px 8px rgba(0,0,0,.06);
+    }
+    .mini-stat span{
+      display:block;
+      font-size:10px;
+      color:var(--muted);
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      font-weight:700;
+      margin-bottom:8px;
+    }
+    .mini-stat strong{
+      display:block;
+      font-size:16px;
+      font-weight:800;
+      letter-spacing:-0.01em;
+      color:var(--text);
+    }
+
+    .math{
+      grid-column:1 / -1;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:500;
+      padding:12px 14px;
+      border-radius:var(--radius-md);
+      background:rgba(0,112,202,.05);
+      border:1px solid rgba(0,112,202,.1);
+    }
+
+    /* ============= INSIGHTS ============= */
+    .insight-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:16px;
+    }
     .insight-card{
-      background:rgba(255,255,255,.78);
-      border:1px solid rgba(0,0,0,.08);
+      background:var(--card);
+      border:1px solid var(--border);
       border-radius:var(--radius-lg);
-      padding:16px;
-      box-shadow:0 10px 22px rgba(0,0,0,.06);
+      padding:24px;
+      box-shadow:0 1px 3px rgba(0,0,0,.04);
+      transition:var(--transition);
+    }
+    .insight-card:hover{
+      box-shadow:0 8px 20px rgba(0,0,0,.08);
+      transform:translateY(-2px);
     }
     .insight-card h3{
-      font-size:12px;font-weight:900;letter-spacing:.10em;text-transform:uppercase;
-      color:rgba(11,18,32,.70);margin-bottom:10px
+      font-size:13px;
+      font-weight:700;
+      letter-spacing:.05em;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:14px;
     }
-    .insight-card .body{color:rgba(11,18,32,.86);font-size:13px;line-height:1.6}
+    .insight-card .body{
+      color:var(--text);
+      font-size:14px;
+      line-height:1.7;
+      font-weight:500;
+    }
     .insight-card .body[contenteditable="true"]:focus{
-      outline:none;border-radius:12px;
-      box-shadow:0 0 0 4px rgba(0,112,202,.10);
-      padding:10px;margin:-10px;background:rgba(255,255,255,.60);
+      outline:none;
+      border-radius:var(--radius-md);
+      box-shadow:0 0 0 4px rgba(0,112,202,.1);
+      padding:12px;
+      margin:-12px;
+      background:rgba(245,248,250,.6);
     }
 
-    .footer{text-align:center;color:var(--muted);font-size:13px;margin-top:14px;padding:10px 0 0}
+    /* ============= FOOTER ============= */
+    .footer{
+      text-align:center;
+      color:var(--muted);
+      font-size:14px;
+      font-weight:500;
+      margin-top:32px;
+      padding:24px 0;
+    }
     .divider{
-      width:220px;height:2px;margin:18px auto;
-      background:linear-gradient(90deg,transparent,rgba(0,112,202,.55),transparent);
+      width:200px;
+      height:2px;
+      margin:24px auto;
+      background:linear-gradient(90deg,transparent,rgba(0,112,202,.4),transparent);
       border-radius:999px;
     }
-    .footer a:hover{text-decoration:underline;}
+    .footer a{
+      color:var(--isl-primary);
+      font-weight:700;
+      text-decoration:none;
+      transition:var(--transition);
+    }
+    .footer a:hover{
+      color:var(--isl-accent);
+      text-decoration:underline;
+    }
 
+    /* ============= RESPONSIVE ============= */
     @media (max-width:1100px){
       .hero-grid{grid-template-columns:1fr}
       .hero-meta{justify-content:flex-start}
       .kpi-grid{grid-template-columns:repeat(2,1fr)}
       .platform-grid{grid-template-columns:1fr}
       .charts{grid-template-columns:1fr}
-      .post-grid{grid-template-columns:1fr}
       .insight-grid{grid-template-columns:1fr}
     }
-    @media (max-width:560px){
-      .hero{padding:34px 22px}
+    
+    @media (max-width:700px){
+      .container{padding:24px 16px}
+      .hero{padding:32px 24px}
       .hero h1{font-size:32px}
-      .section{padding:22px}
+      .section{padding:24px 20px}
       .kpi-grid{grid-template-columns:1fr}
+      .summary-shell{grid-template-columns:4px 1fr;gap:14px}
+      
+      .topbar{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:12px;
+        padding-right:90px;
+      }
+      .brand{min-width:100%;gap:12px}
+      .brand-text strong{font-size:14px}
+      .brand-text span{font-size:12px}
+      
+      .topbar .pill[aria-label="Report period"]{
+        position:absolute;
+        top:0;right:0;
+        padding:8px 12px;
+        font-size:12px;
+      }
+      #reportRangeLabel{display:none}
+      
+      .post-mini > summary{
+        grid-template-columns: 60px 1fr;
+      }
+      .quick{grid-column:1 / -1;justify-content:flex-start}
+      .post-details{grid-template-columns: repeat(2, minmax(0,1fr))}
     }
 
     @media print{
-      body{background:#fff !important}
-      body::before, body::after{display:none !important}
-      .section,.hero,.chart-card,.kpi-card,.platform,.post,.editable,.insight-card{
-        box-shadow:none !important;
-        backdrop-filter:none !important;
+      body{background:#fff}
+      .section,.hero,.chart-card,.kpi-card,.platform,.insight-card{
+        box-shadow:none;
+        page-break-inside:avoid;
       }
-      .pill{box-shadow:none !important}
-      .container{padding:18px !important}
+      .container{padding:20px}
     }
-    /* =========================
-   MOBILE TOPBAR: full brand + small Q pill
-========================= */
-@media (max-width: 700px){
-
-  /* Make topbar a clean stacked header */
-  .topbar{
-    position:relative;
-    flex-direction:column;
-    align-items:flex-start;
-    gap:8px;
-    margin-bottom:12px;
-    padding-right:86px; /* room so the corner pill never overlaps text */
-  }
-
-  /* Ensure brand never truncates */
-  .brand{min-width:100%; gap:10px;}
-  .brand-text{min-width:0;}
-  .brand-text strong,
-  .brand-text span{
-    white-space:normal !important;
-    overflow:visible !important;
-    text-overflow:clip !important;
-  }
-  .brand-text strong{
-    font-size:13px;
-    letter-spacing:.10em;
-  }
-  .brand-text span{
-    font-size:12px;
-    line-height:1.25;
-  }
-
-  /* Corner pill (dot + Q1 only) */
-  .topbar .pill[aria-label="Report period"]{
-    position:absolute;
-    top:0;
-    right:0;
-    width:auto;
-    padding:7px 10px;
-    border-radius:999px;
-    font-size:12px;
-    box-shadow:none;
-  }
-
-  /* Hide everything except the quarter label inside the pill */
-  .topbar .pill[aria-label="Report period"] > span:last-child{
-    display:inline-flex;
-    align-items:center;
-    gap:0;
-  }
-  /* Keep Q1, hide the range “• Sep–Nov 2025” */
-  #reportRangeLabel{display:none !important;}
-  .topbar .pill[aria-label="Report period"] strong#reportQuarterLabel{
-    font-weight:900;
-  }
-
-  /* Optional: shorten "Q1 (Placeholder)" to just "Q1" visually, CSS-only */
-  .topbar .pill[aria-label="Report period"] strong#reportQuarterLabel{
-    position:relative;
-    font-size:12px;
-  }
-  .topbar .pill[aria-label="Report period"] strong#reportQuarterLabel::after{
-    content:"Q1";
-  }
-  .topbar .pill[aria-label="Report period"] strong#reportQuarterLabel{
-    color:transparent;
-  }
-  .topbar .pill[aria-label="Report period"] strong#reportQuarterLabel::after{
-    color:rgba(11,18,32,.85);
-  }
-}
-
   </style>
 </head>
 
@@ -825,6 +856,7 @@
 
     <div class="topbar">
       <div class="brand">
+        <div class="brand-mark" aria-label="Integrated Staffing logo"></div>
         <div class="brand-text">
           <strong>Integrated Staffing</strong>
           <span>Quarterly Digital Media Performance Report</span>
@@ -842,7 +874,7 @@
         <div>
           <h1>Quarterly Performance Report</h1>
           <div class="subtitle">
-            A high-level snapshot of Integrated Staffing’s digital media performance across LinkedIn, Facebook, and Instagram.
+            A high-level snapshot of Integrated Staffing's digital media performance across LinkedIn, Facebook, and Instagram.
           </div>
         </div>
         <div class="hero-meta" aria-label="Report metadata">
@@ -853,36 +885,33 @@
       </div>
     </section>
 
-<section class="section" aria-label="Executive summary">
-  <div class="section-header">
-    <div class="section-title">
-      <div class="icon" aria-hidden="true"></div>
-      <div>
-        <h2>Summary</h2>
-        <p>Executive-level highlights for fast scanning.</p>
+    <section class="section" aria-label="Executive summary">
+      <div class="section-header">
+        <div class="section-title">
+          <div>
+            <h2>Summary</h2>
+            <p>Executive-level highlights for fast scanning.</p>
+          </div>
+        </div>
+
+        <div class="pill" aria-label="Summary type">
+          <span class="pill-dot" aria-hidden="true"></span>
+          <span>Executive Highlights</span>
+        </div>
       </div>
-    </div>
 
-    <div class="pill" aria-label="Summary type">
-      <span class="pill-dot" aria-hidden="true"></span>
-      <span>Executive Highlights</span>
-    </div>
-  </div>
+      <div class="summary-shell">
+        <div class="summary-rail" aria-hidden="true"></div>
 
-  <div class="summary-shell">
-    <div class="summary-rail" aria-hidden="true"></div>
-
-    <div class="summary-card" id="execSummaryBox" data-editable="true" aria-label="Editable executive summary">
-      <ul class="summary-list" id="execSummaryList"></ul>
-    </div>
-  </div>
-</section>
-
+        <div class="summary-card" id="execSummaryBox" data-editable="true" aria-label="Editable executive summary">
+          <ul class="summary-list" id="execSummaryList"></ul>
+        </div>
+      </div>
+    </section>
 
     <section class="section" aria-label="Quarter totals">
       <div class="section-header">
         <div class="section-title">
-          <div class="icon" aria-hidden="true"></div>
           <div>
             <h2>Quarter Totals</h2>
             <p>Hootsuite totals across all platforms.</p>
@@ -895,49 +924,49 @@
         <div class="kpi-card" style="--tone: var(--success);">
           <div class="kpi-label">Posts</div>
           <div class="kpi-value" id="kpiPosts">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaPosts">—</span><span>All platforms</span></div>
+          <div class="kpi-sub"><span class="delta" id="deltaPosts">—</span></div>
         </div>
 
         <div class="kpi-card" style="--tone: var(--isl-accent);">
           <div class="kpi-label">Post Impressions</div>
           <div class="kpi-value" id="kpiImpressions">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaImpressions">—</span><span>Total</span></div>
+          <div class="kpi-sub"><span class="delta" id="deltaImpressions">—</span></div>
         </div>
 
         <div class="kpi-card" style="--tone: var(--warning);">
           <div class="kpi-label">Reactions & Likes</div>
           <div class="kpi-value" id="kpiReactions">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaReactions">—</span><span>Total</span></div>
+          <div class="kpi-sub"><span class="delta" id="deltaReactions">—</span></div>
         </div>
 
         <div class="kpi-card" style="--tone: var(--isl-primary);">
           <div class="kpi-label">Post Shares</div>
           <div class="kpi-value" id="kpiShares">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaShares">—</span><span>Total</span></div>
+          <div class="kpi-sub"><span class="delta" id="deltaShares">—</span></div>
         </div>
 
         <div class="kpi-card" style="--tone: var(--danger);">
           <div class="kpi-label">Followers (Total)</div>
           <div class="kpi-value" id="kpiFollowers">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaFollowers">—</span><span>End of period</span></div>
+          <div class="kpi-sub"><span class="delta" id="deltaFollowers">—</span></div>
         </div>
 
         <div class="kpi-card" style="--tone: var(--isl-accent-bright);">
           <div class="kpi-label">Post Link Clicks</div>
           <div class="kpi-value" id="kpiLinkClicks">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaLinkClicks">—</span><span>Total</span></div>
+          <div class="kpi-sub"><span class="delta" id="deltaLinkClicks">—</span></div>
         </div>
 
         <div class="kpi-card" style="--tone: var(--warning);">
           <div class="kpi-label">Comments & Replies</div>
           <div class="kpi-value" id="kpiComments">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaComments">—</span><span>Total</span></div>
+          <div class="kpi-sub"><span class="delta" id="deltaComments">—</span></div>
         </div>
 
         <div class="kpi-card" style="--tone: var(--success);">
           <div class="kpi-label">Avg Engagement Rate</div>
           <div class="kpi-value" id="kpiAvgEngRate">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaAvgEngRate">—</span><span>Overall</span></div>
+          <div class="kpi-sub"><span class="delta" id="deltaAvgEngRate">—</span></div>
         </div>
       </div>
     </section>
@@ -945,7 +974,6 @@
     <section class="section" aria-label="Platform breakdown">
       <div class="section-header">
         <div class="section-title">
-          <div class="icon" aria-hidden="true"></div>
           <div>
             <h2>Platform Breakdown</h2>
             <p>For each platform: Followers, Post Engagement Rate, Page Reach, Page Clicks.</p>
@@ -956,7 +984,7 @@
 
       <div class="platform-grid" id="platformGrid"></div>
 
-      <div class="charts" style="margin-top: 12px;">
+      <div class="charts">
         <div class="chart-card" aria-label="Reach chart">
           <div class="chart-title">Page Reach by Platform</div>
           <div class="chart-wrap"><canvas id="reachChart"></canvas></div>
@@ -968,29 +996,26 @@
       </div>
     </section>
 
-<section class="section" aria-label="Top posts">
-  <div class="section-header">
-    <div class="section-title">
-      <div class="icon" aria-hidden="true"></div>
-      <div>
-        <h2>Top Performing Posts</h2>
-        <p>Compact view by platform. Click a post to see details.</p>
+    <section class="section" aria-label="Top posts">
+      <div class="section-header">
+        <div class="section-title">
+          <div>
+            <h2>Top Performing Posts</h2>
+            <p>Compact view by platform. Click a post to see details.</p>
+          </div>
+        </div>
+        <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Top 3 × 3</span></div>
       </div>
-    </div>
-    <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Top 3 × 3</span></div>
-  </div>
 
-  <div class="top-compact" id="topCompact"></div>
-</section>
-
+      <div class="top-compact" id="topCompact"></div>
+    </section>
 
     <section class="section" aria-label="Insights and analysis">
       <div class="section-header">
         <div class="section-title">
-          <div class="icon" aria-hidden="true"></div>
           <div>
             <h2>Insights, Analysis, and Actions</h2>
-            <p>Write what we’re doing right/wrong and the actions management should approve. These boxes are editable.</p>
+            <p>Write what we're doing right/wrong and the actions management should approve. These boxes are editable.</p>
           </div>
         </div>
         <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Notes</span></div>
@@ -998,7 +1023,7 @@
 
       <div class="insight-grid">
         <div class="insight-card">
-          <h3>What’s Working</h3>
+          <h3>What's Working</h3>
           <div class="body" data-editable="true">
             • Engagement is climbing quickly: reactions & likes increased 86.9% quarter-over-quarter.<br>
             • Link clicks rose 122%, showing stronger CTA performance and more traffic-driving content.
@@ -1006,10 +1031,10 @@
         </div>
 
         <div class="insight-card">
-          <h3>What’s Not Working</h3>
+          <h3>What's Not Working</h3>
           <div class="body" data-editable="true">
             • Add 3–6 gaps or underperforming areas.<br>
-            • Example: “Follower growth is positive but slower than engagement gains — we need more follow-driving formats.”
+            • Example: "Follower growth is positive but slower than engagement gains — we need more follow-driving formats."
           </div>
         </div>
 
@@ -1017,15 +1042,15 @@
           <h3>Actions From This Data</h3>
           <div class="body" data-editable="true">
             • Add 3–8 actions (clear, measurable).<br>
-            • Example: “Standardize post CTAs and track clicks per 1,000 impressions weekly.”
+            • Example: "Standardize post CTAs and track clicks per 1,000 impressions weekly."
           </div>
         </div>
 
         <div class="insight-card">
           <h3>Next Quarter Focus</h3>
           <div class="body" data-editable="true">
-            • Add what you’ll prioritize and how you’ll measure it.<br>
-            • Example: “Increase engagement rate while growing followers by improving distribution and repurposing top themes.”
+            • Add what you'll prioritize and how you'll measure it.<br>
+            • Example: "Increase engagement rate while growing followers by improving distribution and repurposing top themes."
           </div>
         </div>
       </div>
@@ -1035,12 +1060,10 @@
       <div class="divider" aria-hidden="true"></div>
       <p><strong>Prepared by:</strong> Josiah Yule</p>
       <p style="margin-top:10px;">
-  <a href="https://integratedstaffing.ca" target="_blank" rel="noopener"
-     style="color:rgba(0,61,114,.95); font-weight:900; text-decoration:none;">
-    Integrated Staffing
-  </a>
-</p>
-
+        <a href="https://integratedstaffing.ca" target="_blank" rel="noopener">
+          Integrated Staffing
+        </a>
+      </p>
     </div>
 
   </div>
@@ -1051,12 +1074,11 @@
       rangeLabel: "Sep–Nov 2025",
       generatedLabel: "Feb 10, 2026",
       execSummary: [
-  "Overall performance increased quarter-over-quarter: impressions ▲ 50.6%, reactions & likes ▲ 86.9%, and link clicks ▲ 122%.",
-  "Average post engagement rate finished at 5.51% (▲ 23.6% vs previous quarter).",
-  "LinkedIn led engagement rate at 6.97% (▲ 34.6%).",
-  "LinkedIn delivered the highest reach (14,337; ▲ 52.8%), while Facebook led page clicks (1,961; ▲ 326%)."
-],
-
+        "Overall performance increased quarter-over-quarter: impressions ▲ 50.6%, reactions & likes ▲ 86.9%, and link clicks ▲ 122%.",
+        "Average post engagement rate finished at 5.51% (▲ 23.6% vs previous quarter).",
+        "LinkedIn led engagement rate at 6.97% (▲ 34.6%).",
+        "LinkedIn delivered the highest reach (14,337; ▲ 52.8%), while Facebook led page clicks (1,961; ▲ 326%)."
+      ],
 
       overall: {
         posts: 126,
@@ -1140,7 +1162,6 @@
       if(text.trim().startsWith("▼") || text.trim().startsWith("↓")) el.classList.add("negative");
     }
 
-    // Engagement rate per post: (likes + shares) / impressions
     function postEngRate(p){
       const imp = p.impressions || 0;
       const eng = (p.likes || 0) + (p.shares || 0);
@@ -1171,7 +1192,7 @@
     setDelta(byId("deltaComments"), REPORT.deltas.comments);
     setDelta(byId("deltaAvgEngRate"), REPORT.deltas.avgEngagementRate);
 
-    // Executive summary (auto bullets)
+    // Executive summary
     function bestBy(key){
       let best = null;
       REPORT.platforms.forEach(p => {
@@ -1179,37 +1200,22 @@
       });
       return best;
     }
-    const bestER = bestBy("engagementRate");
-    const bestReach = bestBy("pageReach");
-    const bestClicks = bestBy("pageClicks");
 
-const summary = (REPORT.execSummary && REPORT.execSummary.length)
-  ? REPORT.execSummary
-  : [
-      `Overall performance increased quarter-over-quarter: impressions ${REPORT.deltas.impressions}, reactions & likes ${REPORT.deltas.reactions}, and link clicks ${REPORT.deltas.linkClicks}.`,
-      `Average post engagement rate finished at ${fmtPct(REPORT.overall.avgEngagementRate)} (${REPORT.deltas.avgEngagementRate} vs previous quarter).`,
-      `${bestER.name} led engagement rate at ${fmtPct(bestER.engagementRate)} (${bestER.engagementRateDelta}).`,
-      `${bestReach.name} delivered the highest reach (${fmtInt(bestReach.pageReach)}; ${bestReach.pageReachDelta}), while ${bestClicks.name} led page clicks (${fmtInt(bestClicks.pageClicks)}; ${bestClicks.pageClicksDelta}).`
-    ];
-
+    const summary = REPORT.execSummary;
     const ul = byId("execSummaryList");
-ul.innerHTML = "";
-summary.forEach(s => {
-  const li = document.createElement("li");
+    ul.innerHTML = "";
+    summary.forEach(s => {
+      const li = document.createElement("li");
+      const html = s
+        .replace(/(▲\s?\d+(\.\d+)?%)/g, `<span class="summary-badge positive">$1</span>`)
+        .replace(/(▼\s?\d+(\.\d+)?%)/g, `<span class="summary-badge negative">$1</span>`);
 
-  // Wrap ▲/▼ deltas in styled badges
-  const html = s
-    .replace(/(▲\s?\d+(\.\d+)?%)/g, `<span class="summary-badge positive">$1</span>`)
-    .replace(/(▼\s?\d+(\.\d+)?%)/g, `<span class="summary-badge negative">$1</span>`);
-
-  li.innerHTML = `
-    <span class="summary-dot" aria-hidden="true"></span>
-    <span class="summary-text">${html}</span>
-  `;
-
-  ul.appendChild(li);
-});
-
+      li.innerHTML = `
+        <span class="summary-dot" aria-hidden="true"></span>
+        <span class="summary-text">${html}</span>
+      `;
+      ul.appendChild(li);
+    });
 
     // Platform cards
     function renderPlatforms(){
@@ -1262,90 +1268,90 @@ summary.forEach(s => {
     }
     renderPlatforms();
 
-    // Top posts (computed engagement rate)
-function renderTopPosts(){
-  const wrap = byId("topCompact");
-  wrap.innerHTML = "";
+    // Top posts
+    function renderTopPosts(){
+      const wrap = byId("topCompact");
+      wrap.innerHTML = "";
 
-  const order = [
-    { key: "linkedin", label: "LinkedIn" },
-    { key: "facebook", label: "Facebook" },
-    { key: "instagram", label: "Instagram" }
-  ];
+      const order = [
+        { key: "linkedin", label: "LinkedIn" },
+        { key: "facebook", label: "Facebook" },
+        { key: "instagram", label: "Instagram" }
+      ];
 
-  order.forEach(({key, label}) => {
-    const posts = (REPORT.topPostsByPlatform[key] || []).slice(0,3)
-      .map(p => ({...p, engagementRate: postEngRate(p)}))
-      .sort((a,b) => (b.engagementRate||0) - (a.engagementRate||0));
+      order.forEach(({key, label}) => {
+        const posts = (REPORT.topPostsByPlatform[key] || []).slice(0,3)
+          .map(p => ({...p, engagementRate: postEngRate(p)}))
+          .sort((a,b) => (b.engagementRate||0) - (a.engagementRate||0));
 
-    const totalImpressions = posts.reduce((sum,p) => sum + (p.impressions||0), 0);
-    const avgER = posts.length ? (posts.reduce((sum,p)=>sum+(p.engagementRate||0),0) / posts.length) : 0;
+        const totalImpressions = posts.reduce((sum,p) => sum + (p.impressions||0), 0);
+        const avgER = posts.length ? (posts.reduce((sum,p)=>sum+(p.engagementRate||0),0) / posts.length) : 0;
 
-    const platform = document.createElement("details");
-    platform.className = "platform-acc";
-    platform.open = (key === "linkedin"); // optional: default open first
+        const platform = document.createElement("details");
+        platform.className = "platform-acc";
+        platform.open = (key === "linkedin");
 
-    platform.innerHTML = `
-      <summary>
-        <div class="sum-left">
-          <span class="platform-pill">${label}</span>
-          <span class="platform-meta">Top 3 • ${fmtInt(totalImpressions)} impressions • Avg ER ${fmtPct(avgER)}</span>
-        </div>
-        <span class="chev" aria-hidden="true">⌄</span>
-      </summary>
-      <div class="platform-body"></div>
-    `;
+        platform.innerHTML = `
+          <summary>
+            <div class="sum-left">
+              <span class="platform-pill">${label}</span>
+              <span class="platform-meta">Top 3 • ${fmtInt(totalImpressions)} impressions • Avg ER ${fmtPct(avgER)}</span>
+            </div>
+            <span class="chev" aria-hidden="true">⌄</span>
+          </summary>
+          <div class="platform-body"></div>
+        `;
 
-    const body = platform.querySelector(".platform-body");
+        const body = platform.querySelector(".platform-body");
 
-    posts.forEach((p, idx) => {
-      const mini = document.createElement("details");
-      mini.className = "post-mini";
+        posts.forEach((p, idx) => {
+          const mini = document.createElement("details");
+          mini.className = "post-mini";
 
-      const erText = fmtPct(p.engagementRate || 0);
+          const erText = fmtPct(p.engagementRate || 0);
 
-      mini.innerHTML = `
-        <summary>
-          <div class="rank">#${idx+1}</div>
-          <div class="ptitle">${p.title || (label + " Post")}</div>
-          <div class="quick">
-            <span><strong>${fmtInt(p.impressions || 0)}</strong> impr.</span>
-            <span><strong>${erText}</strong> ER</span>
-          </div>
-        </summary>
+          mini.innerHTML = `
+            <summary>
+              <div class="rank">#${idx+1}</div>
+              <div class="ptitle">${p.title || (label + " Post")}</div>
+              <div class="quick">
+                <span><strong>${fmtInt(p.impressions || 0)}</strong> impr.</span>
+                <span><strong>${erText}</strong> ER</span>
+              </div>
+            </summary>
 
-        <div class="post-details">
-          <div class="mini-stat"><span>Impressions</span><strong>${fmtInt(p.impressions || 0)}</strong></div>
-          <div class="mini-stat"><span>Likes</span><strong>${fmtInt(p.likes || 0)}</strong></div>
-          <div class="mini-stat"><span>Shares</span><strong>${fmtInt(p.shares || 0)}</strong></div>
-          <div class="mini-stat"><span>Eng. Rate</span><strong>${erText}</strong></div>
-          <div class="math">Eng. Rate = (likes + shares) ÷ impressions = (${fmtInt(p.likes||0)} + ${fmtInt(p.shares||0)}) ÷ ${fmtInt(p.impressions||0)}</div>
-        </div>
-      `;
+            <div class="post-details">
+              <div class="mini-stat"><span>Impressions</span><strong>${fmtInt(p.impressions || 0)}</strong></div>
+              <div class="mini-stat"><span>Likes</span><strong>${fmtInt(p.likes || 0)}</strong></div>
+              <div class="mini-stat"><span>Shares</span><strong>${fmtInt(p.shares || 0)}</strong></div>
+              <div class="mini-stat"><span>Eng. Rate</span><strong>${erText}</strong></div>
+              <div class="math">Eng. Rate = (likes + shares) ÷ impressions = (${fmtInt(p.likes||0)} + ${fmtInt(p.shares||0)}) ÷ ${fmtInt(p.impressions||0)}</div>
+            </div>
+          `;
 
-      body.appendChild(mini);
-    });
+          body.appendChild(mini);
+        });
 
-    wrap.appendChild(platform);
-  });
-}
-renderTopPosts();
-
+        wrap.appendChild(platform);
+      });
+    }
+    renderTopPosts();
 
     // Charts
     Chart.defaults.font.family = 'Gotham, Gotham SSm, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
-    Chart.defaults.color = 'rgba(11,18,32,.78)';
+    Chart.defaults.color = '#64748B';
 
     const labels = REPORT.platforms.map(p => p.name);
     const reach = REPORT.platforms.map(p => p.pageReach || 0);
     const er = REPORT.platforms.map(p => p.engagementRate || 0);
 
     const commonTooltip = {
-      backgroundColor: 'rgba(0,61,114,0.92)',
-      padding: 12,
-      titleFont: { size: 13, weight: '800' },
-      bodyFont: { size: 12 },
-      cornerRadius: 12
+      backgroundColor: 'rgba(0,61,114,0.95)',
+      padding: 14,
+      titleFont: { size: 13, weight: '700' },
+      bodyFont: { size: 12, weight: '500' },
+      cornerRadius: 10,
+      displayColors: false
     };
 
     new Chart(byId("reachChart").getContext("2d"), {
@@ -1356,22 +1362,34 @@ renderTopPosts();
           label: "Page Reach",
           data: reach,
           backgroundColor: [
-            'rgba(0,112,202,0.78)',
-            'rgba(0,84,154,0.72)',
-            'rgba(77,163,232,0.68)'
+            'rgba(0,112,202,0.9)',
+            'rgba(0,84,154,0.85)',
+            'rgba(77,163,232,0.8)'
           ],
           borderColor: ['#0070CA', '#00549A', '#4DA3E8'],
-          borderWidth: 2,
-          borderRadius: 12
+          borderWidth: 0,
+          borderRadius: 8
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: commonTooltip },
+        plugins: { 
+          legend: { display: false }, 
+          tooltip: commonTooltip 
+        },
         scales: {
-          y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { font: { size: 11 } } },
-          x: { grid: { display: false }, ticks: { font: { size: 12, weight: '800' } } }
+          y: { 
+            beginAtZero: true, 
+            grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+            ticks: { font: { size: 11, weight: '500' }, color: '#64748B' },
+            border: { display: false }
+          },
+          x: { 
+            grid: { display: false, drawBorder: false }, 
+            ticks: { font: { size: 12, weight: '700' }, color: '#0B1220' },
+            border: { display: false }
+          }
         }
       }
     });
@@ -1383,33 +1401,47 @@ renderTopPosts();
         datasets: [{
           label: "Post Engagement Rate (%)",
           data: er,
-          backgroundColor: 'rgba(0,112,202,0.20)',
+          backgroundColor: 'rgba(0,112,202,0.15)',
           borderColor: '#0070CA',
           borderWidth: 2,
-          borderRadius: 12
+          borderRadius: 8
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: commonTooltip },
+        plugins: { 
+          legend: { display: false }, 
+          tooltip: commonTooltip 
+        },
         scales: {
-          y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.06)' },
-               ticks: { font: { size: 11 }, callback: (v) => v + "%" } },
-          x: { grid: { display: false }, ticks: { font: { size: 12, weight: '800' } } }
+          y: { 
+            beginAtZero: true, 
+            grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+            ticks: { 
+              font: { size: 11, weight: '500' }, 
+              color: '#64748B',
+              callback: (v) => v + "%" 
+            },
+            border: { display: false }
+          },
+          x: { 
+            grid: { display: false, drawBorder: false }, 
+            ticks: { font: { size: 12, weight: '700' }, color: '#0B1220' },
+            border: { display: false }
+          }
         }
       }
     });
 
+    // Lock editing unless ?edit=1
     (function lockEditing(){
-  const params = new URLSearchParams(window.location.search);
-  const canEdit = params.get("edit") === "1";   // only editable on ?edit=1
-
-  document.querySelectorAll('[data-editable="true"]').forEach(el => {
-    el.setAttribute("contenteditable", canEdit ? "true" : "false");
-  });
-})();
-
+      const params = new URLSearchParams(window.location.search);
+      const canEdit = params.get("edit") === "1";
+      document.querySelectorAll('[data-editable="true"]').forEach(el => {
+        el.setAttribute("contenteditable", canEdit ? "true" : "false");
+      });
+    })();
   </script>
 </body>
 </html>
