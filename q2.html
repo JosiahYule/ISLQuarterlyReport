@@ -895,6 +895,62 @@
       .section,.hero,.chart-card,.kpi-card,.platform,.insight-card{ box-shadow:none; page-break-inside:avoid; }
       .container{padding:20px}
     }
+
+    /* =========================
+   PLATFORM TILE (CLEANER)
+   paste at end of <style>
+========================= */
+
+.pstat{
+  padding: 16px 16px 14px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.pstat-label{
+  margin-bottom: 10px;
+}
+
+/* Use a 2-column grid so the delta always has its own lane */
+.pstat-row{
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: 12px;
+}
+
+/* Value: keep it readable, but allow shrinking */
+.pstat-row strong{
+  min-width: 0;
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+/* Delta chip: consistent sizing + clean alignment */
+.pstat-row .delta{
+  margin: 0;                 /* no edge-hugging */
+  padding: 6px 10px;
+  border-radius: 999px;      /* cleaner “chip” look */
+  min-width: 76px;           /* makes them consistent */
+  justify-content: center;   /* centers the ▲ and % */
+  text-align: center;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: .01em;
+  flex: 0 0 auto;
+}
+
+/* Slightly calmer backgrounds on the tiles */
+.pstat{
+  background: rgba(245,248,250,.55);
+  border-color: rgba(0,0,0,.06);
+}
+
+/* Optional: reduce hover noise a bit */
+.pstat:hover{
+  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+  transform: none;
+}
   </style>
 </head>
 
