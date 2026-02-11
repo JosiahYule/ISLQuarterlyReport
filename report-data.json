@@ -3,10 +3,14 @@
   "rangeLabel": "Sep–Nov 2025",
   "generatedLabel": "Wed Feb 11 2026",
   "execSummary": [
-    "Impressions increased ▲ 50.6% quarter-over-quarter."
+    "Impressions increased ▲ 50.6% quarter-over-quarter.",
+    "LinkedIn led engagement rate at 6.97%."
   ],
   "insights": {
-    "What's Working": "Engagement is climbing quickly across LinkedIn and Facebook."
+    "insWorking": "Engagement is climbing quickly across LinkedIn and Facebook.",
+    "insNotWorking": "",
+    "insActions": "",
+    "insNext": ""
   },
   "overall": {
     "posts": 126,
