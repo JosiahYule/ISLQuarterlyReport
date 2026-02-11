@@ -1081,6 +1081,34 @@ body{ font-weight: 400; }
 @media (max-width:1100px){
   .chart-wrap{ height: 320px; }
 }  
+
+/* =========================
+   QUARTER PILL – MINIMAL CLOSED STATE
+========================= */
+
+.pill-quarter{
+  gap:6px;
+  padding:10px 14px;
+}
+
+/* Hide the dot + range completely */
+.pill-quarter .pill-dot,
+#reportRangeLabel{
+  display:none !important;
+}
+
+/* Make Q1 bold + clean */
+.pill-quarter strong{
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.02em;
+}
+
+/* Caret tighter */
+.pill-quarter .pill-caret{
+  margin-left:4px;
+  opacity:.65;
+}
   </style>
 </head>
 
@@ -1097,14 +1125,14 @@ body{ font-weight: 400; }
   </div>
 
   <div class="pill-wrap" aria-label="Report period selector">
-    <button class="pill pill-trigger" id="quarterBtn" type="button" aria-haspopup="menu" aria-expanded="false">
-      <span class="pill-dot" aria-hidden="true"></span>
-      <span>
-        <strong id="reportQuarterLabel">Q1</strong>
-        • <span id="reportRangeLabel">Sep–Nov 2025</span>
-      </span>
-      <span class="pill-caret" aria-hidden="true">▾</span>
-    </button>
+<button class="pill pill-trigger pill-quarter" id="quarterBtn" type="button"
+  aria-haspopup="menu" aria-expanded="false">
+
+  <strong id="reportQuarterLabel">Q1</strong>
+  <span class="pill-caret" aria-hidden="true">▾</span>
+
+</button>
+
 
     <div class="pill-menu" id="quarterMenu" role="menu" aria-label="Choose quarter">
       <a class="pill-item" role="menuitem" href="/q1.html">Q1 • Sep–Nov 2025</a>
