@@ -1,0 +1,43 @@
+{
+  "quarterLabel": "Q1",
+  "rangeLabel": "Sep–Nov 2025",
+  "generatedLabel": "Wed Feb 11 2026",
+  "execSummary": [
+    "Impressions increased ▲ 50.6% quarter-over-quarter."
+  ],
+  "insights": {
+    "What's Working": "Engagement is climbing quickly across LinkedIn and Facebook."
+  },
+  "overall": {
+    "posts": 126
+  },
+  "deltas": {
+    "posts": "▲ 55.6%"
+  },
+  "platforms": [
+    {
+      "key": "linkedin",
+      "name": "LinkedIn",
+      "followers": 2644,
+      "followersDelta": "▲ 6.3%",
+      "engagementRate": 6.97,
+      "engagementRateDelta": "▲ 34.6%",
+      "pageReach": 14337,
+      "pageReachDelta": "▲ 52.8%",
+      "pageClicks": 1476,
+      "pageClicksDelta": "▲ 106%"
+    }
+  ],
+  "topPostsByPlatform": {
+    "linkedin": [
+      {
+        "title": "Celebrating Lisa's 10 Years",
+        "impressions": 2235,
+        "likes": 52,
+        "shares": 4
+      }
+    ],
+    "facebook": [],
+    "instagram": []
+  }
+}
