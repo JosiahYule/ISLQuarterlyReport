@@ -377,14 +377,6 @@
       min-height:130px;
       min-width:0;
     }
-    .kpi-card::before{
-      content:"";
-      position:absolute;
-      inset:0 0 auto 0;
-      height:3px;
-      background:linear-gradient(90deg,var(--tone,var(--isl-accent)),transparent);
-      opacity:.7;
-    }
     .kpi-card:hover{
       transform:translateY(-4px);
       box-shadow:0 12px 24px rgba(0,0,0,.1);
@@ -984,18 +976,18 @@
   white-space:nowrap;
 }
 
- /* =========================
+/* =========================
    KPI HOVER DEFINITIONS (TOOLTIPS)
    paste at END of <style>
 ========================= */
 
 /* Tooltips need overflow visible (your earlier overflow:hidden clips them) */
-.section{ overflow: visible !important; }
-/* Keep Platform Breakdown clipped, but allow others (like Quarter Totals) to show tooltips */
+.section[aria-label="Quarter totals"]{ overflow: visible !important; }
 .section[aria-label="Platform breakdown"]{ overflow: hidden !important; }
 
 .kpi-card{
   position: relative;
+  outline: none;
 }
 
 /* Tooltip bubble */
@@ -1055,22 +1047,19 @@
   transform: translateY(0);
 }
 
-/* Make cards focusable (for accessibility) */
-.kpi-card{
-  outline: none;
-}
+/* Focus styling */
 .kpi-card:focus{
   box-shadow: 0 0 0 4px rgba(0,112,202,.16), 0 12px 24px rgba(0,0,0,.10);
   border-color: rgba(0,112,202,.22);
 }
 
-/* Mobile: don’t show huge hover popups */
+/* Mobile: no hover tooltips */
 @media (max-width: 700px){
   .kpi-card::after,
   .kpi-card::before{
     display: none;
   }
-}   
+}
   </style>
 </head>
 
