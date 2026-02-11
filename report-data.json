@@ -7,10 +7,10 @@
     "LinkedIn led engagement rate at 6.97%."
   ],
   "insights": {
-    "insWorking": "Engagement is climbing quickly across LinkedIn and Facebook.",
-    "insNotWorking": "",
-    "insActions": "",
-    "insNext": ""
+    "working": "Engagement is climbing quickly across LinkedIn and Facebook.",
+    "notWorking": "This is a test",
+    "actions": "",
+    "next": ""
   },
   "overall": {
     "posts": 126,
