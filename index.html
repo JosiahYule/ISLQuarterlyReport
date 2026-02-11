@@ -1095,6 +1095,13 @@
 .kpi-card:focus::after{
   transform: translate(-50%, 0) !important;
 }    
+
+.platform-badge svg{
+  width: 18px;
+  height: 18px;
+  display:block;
+  fill: currentColor;
+}    
   </style>
 </head>
 
@@ -1413,6 +1420,24 @@ function seriesColors(count){
   ].slice(0, count);
 }
 
+const PLATFORM_ICONS = {
+  linkedin: `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5ZM0.2 8.2H4.8V24H0.2V8.2ZM8.2 8.2H12.6V10.3H12.7C13.3 9.2 14.8 8 17 8C21.7 8 22.6 11.1 22.6 15.1V24H18V16.2C18 14.3 18 11.9 15.4 11.9C12.8 11.9 12.4 14 12.4 16.1V24H7.8V8.2H8.2Z"/>
+    </svg>
+  `,
+  facebook: `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M13.5 24V13.1H17l.5-4.2h-4V6.2c0-1.2.3-2 2.1-2H17.7V.3C17.3.2 16 .1 14.4.1c-3.3 0-5.6 2-5.6 5.8v3H5v4.2h3.8V24h4.7Z"/>
+    </svg>
+  `,
+  instagram: `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7.2 0h9.6C20.8 0 24 3.2 24 7.2v9.6c0 4-3.2 7.2-7.2 7.2H7.2C3.2 24 0 20.8 0 16.8V7.2C0 3.2 3.2 0 7.2 0Zm9.6 2.2H7.2C4.4 2.2 2.2 4.4 2.2 7.2v9.6c0 2.8 2.2 5 5 5h9.6c2.8 0 5-2.2 5-5V7.2c0-2.8-2.2-5-5-5ZM12 6.1a5.9 5.9 0 1 1 0 11.8 5.9 5.9 0 0 1 0-11.8Zm0 2.2a3.7 3.7 0 1 0 0 7.4 3.7 3.7 0 0 0 0-7.4Zm6.6-2.8a1.4 1.4 0 1 1 0 2.8 1.4 1.4 0 0 1 0-2.8Z"/>
+    </svg>
+  `
+};
+
 /* =========================
    NORMALIZE JSON KEYS (handles older sheets)
 ========================= */
@@ -1563,7 +1588,7 @@ function renderPlatforms(){
     card.innerHTML = `
       <div class="platform-head">
         <div class="platform-name">
-          <span class="platform-badge" aria-hidden="true">${p.badge || ""}</span>
+          <span class="platform-badge" aria-hidden="true">${PLATFORM_ICONS[p.key] || ""}</span>
           ${p.name || ""}
         </div>
         <div class="platform-tag">${p.tag || ""}</div>
