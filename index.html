@@ -1053,6 +1053,13 @@
   border-color: rgba(0,112,202,.22);
 }
 
+/* === KPI TOOLTIP FIX: allow tooltip to render outside the card === */
+.kpi-card{
+  overflow: visible !important;   /* this is the missing piece */
+  position: relative;
+  isolation: isolate;             /* keeps tooltip layering reliable */
+}    
+
 /* Mobile: no hover tooltips */
 @media (max-width: 700px){
   .kpi-card::after,
