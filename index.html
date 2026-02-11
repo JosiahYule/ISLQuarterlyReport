@@ -471,18 +471,6 @@
       letter-spacing:-0.02em;
       flex:0 0 auto;
     }
-    .platform-tag{
-      font-size:11px;
-      font-weight:700;
-      padding:6px 12px;
-      border-radius:6px;
-      background:rgba(0,112,202,.08);
-      border:1px solid rgba(0,112,202,.15);
-      color:var(--isl-primary);
-      text-transform:uppercase;
-      letter-spacing:.05em;
-      flex:0 0 auto;
-    }
     .pstats{
       display:grid;
       grid-template-columns:repeat(2, minmax(0,1fr));
@@ -1586,13 +1574,13 @@ function renderPlatforms(){
     const card = document.createElement("div");
     card.className = "platform";
     card.innerHTML = `
-      <div class="platform-head">
-        <div class="platform-name">
-          <span class="platform-badge" aria-hidden="true">${PLATFORM_ICONS[p.key] || ""}</span>
-          ${p.name || ""}
-        </div>
-        <div class="platform-tag">${p.tag || ""}</div>
-      </div>
+  <div class="platform-head">
+    <div class="platform-name">
+      <span class="platform-badge" aria-hidden="true">${p.badge || ""}</span>
+      ${p.name || ""}
+    </div>
+  </div>
+
 
       <div class="pstats">
         <div class="pstat">
