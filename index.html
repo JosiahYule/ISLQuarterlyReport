@@ -1016,6 +1016,49 @@ body{ font-weight: 400; }
 .pstat{
   min-width:0;
 }  
+
+  /* =========================
+   CHART TOGGLE (BAR/PIE)
+========================= */
+.chart-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+
+.chart-toggle{
+  display:inline-flex;
+  padding:4px;
+  border-radius:999px;
+  background:rgba(0,0,0,.03);
+  border:1px solid rgba(0,0,0,.06);
+}
+
+.ct-btn{
+  appearance:none;
+  -webkit-appearance:none;
+  border:0;
+  background:transparent;
+  font:inherit;
+  cursor:pointer;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  color:var(--muted);
+  transition:var(--transition);
+}
+
+.ct-btn:hover{ color:var(--text); }
+
+.ct-btn.is-active{
+  background:#fff;
+  color:var(--isl-navy);
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+  border:1px solid rgba(0,0,0,.06);
+}  
   </style>
 </head>
 
@@ -1165,17 +1208,29 @@ body{ font-weight: 400; }
 
       <div class="platform-grid" id="platformGrid"></div>
 
-      <div class="charts">
-        <div class="chart-card" aria-label="Reach chart">
-          <div class="chart-title">Page Reach by Platform</div>
-          <div class="chart-wrap"><canvas id="reachChart"></canvas></div>
-        </div>
-        <div class="chart-card" aria-label="Engagement rate chart">
-          <div class="chart-title">Post Engagement Rate by Platform</div>
-          <div class="chart-wrap"><canvas id="engRateChart"></canvas></div>
-        </div>
+<div class="charts">
+  <div class="chart-card" aria-label="Reach chart">
+    <div class="chart-head">
+      <div class="chart-title">Page Reach by Platform</div>
+      <div class="chart-toggle" role="group" aria-label="Reach chart type">
+        <button type="button" class="ct-btn is-active" data-chart="reach" data-type="bar">Bar</button>
+        <button type="button" class="ct-btn" data-chart="reach" data-type="pie">Pie</button>
       </div>
-    </section>
+    </div>
+    <div class="chart-wrap"><canvas id="reachChart"></canvas></div>
+  </div>
+
+  <div class="chart-card" aria-label="Engagement rate chart">
+    <div class="chart-head">
+      <div class="chart-title">Post Engagement Rate by Platform</div>
+      <div class="chart-toggle" role="group" aria-label="Engagement chart type">
+        <button type="button" class="ct-btn is-active" data-chart="eng" data-type="bar">Bar</button>
+        <button type="button" class="ct-btn" data-chart="eng" data-type="pie">Pie</button>
+      </div>
+    </div>
+    <div class="chart-wrap"><canvas id="engRateChart"></canvas></div>
+  </div>
+</div>
 
     <section class="section" aria-label="Top posts">
       <div class="section-header">
@@ -1249,386 +1304,471 @@ body{ font-weight: 400; }
 
   </div>
 
-  <script>
-    const REPORT = {
-      quarterLabel: "Q1",
-      rangeLabel: "Sep–Nov 2025",
-      generatedLabel: "Feb 10, 2026",
-      execSummary: [
-        "Overall performance increased quarter-over-quarter: impressions ▲ 50.6%, reactions & likes ▲ 86.9%, and link clicks ▲ 122%.",
-        "Average post engagement rate finished at 5.51% (▲ 23.6% vs previous quarter).",
-        "LinkedIn led engagement rate at 6.97% (▲ 34.6%).",
-        "LinkedIn delivered the highest reach (14,337; ▲ 52.8%), while Facebook led page clicks (1,961; ▲ 326%)."
-      ],
+<script>
+/* =========================
+   DATA (EDIT THIS ONLY)
+========================= */
+const REPORT = {
+  quarterLabel: "Q1",
+  rangeLabel: "Sep–Nov 2025",
+  generatedLabel: "Feb 10, 2026",
+  execSummary: [
+    "Overall performance increased quarter-over-quarter: impressions ▲ 50.6%, reactions & likes ▲ 86.9%, and link clicks ▲ 122%.",
+    "Average post engagement rate finished at 5.51% (▲ 23.6% vs previous quarter).",
+    "LinkedIn led engagement rate at 6.97% (▲ 34.6%).",
+    "LinkedIn delivered the highest reach (14,337; ▲ 52.8%), while Facebook led page clicks (1,961; ▲ 326%)."
+  ],
 
-      overall: {
-        posts: 126,
-        impressions: 62690,
-        shares: 166,
-        reactions: 785,
-        followers: 4928,
-        linkClicks: 1597,
-        comments: 35,
-        avgEngagementRate: 5.51
-      },
+  overall: {
+    posts: 126,
+    impressions: 62690,
+    shares: 166,
+    reactions: 785,
+    followers: 4928,
+    linkClicks: 1597,
+    comments: 35,
+    avgEngagementRate: 5.51
+  },
 
-      deltas: {
-        posts: "▲ 55.6%",
-        impressions: "▲ 50.6%",
-        shares: "▲ 13.6%",
-        reactions: "▲ 86.9%",
-        followers: "▲ 3.9%",
-        linkClicks: "▲ 122%",
-        comments: "▲ 52.2%",
-        avgEngagementRate: "▲ 23.6%"
-      },
+  deltas: {
+    posts: "▲ 55.6%",
+    impressions: "▲ 50.6%",
+    shares: "▲ 13.6%",
+    reactions: "▲ 86.9%",
+    followers: "▲ 3.9%",
+    linkClicks: "▲ 122%",
+    comments: "▲ 52.2%",
+    avgEngagementRate: "▲ 23.6%"
+  },
 
-      platforms: [
-        { key:"linkedin", name:"LinkedIn", badge:"in", tag:"Primary",
-          followers:2644, followersDelta:"▲ 6.3%",
-          engagementRate:6.97, engagementRateDelta:"▲ 34.6%",
-          pageReach:14337, pageReachDelta:"▲ 52.8%",
-          pageClicks:1476, pageClicksDelta:"▲ 106%" },
+  platforms: [
+    { key:"linkedin", name:"LinkedIn", badge:"in", tag:"Primary",
+      followers:2644, followersDelta:"▲ 6.3%",
+      engagementRate:6.97, engagementRateDelta:"▲ 34.6%",
+      pageReach:14337, pageReachDelta:"▲ 52.8%",
+      pageClicks:1476, pageClicksDelta:"▲ 106%" },
 
-        { key:"facebook", name:"Facebook", badge:"f", tag:"Community",
-          followers:1775, followersDelta:"▲ 1.5%",
-          engagementRate:5.38, engagementRateDelta:"▲ 22.2%",
-          pageReach:11447, pageReachDelta:"▲ 108%",
-          pageClicks:1961, pageClicksDelta:"▲ 326%" },
+    { key:"facebook", name:"Facebook", badge:"f", tag:"Community",
+      followers:1775, followersDelta:"▲ 1.5%",
+      engagementRate:5.38, engagementRateDelta:"▲ 22.2%",
+      pageReach:11447, pageReachDelta:"▲ 108%",
+      pageClicks:1961, pageClicksDelta:"▲ 326%" },
 
-        { key:"instagram", name:"Instagram", badge:"IG", tag:"Visual",
-          followers:509, followersDelta:"▲ 0.6%",
-          engagementRate:4.48, engagementRateDelta:"▲ 14.1%",
-          pageReach:4172, pageReachDelta:"▲ 30.6%",
-          pageClicks:178, pageClicksDelta:"▲ 78%" }
-      ],
+    { key:"instagram", name:"Instagram", badge:"IG", tag:"Visual",
+      followers:509, followersDelta:"▲ 0.6%",
+      engagementRate:4.48, engagementRateDelta:"▲ 14.1%",
+      pageReach:4172, pageReachDelta:"▲ 30.6%",
+      pageClicks:178, pageClicksDelta:"▲ 78%" }
+  ],
 
-      topPostsByPlatform: {
-        linkedin: [
-          { title:"Celebrating Lisa's 10 years", description:"", impressions:2235, likes:52, shares:4 },
-          { title:"Welcoming Crystal", description:"", impressions:2613, likes:42, shares:8 },
-          { title:"Chance and Megan 2 Years", description:"", impressions:1549, likes:31, shares:3 }
-        ],
-        facebook: [
-          { title:"Welcoming Crystal", description:"", impressions:2100, likes:27, shares:3 },
-          { title:"Celebrating Lisa's 10 Years", description:"", impressions:828, likes:26, shares:3 },
-          { title:"Celebrating Chance and Megan 2 years", description:"", impressions:636, likes:14, shares:3 }
-        ],
-        instagram: [
-          { title:"Celebrating Lisa's 10 Years", description:"", impressions:510, likes:14, shares:2 },
-          { title:"Gear Up Team Video 1", description:"", impressions:743, likes:12, shares:2 },
-          { title:"Chance and Megan 2 years", description:"", impressions:347, likes:12, shares:0 }
-        ]
-      }
-    };
+  topPostsByPlatform: {
+    linkedin: [
+      { title:"Celebrating Lisa's 10 years", description:"", impressions:2235, likes:52, shares:4 },
+      { title:"Welcoming Crystal", description:"", impressions:2613, likes:42, shares:8 },
+      { title:"Chance and Megan 2 Years", description:"", impressions:1549, likes:31, shares:3 }
+    ],
+    facebook: [
+      { title:"Welcoming Crystal", description:"", impressions:2100, likes:27, shares:3 },
+      { title:"Celebrating Lisa's 10 Years", description:"", impressions:828, likes:26, shares:3 },
+      { title:"Celebrating Chance and Megan 2 years", description:"", impressions:636, likes:14, shares:3 }
+    ],
+    instagram: [
+      { title:"Celebrating Lisa's 10 Years", description:"", impressions:510, likes:14, shares:2 },
+      { title:"Gear Up Team Video 1", description:"", impressions:743, likes:12, shares:2 },
+      { title:"Chance and Megan 2 years", description:"", impressions:347, likes:12, shares:0 }
+    ]
+  }
+};
 
-    // Helpers
-    const byId = (id) => document.getElementById(id);
-    const fmtInt = (n) => (typeof n === "number" ? n.toLocaleString() : "—");
-    const fmtCompact = (n) => {
-      if (typeof n !== "number" || Number.isNaN(n)) return "—";
-      if (Math.abs(n) >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
-      if (Math.abs(n) >= 1_000) return n.toLocaleString();
-      return String(n);
-    };
-    const fmtPct = (n) => (typeof n === "number" ? (n.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "%") : "—");
+/* =========================
+   HELPERS
+========================= */
+const byId = (id) => document.getElementById(id);
 
-    function setText(id, value){ const el = byId(id); if(el) el.textContent = value; }
-    function setDelta(el, text){
-      if(!el) return;
-      el.textContent = text || "—";
-      el.classList.remove("positive","negative");
-      if(!text || text === "—") return;
-      if(text.trim().startsWith("▲") || text.trim().startsWith("↑")) el.classList.add("positive");
-      if(text.trim().startsWith("▼") || text.trim().startsWith("↓")) el.classList.add("negative");
-    }
+const fmtInt = (n) => (typeof n === "number" ? n.toLocaleString() : "—");
+const fmtCompact = (n) => {
+  if (typeof n !== "number" || Number.isNaN(n)) return "—";
+  if (Math.abs(n) >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+  if (Math.abs(n) >= 1_000) return n.toLocaleString();
+  return String(n);
+};
+const fmtPct = (n) =>
+  typeof n === "number"
+    ? (n.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "%")
+    : "—";
 
-    function postEngRate(p){
-      const imp = p.impressions || 0;
-      const eng = (p.likes || 0) + (p.shares || 0);
-      return imp > 0 ? (eng / imp) * 100 : 0;
-    }
+function setText(id, value){
+  const el = byId(id);
+  if (el) el.textContent = value;
+}
 
-    // Header
-    setText("reportQuarterLabel", REPORT.quarterLabel);
-    setText("reportRangeLabel", REPORT.rangeLabel);
-    setText("generatedLabel", REPORT.generatedLabel);
+function setDelta(el, text){
+  if(!el) return;
+  el.textContent = text || "—";
+  el.classList.remove("positive","negative");
+  if(!text || text === "—") return;
+  const t = text.trim();
+  if(t.startsWith("▲") || t.startsWith("↑")) el.classList.add("positive");
+  if(t.startsWith("▼") || t.startsWith("↓")) el.classList.add("negative");
+}
 
-    // Overall KPIs
-    setText("kpiPosts", fmtInt(REPORT.overall.posts));
-    setText("kpiImpressions", fmtCompact(REPORT.overall.impressions));
-    setText("kpiShares", fmtInt(REPORT.overall.shares));
-    setText("kpiReactions", fmtInt(REPORT.overall.reactions));
-    setText("kpiFollowers", fmtInt(REPORT.overall.followers));
-    setText("kpiLinkClicks", fmtInt(REPORT.overall.linkClicks));
-    setText("kpiComments", fmtInt(REPORT.overall.comments));
-    setText("kpiAvgEngRate", fmtPct(REPORT.overall.avgEngagementRate));
+function postEngRate(p){
+  const imp = p.impressions || 0;
+  const eng = (p.likes || 0) + (p.shares || 0);
+  return imp > 0 ? (eng / imp) * 100 : 0;
+}
 
-    setDelta(byId("deltaPosts"), REPORT.deltas.posts);
-    setDelta(byId("deltaImpressions"), REPORT.deltas.impressions);
-    setDelta(byId("deltaShares"), REPORT.deltas.shares);
-    setDelta(byId("deltaReactions"), REPORT.deltas.reactions);
-    setDelta(byId("deltaFollowers"), REPORT.deltas.followers);
-    setDelta(byId("deltaLinkClicks"), REPORT.deltas.linkClicks);
-    setDelta(byId("deltaComments"), REPORT.deltas.comments);
-    setDelta(byId("deltaAvgEngRate"), REPORT.deltas.avgEngagementRate);
+function barColors(count){
+  return [
+    'rgba(0,112,202,0.9)',
+    'rgba(0,84,154,0.85)',
+    'rgba(77,163,232,0.8)'
+  ].slice(0, count);
+}
 
-    // Executive summary
-    function bestBy(key){
-      let best = null;
-      REPORT.platforms.forEach(p => {
-        if(best === null || (p[key] || 0) > (best[key] || 0)) best = p;
-      });
-      return best;
-    }
+/* =========================
+   HEADER + KPI + SUMMARY
+========================= */
+function renderHeader(){
+  setText("reportQuarterLabel", REPORT.quarterLabel);
+  setText("reportRangeLabel", REPORT.rangeLabel);
+  setText("generatedLabel", REPORT.generatedLabel);
+}
 
-    const summary = REPORT.execSummary;
-    const ul = byId("execSummaryList");
-    ul.innerHTML = "";
-    summary.forEach(s => {
-      const li = document.createElement("li");
-      const html = s
-        .replace(/(▲\s?\d+(\.\d+)?%)/g, `<span class="summary-badge positive">$1</span>`)
-        .replace(/(▼\s?\d+(\.\d+)?%)/g, `<span class="summary-badge negative">$1</span>`);
+function renderKPIs(){
+  setText("kpiPosts", fmtInt(REPORT.overall.posts));
+  setText("kpiImpressions", fmtCompact(REPORT.overall.impressions));
+  setText("kpiShares", fmtInt(REPORT.overall.shares));
+  setText("kpiReactions", fmtInt(REPORT.overall.reactions));
+  setText("kpiFollowers", fmtInt(REPORT.overall.followers));
+  setText("kpiLinkClicks", fmtInt(REPORT.overall.linkClicks));
+  setText("kpiComments", fmtInt(REPORT.overall.comments));
+  setText("kpiAvgEngRate", fmtPct(REPORT.overall.avgEngagementRate));
 
-      li.innerHTML = `
-        <span class="summary-dot" aria-hidden="true"></span>
-        <span class="summary-text">${html}</span>
+  setDelta(byId("deltaPosts"), REPORT.deltas.posts);
+  setDelta(byId("deltaImpressions"), REPORT.deltas.impressions);
+  setDelta(byId("deltaShares"), REPORT.deltas.shares);
+  setDelta(byId("deltaReactions"), REPORT.deltas.reactions);
+  setDelta(byId("deltaFollowers"), REPORT.deltas.followers);
+  setDelta(byId("deltaLinkClicks"), REPORT.deltas.linkClicks);
+  setDelta(byId("deltaComments"), REPORT.deltas.comments);
+  setDelta(byId("deltaAvgEngRate"), REPORT.deltas.avgEngagementRate);
+}
+
+function renderExecutiveSummary(){
+  const ul = byId("execSummaryList");
+  if(!ul) return;
+
+  ul.innerHTML = "";
+  (REPORT.execSummary || []).forEach(s => {
+    const li = document.createElement("li");
+    const html = String(s)
+      .replace(/(▲\s?\d+(\.\d+)?%)/g, `<span class="summary-badge positive">$1</span>`)
+      .replace(/(▼\s?\d+(\.\d+)?%)/g, `<span class="summary-badge negative">$1</span>`);
+
+    li.innerHTML = `
+      <span class="summary-dot" aria-hidden="true"></span>
+      <span class="summary-text">${html}</span>
+    `;
+    ul.appendChild(li);
+  });
+}
+
+/* =========================
+   PLATFORM CARDS
+========================= */
+function renderPlatforms(){
+  const grid = byId("platformGrid");
+  if(!grid) return;
+
+  grid.innerHTML = "";
+  (REPORT.platforms || []).forEach(p => {
+    const card = document.createElement("div");
+    card.className = "platform";
+    card.innerHTML = `
+      <div class="platform-head">
+        <div class="platform-name">
+          <span class="platform-badge" aria-hidden="true">${p.badge || ""}</span>
+          ${p.name || ""}
+        </div>
+        <div class="platform-tag">${p.tag || ""}</div>
+      </div>
+
+      <div class="pstats">
+        <div class="pstat">
+          <span class="pstat-label">Followers</span>
+          <div class="pstat-row">
+            <strong>${fmtInt(p.followers)}</strong>
+            <span class="delta ${p.followersDelta?.trim().startsWith("▲") ? "positive" : (p.followersDelta?.trim().startsWith("▼") ? "negative" : "")}">
+              ${p.followersDelta || "—"}
+            </span>
+          </div>
+        </div>
+
+        <div class="pstat">
+          <span class="pstat-label">Post Engagement Rate</span>
+          <div class="pstat-row">
+            <strong>${fmtPct(p.engagementRate)}</strong>
+            <span class="delta ${p.engagementRateDelta?.trim().startsWith("▲") ? "positive" : (p.engagementRateDelta?.trim().startsWith("▼") ? "negative" : "")}">
+              ${p.engagementRateDelta || "—"}
+            </span>
+          </div>
+        </div>
+
+        <div class="pstat">
+          <span class="pstat-label">Page Reach</span>
+          <div class="pstat-row">
+            <strong>${fmtInt(p.pageReach)}</strong>
+            <span class="delta ${p.pageReachDelta?.trim().startsWith("▲") ? "positive" : (p.pageReachDelta?.trim().startsWith("▼") ? "negative" : "")}">
+              ${p.pageReachDelta || "—"}
+            </span>
+          </div>
+        </div>
+
+        <div class="pstat">
+          <span class="pstat-label">Page Clicks</span>
+          <div class="pstat-row">
+            <strong>${fmtInt(p.pageClicks)}</strong>
+            <span class="delta ${p.pageClicksDelta?.trim().startsWith("▲") ? "positive" : (p.pageClicksDelta?.trim().startsWith("▼") ? "negative" : "")}">
+              ${p.pageClicksDelta || "—"}
+            </span>
+          </div>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+/* =========================
+   TOP POSTS (START CLOSED)
+========================= */
+function renderTopPosts(){
+  const wrap = byId("topCompact");
+  if(!wrap) return;
+
+  wrap.innerHTML = "";
+
+  const order = [
+    { key: "linkedin", label: "LinkedIn" },
+    { key: "facebook", label: "Facebook" },
+    { key: "instagram", label: "Instagram" }
+  ];
+
+  order.forEach(({key, label}) => {
+    const posts = (REPORT.topPostsByPlatform?.[key] || [])
+      .slice(0,3)
+      .map(p => ({...p, engagementRate: postEngRate(p)}))
+      .sort((a,b) => (b.engagementRate||0) - (a.engagementRate||0));
+
+    const totalImpressions = posts.reduce((sum,p) => sum + (p.impressions||0), 0);
+    const avgER = posts.length ? (posts.reduce((sum,p)=>sum+(p.engagementRate||0),0) / posts.length) : 0;
+
+    const platform = document.createElement("details");
+    platform.className = "platform-acc";
+    platform.open = false; // ✅ start closed
+
+    platform.innerHTML = `
+      <summary>
+        <div class="sum-left">
+          <span class="platform-pill">${label}</span>
+          <span class="platform-meta">Top 3 • ${fmtInt(totalImpressions)} impressions • Avg ER ${fmtPct(avgER)}</span>
+        </div>
+        <span class="chev" aria-hidden="true">⌄</span>
+      </summary>
+      <div class="platform-body"></div>
+    `;
+
+    const body = platform.querySelector(".platform-body");
+
+    posts.forEach((p, idx) => {
+      const mini = document.createElement("details");
+      mini.className = "post-mini";
+
+      const erText = fmtPct(p.engagementRate || 0);
+
+      mini.innerHTML = `
+        <summary>
+          <div class="rank">#${idx+1}</div>
+          <div class="ptitle">${p.title || (label + " Post")}</div>
+          <div class="quick">
+            <span><strong>${fmtInt(p.impressions || 0)}</strong> impr.</span>
+            <span><strong>${erText}</strong> ER</span>
+          </div>
+        </summary>
+
+        <div class="post-details">
+          <div class="mini-stat"><span>Impressions</span><strong>${fmtInt(p.impressions || 0)}</strong></div>
+          <div class="mini-stat"><span>Likes</span><strong>${fmtInt(p.likes || 0)}</strong></div>
+          <div class="mini-stat"><span>Shares</span><strong>${fmtInt(p.shares || 0)}</strong></div>
+          <div class="mini-stat"><span>Eng. Rate</span><strong>${erText}</strong></div>
+          <div class="math">Eng. Rate = (likes + shares) ÷ impressions = (${fmtInt(p.likes||0)} + ${fmtInt(p.shares||0)}) ÷ ${fmtInt(p.impressions||0)}</div>
+        </div>
       `;
-      ul.appendChild(li);
+
+      body.appendChild(mini);
     });
 
-    // Platform cards
-    function renderPlatforms(){
-      const grid = byId("platformGrid");
-      grid.innerHTML = "";
-      REPORT.platforms.forEach(p => {
-        const card = document.createElement("div");
-        card.className = "platform";
-        card.innerHTML = `
-          <div class="platform-head">
-            <div class="platform-name">
-              <span class="platform-badge" aria-hidden="true">${p.badge || ""}</span>
-              ${p.name || ""}
-            </div>
-            <div class="platform-tag">${p.tag || ""}</div>
-          </div>
-          <div class="pstats">
-            <div class="pstat">
-              <span class="pstat-label">Followers</span>
-              <div class="pstat-row">
-                <strong>${fmtInt(p.followers)}</strong>
-                <span class="delta ${p.followersDelta && p.followersDelta.trim().startsWith("▲") ? "positive" : (p.followersDelta && p.followersDelta.trim().startsWith("▼") ? "negative" : "")}">${p.followersDelta || "—"}</span>
-              </div>
-            </div>
-            <div class="pstat">
-              <span class="pstat-label">Post Engagement Rate</span>
-              <div class="pstat-row">
-                <strong>${fmtPct(p.engagementRate)}</strong>
-                <span class="delta ${p.engagementRateDelta && p.engagementRateDelta.trim().startsWith("▲") ? "positive" : (p.engagementRateDelta && p.engagementRateDelta.trim().startsWith("▼") ? "negative" : "")}">${p.engagementRateDelta || "—"}</span>
-              </div>
-            </div>
-            <div class="pstat">
-              <span class="pstat-label">Page Reach</span>
-              <div class="pstat-row">
-                <strong>${fmtInt(p.pageReach)}</strong>
-                <span class="delta ${p.pageReachDelta && p.pageReachDelta.trim().startsWith("▲") ? "positive" : (p.pageReachDelta && p.pageReachDelta.trim().startsWith("▼") ? "negative" : "")}">${p.pageReachDelta || "—"}</span>
-              </div>
-            </div>
-            <div class="pstat">
-              <span class="pstat-label">Page Clicks</span>
-              <div class="pstat-row">
-                <strong>${fmtInt(p.pageClicks)}</strong>
-                <span class="delta ${p.pageClicksDelta && p.pageClicksDelta.trim().startsWith("▲") ? "positive" : (p.pageClicksDelta && p.pageClicksDelta.trim().startsWith("▼") ? "negative" : "")}">${p.pageClicksDelta || "—"}</span>
-              </div>
-            </div>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
-    renderPlatforms();
+    wrap.appendChild(platform);
+  });
+}
 
-    // Top posts
-    function renderTopPosts(){
-      const wrap = byId("topCompact");
-      wrap.innerHTML = "";
+/* =========================
+   CHARTS (BAR <-> PIE)
+   Requires your HTML toggle buttons
+========================= */
+Chart.defaults.font.family = 'Gotham, Gotham SSm, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+Chart.defaults.color = '#64748B';
 
-      const order = [
-        { key: "linkedin", label: "LinkedIn" },
-        { key: "facebook", label: "Facebook" },
-        { key: "instagram", label: "Instagram" }
-      ];
+const commonTooltip = {
+  backgroundColor: 'rgba(0,61,114,0.95)',
+  padding: 14,
+  titleFont: { size: 13, weight: '700' },
+  bodyFont: { size: 12, weight: '500' },
+  cornerRadius: 10,
+  displayColors: false
+};
 
-      order.forEach(({key, label}) => {
-        const posts = (REPORT.topPostsByPlatform[key] || []).slice(0,3)
-          .map(p => ({...p, engagementRate: postEngRate(p)}))
-          .sort((a,b) => (b.engagementRate||0) - (a.engagementRate||0));
+let reachChart, engChart;
 
-        const totalImpressions = posts.reduce((sum,p) => sum + (p.impressions||0), 0);
-        const avgER = posts.length ? (posts.reduce((sum,p)=>sum+(p.engagementRate||0),0) / posts.length) : 0;
+function getChartSeries(){
+  const labels = (REPORT.platforms || []).map(p => p.name);
+  const reach = (REPORT.platforms || []).map(p => p.pageReach || 0);
+  const er = (REPORT.platforms || []).map(p => p.engagementRate || 0);
+  return { labels, reach, er };
+}
 
-        const platform = document.createElement("details");
-        platform.className = "platform-acc";
-        platform.open = (key === "linkedin");
+function buildReach(type){
+  const canvas = byId("reachChart");
+  if(!canvas) return;
+  const ctx = canvas.getContext("2d");
+  if(reachChart) reachChart.destroy();
 
-        platform.innerHTML = `
-          <summary>
-            <div class="sum-left">
-              <span class="platform-pill">${label}</span>
-              <span class="platform-meta">Top 3 • ${fmtInt(totalImpressions)} impressions • Avg ER ${fmtPct(avgER)}</span>
-            </div>
-            <span class="chev" aria-hidden="true">⌄</span>
-          </summary>
-          <div class="platform-body"></div>
-        `;
+  const { labels, reach } = getChartSeries();
 
-        const body = platform.querySelector(".platform-body");
-
-        posts.forEach((p, idx) => {
-          const mini = document.createElement("details");
-          mini.className = "post-mini";
-
-          const erText = fmtPct(p.engagementRate || 0);
-
-          mini.innerHTML = `
-            <summary>
-              <div class="rank">#${idx+1}</div>
-              <div class="ptitle">${p.title || (label + " Post")}</div>
-              <div class="quick">
-                <span><strong>${fmtInt(p.impressions || 0)}</strong> impr.</span>
-                <span><strong>${erText}</strong> ER</span>
-              </div>
-            </summary>
-
-            <div class="post-details">
-              <div class="mini-stat"><span>Impressions</span><strong>${fmtInt(p.impressions || 0)}</strong></div>
-              <div class="mini-stat"><span>Likes</span><strong>${fmtInt(p.likes || 0)}</strong></div>
-              <div class="mini-stat"><span>Shares</span><strong>${fmtInt(p.shares || 0)}</strong></div>
-              <div class="mini-stat"><span>Eng. Rate</span><strong>${erText}</strong></div>
-              <div class="math">Eng. Rate = (likes + shares) ÷ impressions = (${fmtInt(p.likes||0)} + ${fmtInt(p.shares||0)}) ÷ ${fmtInt(p.impressions||0)}</div>
-            </div>
-          `;
-
-          body.appendChild(mini);
-        });
-
-        wrap.appendChild(platform);
-      });
-    }
-    renderTopPosts();
-
-    // Charts
-    Chart.defaults.font.family = 'Gotham, Gotham SSm, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
-    Chart.defaults.color = '#64748B';
-
-    const labels = REPORT.platforms.map(p => p.name);
-    const reach = REPORT.platforms.map(p => p.pageReach || 0);
-    const er = REPORT.platforms.map(p => p.engagementRate || 0);
-
-    const commonTooltip = {
-      backgroundColor: 'rgba(0,61,114,0.95)',
-      padding: 14,
-      titleFont: { size: 13, weight: '700' },
-      bodyFont: { size: 12, weight: '500' },
-      cornerRadius: 10,
-      displayColors: false
-    };
-
-    new Chart(byId("reachChart").getContext("2d"), {
-      type: "bar",
-      data: {
-        labels,
-        datasets: [{
-          label: "Page Reach",
-          data: reach,
-          backgroundColor: [
-            'rgba(0,112,202,0.9)',
-            'rgba(0,84,154,0.85)',
-            'rgba(77,163,232,0.8)'
-          ],
-          borderColor: ['#0070CA', '#00549A', '#4DA3E8'],
-          borderWidth: 0,
-          borderRadius: 8
-        }]
+  reachChart = new Chart(ctx, {
+    type,
+    data: {
+      labels,
+      datasets: [{
+        label: "Page Reach",
+        data: reach,
+        backgroundColor: type === "pie" ? barColors(labels.length) : barColors(labels.length),
+        borderColor: type === "pie" ? "#fff" : ['#0070CA', '#00549A', '#4DA3E8'],
+        borderWidth: type === "pie" ? 2 : 0,
+        borderRadius: type === "bar" ? 8 : 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: type === "pie", labels: { boxWidth: 10, boxHeight: 10 } },
+        tooltip: commonTooltip
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { 
-          legend: { display: false }, 
-          tooltip: commonTooltip 
+      scales: type === "bar" ? {
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+          ticks: { font: { size: 11, weight: '500' }, color: '#64748B' },
+          border: { display: false }
         },
-        scales: {
-          y: { 
-            beginAtZero: true, 
-            grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-            ticks: { font: { size: 11, weight: '500' }, color: '#64748B' },
-            border: { display: false }
-          },
-          x: { 
-            grid: { display: false, drawBorder: false }, 
-            ticks: { font: { size: 12, weight: '700' }, color: '#0B1220' },
-            border: { display: false }
-          }
+        x: {
+          grid: { display: false, drawBorder: false },
+          ticks: { font: { size: 12, weight: '700' }, color: '#0B1220' },
+          border: { display: false }
         }
-      }
-    });
+      } : {}
+    }
+  });
+}
 
-    new Chart(byId("engRateChart").getContext("2d"), {
-      type: "bar",
-      data: {
-        labels,
-        datasets: [{
-          label: "Post Engagement Rate (%)",
-          data: er,
-          backgroundColor: 'rgba(0,112,202,0.15)',
-          borderColor: '#0070CA',
-          borderWidth: 2,
-          borderRadius: 8
-        }]
+function buildEng(type){
+  const canvas = byId("engRateChart");
+  if(!canvas) return;
+  const ctx = canvas.getContext("2d");
+  if(engChart) engChart.destroy();
+
+  const { labels, er } = getChartSeries();
+
+  engChart = new Chart(ctx, {
+    type,
+    data: {
+      labels,
+      datasets: [{
+        label: "Post Engagement Rate (%)",
+        data: er,
+        backgroundColor: type === "pie" ? barColors(labels.length) : 'rgba(0,112,202,0.15)',
+        borderColor: type === "pie" ? "#fff" : "#0070CA",
+        borderWidth: type === "pie" ? 2 : 2,
+        borderRadius: type === "bar" ? 8 : 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: type === "pie", labels: { boxWidth: 10, boxHeight: 10 } },
+        tooltip: commonTooltip
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { 
-          legend: { display: false }, 
-          tooltip: commonTooltip 
-        },
-        scales: {
-          y: { 
-            beginAtZero: true, 
-            grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-            ticks: { 
-              font: { size: 11, weight: '500' }, 
-              color: '#64748B',
-              callback: (v) => v + "%" 
-            },
-            border: { display: false }
+      scales: type === "bar" ? {
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+          ticks: {
+            font: { size: 11, weight: '500' },
+            color: '#64748B',
+            callback: (v) => v + "%"
           },
-          x: { 
-            grid: { display: false, drawBorder: false }, 
-            ticks: { font: { size: 12, weight: '700' }, color: '#0B1220' },
-            border: { display: false }
-          }
+          border: { display: false }
+        },
+        x: {
+          grid: { display: false, drawBorder: false },
+          ticks: { font: { size: 12, weight: '700' }, color: '#0B1220' },
+          border: { display: false }
         }
-      }
+      } : {}
+    }
+  });
+}
+
+function wireChartToggles(){
+  // If the toggle buttons aren't present, charts still render as bars.
+  const btns = document.querySelectorAll(".ct-btn");
+  if(!btns.length) return;
+
+  btns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const chart = btn.getAttribute("data-chart"); // reach | eng
+      const type = btn.getAttribute("data-type");   // bar | pie
+
+      const group = btn.parentElement;
+      group.querySelectorAll(".ct-btn").forEach(b => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+
+      if(chart === "reach") buildReach(type);
+      if(chart === "eng") buildEng(type);
     });
+  });
+}
 
-    // Lock editing unless ?edit=1
-    (function lockEditing(){
-      const params = new URLSearchParams(window.location.search);
-      const canEdit = params.get("edit") === "1";
-      document.querySelectorAll('[data-editable="true"]').forEach(el => {
-        el.setAttribute("contenteditable", canEdit ? "true" : "false");
-      });
-    })();
+/* =========================
+   EDIT LOCK (?edit=1)
+========================= */
+function lockEditing(){
+  const params = new URLSearchParams(window.location.search);
+  const canEdit = params.get("edit") === "1";
+  document.querySelectorAll('[data-editable="true"]').forEach(el => {
+    el.setAttribute("contenteditable", canEdit ? "true" : "false");
+  });
+}
 
-    // Quarter dropdown toggle
-(function quarterDropdown(){
+/* =========================
+   QUARTER DROPDOWN
+========================= */
+function quarterDropdown(){
   const wrap = document.querySelector(".pill-wrap");
   const btn = document.getElementById("quarterBtn");
-
   if(!wrap || !btn) return;
 
   btn.addEventListener("click", (e) => {
@@ -1636,16 +1776,31 @@ body{ font-weight: 400; }
     wrap.classList.toggle("open");
   });
 
-  document.addEventListener("click", () => {
-    wrap.classList.remove("open");
-  });
+  document.addEventListener("click", () => wrap.classList.remove("open"));
 
   document.addEventListener("keydown", (e) => {
-    if(e.key === "Escape"){
-      wrap.classList.remove("open");
-    }
+    if(e.key === "Escape") wrap.classList.remove("open");
   });
+}
+
+/* =========================
+   INIT
+========================= */
+(function init(){
+  renderHeader();
+  renderKPIs();
+  renderExecutiveSummary();
+  renderPlatforms();
+  renderTopPosts();
+
+  // default charts: bar
+  buildReach("bar");
+  buildEng("bar");
+  wireChartToggles();
+
+  lockEditing();
+  quarterDropdown();
 })();
-  </script>
+</script>
 </body>
 </html>
