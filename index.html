@@ -848,6 +848,83 @@
       }
       .container{padding:20px}
     }
+
+    /* =========================
+   READABILITY OVERRIDES
+   (paste at end of <style>)
+========================= */
+
+body{ font-weight: 400; }
+
+/* Section helper text */
+.section-title p{
+  font-weight: 400;
+  color: #6B7A90; /* slightly softer than your current muted */
+}
+
+/* Summary line text */
+.summary-text{
+  font-weight: 400;
+  color: #0B1220;
+}
+
+/* Insight paragraphs */
+.insight-card .body{
+  font-weight: 400;
+}
+
+/* Small meta lines */
+.platform-meta,
+.quick{
+  font-weight: 400;
+}
+
+    /* =========================
+   CLEANER SUMMARY
+========================= */
+
+/* Reduce “card within card” feel */
+.summary-card{
+  padding: 18px;
+  box-shadow: none;
+  border-color: rgba(0,0,0,.05);
+}
+
+/* Tighter list spacing */
+.summary-list{
+  gap: 10px;
+}
+
+/* Make each bullet row cleaner */
+.summary-list li{
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.05);
+  padding: 12px 14px;
+  gap: 12px;
+}
+
+/* Remove the slide-on-hover (it adds visual noise) */
+.summary-list li:hover{
+  transform: none;
+  background: #fff;
+  border-color: rgba(0,0,0,.07);
+}
+
+/* Smaller, calmer dot */
+.summary-dot{
+  width: 10px;
+  height: 10px;
+  margin-top: 5px;
+  box-shadow: 0 0 0 3px rgba(0,112,202,.10);
+}
+
+/* Badges: a bit less chunky */
+.summary-badge{
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
   </style>
 </head>
 
