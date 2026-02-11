@@ -827,7 +827,7 @@
     @media (max-width:1100px){
       .hero-grid{grid-template-columns:1fr}
       .hero-meta{justify-content:flex-start}
-      .kpi-grid{grid-template-columns:repeat(2, minmax(0,1fr))}
+      .kpi-grid{ grid-template-columns: repeat(3, minmax(0,1fr)); }
       .platform-grid{grid-template-columns:1fr}
       .charts{grid-template-columns:1fr}
       .insight-grid{grid-template-columns:1fr}
@@ -1497,24 +1497,29 @@ function renderHeader(){
   setText("generatedLabel", REPORT.generatedLabel);
 }
 
-function renderKPIs(){
-  setText("kpiPosts", fmtInt(REPORT.overall.posts));
-  setText("kpiImpressions", fmtCompact(REPORT.overall.impressions));
-  setText("kpiShares", fmtInt(REPORT.overall.shares));
-  setText("kpiReactions", fmtInt(REPORT.overall.reactions));
-  setText("kpiFollowers", fmtInt(REPORT.overall.followers));
-  setText("kpiLinkClicks", fmtInt(REPORT.overall.linkClicks));
-  setText("kpiComments", fmtInt(REPORT.overall.comments));
-  setText("kpiAvgEngRate", fmtPct(REPORT.overall.avgEngagementRate));
+function fmtTime(seconds){
+  const s = toNumber(seconds);
+  if (typeof s !== "number" || !Number.isFinite(s)) return "—";
+  const total = Math.max(0, Math.round(s));
+  const m = Math.floor(total / 60);
+  const r = total % 60;
+  return `${m}:${String(r).padStart(2,"0")}`;
+}
 
-  setDelta(byId("deltaPosts"), REPORT.deltas.posts);
-  setDelta(byId("deltaImpressions"), REPORT.deltas.impressions);
-  setDelta(byId("deltaShares"), REPORT.deltas.shares);
-  setDelta(byId("deltaReactions"), REPORT.deltas.reactions);
-  setDelta(byId("deltaFollowers"), REPORT.deltas.followers);
-  setDelta(byId("deltaLinkClicks"), REPORT.deltas.linkClicks);
-  setDelta(byId("deltaComments"), REPORT.deltas.comments);
-  setDelta(byId("deltaAvgEngRate"), REPORT.deltas.avgEngagementRate);
+function renderKPIs(){
+  setText("kpiSessions", fmtInt(REPORT.overall.sessions));
+  setText("kpiUsers", fmtInt(REPORT.overall.users));
+  setText("kpiEngRate", fmtPct(REPORT.overall.engagementRate));
+  setText("kpiAvgEngTime", fmtTime(REPORT.overall.avgEngagementTimeSec));
+  setText("kpiConversions", fmtInt(REPORT.overall.conversions));
+  setText("kpiConvRate", fmtPct(REPORT.overall.conversionRate));
+
+  setDelta(byId("deltaSessions"), REPORT.deltas.sessions);
+  setDelta(byId("deltaUsers"), REPORT.deltas.users);
+  setDelta(byId("deltaEngRate"), REPORT.deltas.engagementRate);
+  setDelta(byId("deltaAvgEngTime"), REPORT.deltas.avgEngagementTimeSec);
+  setDelta(byId("deltaConversions"), REPORT.deltas.conversions);
+  setDelta(byId("deltaConvRate"), REPORT.deltas.conversionRate);
 }
 
 function renderExecutiveSummary(){
