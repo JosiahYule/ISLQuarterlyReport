@@ -983,32 +983,32 @@ body{ font-weight: 400; }
 <body>
   <div class="container">
 
-    <div class="topbar">
-      <div class="brand">
-        <div class="brand-mark" aria-label="Integrated Staffing logo"></div>
-        <div class="brand-text">
-          <strong>Integrated Staffing</strong>
-          <span>Quarterly Digital Media Performance Report</span>
-        </div>
-      </div>
-
-<div class="pill-wrap" aria-label="Report period selector">
-
-  <button class="pill pill-trigger" id="quarterBtn" type="button">
-    <span class="pill-dot" aria-hidden="true"></span>
-    <span>
-      <strong id="reportQuarterLabel">Q1</strong>
-      • <span id="reportRangeLabel">Sep–Nov 2025</span>
-    </span>
-    <span class="pill-caret">▾</span>
-  </button>
-
-  <div class="pill-menu" id="quarterMenu">
-    <a class="pill-item" href="/q1.html">Q1 • Sep–Nov 2025</a>
-    <a class="pill-item" href="/q2.html">Q2 • Dec–Feb 2026</a>
+ <div class="topbar">
+  <div class="brand">
+    <div class="brand-mark" aria-label="Integrated Staffing logo"></div>
+    <div class="brand-text">
+      <strong>Integrated Staffing</strong>
+      <span>Quarterly Digital Media Performance Report</span>
+    </div>
   </div>
 
+  <div class="pill-wrap" aria-label="Report period selector">
+    <button class="pill pill-trigger" id="quarterBtn" type="button" aria-haspopup="menu" aria-expanded="false">
+      <span class="pill-dot" aria-hidden="true"></span>
+      <span>
+        <strong id="reportQuarterLabel">Q1</strong>
+        • <span id="reportRangeLabel">Sep–Nov 2025</span>
+      </span>
+      <span class="pill-caret" aria-hidden="true">▾</span>
+    </button>
+
+    <div class="pill-menu" id="quarterMenu" role="menu" aria-label="Choose quarter">
+      <a class="pill-item" role="menuitem" href="/q1.html">Q1 • Sep–Nov 2025</a>
+      <a class="pill-item" role="menuitem" href="/q2.html">Q2 • Dec–Feb 2026</a>
+    </div>
+  </div>
 </div>
+
 
 
     <section class="hero" aria-label="Report header">
