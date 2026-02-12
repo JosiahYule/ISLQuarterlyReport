@@ -330,6 +330,59 @@
       .charts{grid-template-columns:1fr}
       .page-body{grid-template-columns:1fr}
     }
+
+    /* =========================
+   DROPDOWN MENU (TOP RIGHT)
+========================= */
+
+.pill-wrap{
+  position:relative;
+  display:inline-flex;
+}
+
+.pill-trigger{
+  border:none;
+  cursor:pointer;
+  background:#fff;
+}
+
+.pill-caret{
+  margin-left:10px;
+  font-size:12px;
+  opacity:.7;
+}
+
+.pill-menu{
+  position:absolute;
+  right:0;
+  top:calc(100% + 10px);
+  min-width:220px;
+  background:#fff;
+  border:1px solid rgba(0,0,0,.10);
+  border-radius:14px;
+  box-shadow:0 14px 30px rgba(0,0,0,.14);
+  padding:8px;
+  display:none;
+  z-index:999;
+}
+
+.pill-wrap.open .pill-menu{
+  display:block;
+}
+
+.pill-item{
+  display:block;
+  padding:10px 12px;
+  border-radius:12px;
+  text-decoration:none;
+  font-size:13px;
+  font-weight:700;
+  color:var(--text);
+}
+
+.pill-item:hover{
+  background:rgba(0,112,202,.08);
+}
   </style>
 </head>
 
@@ -346,11 +399,23 @@
       </div>
     </div>
 
-    <div class="pill">
-      <span class="pill-dot"></span>
-      <span id="reportQuarter">Q2 • Dec–Feb 2026</span>
+<div class="pill-wrap" aria-label="Report period selector">
+        <button class="pill pill-trigger" id="quarterBtn" type="button" aria-haspopup="menu" aria-expanded="false">
+          <span class="pill-dot" aria-hidden="true"></span>
+          <span>
+            <strong id="reportQuarterLabel">Q1</strong>
+            <span class="pill-range"> <span id="reportRangeLabel">Sep–Nov 2025</span></span>
+          </span>
+          <span class="pill-caret" aria-hidden="true">▾</span>
+        </button>
+
+        <div class="pill-menu" id="quarterMenu" role="menu" aria-label="Choose quarter">
+          <a class="pill-item" role="menuitem" href="/q1.html">Q1 • Sep–Nov 2025</a>
+          <a class="pill-item" role="menuitem" href="/q2.html">Q2 • Dec–Feb 2026</a>
+          <a class="pill-item" role="menuitem" href="/web.html">Website • Q2 • Dec–Feb 2026</a>
+        </div>
+      </div>
     </div>
-  </div>
 
   <!-- HERO -->
   <section class="hero">
@@ -555,12 +620,41 @@ function buildCharts(){
   });
 }
 
+function quarterDropdown(){
+  const wrap = document.querySelector(".pill-wrap");
+  const btn = document.getElementById("quarterBtn");
+
+  if(!wrap || !btn) return;
+
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    wrap.classList.toggle("open");
+    btn.setAttribute(
+      "aria-expanded",
+      wrap.classList.contains("open") ? "true" : "false"
+    );
+  });
+
+  document.addEventListener("click", () => {
+    wrap.classList.remove("open");
+    btn.setAttribute("aria-expanded","false");
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if(e.key === "Escape"){
+      wrap.classList.remove("open");
+      btn.setAttribute("aria-expanded","false");
+    }
+  });
+}
+  
 (async function init(){
   REPORT=await loadData();
   renderKPIs();
   renderChannels();
   renderTopPages();
   buildCharts();
+  quarterDropdown();
 })();
 </script>
 
