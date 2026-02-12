@@ -383,6 +383,10 @@
 .pill-item:hover{
   background:rgba(0,112,202,.08);
 }
+
+.pill-wrap{ position:relative; z-index: 9999; }
+.pill-trigger{ position:relative; z-index: 10000; }
+.pill-menu{ z-index: 10001; }
   </style>
 </head>
 
@@ -513,126 +517,46 @@
 </div>
 
 <script>
-let REPORT=null;
+let REPORT = null;
 
 async function loadData(){
-  const res = await fetch("./web-data.json",{cache:"no-store"});
+  const res = await fetch("./web-data.json", { cache: "no-store" });
+  if(!res.ok) throw new Error("web-data.json not found or failed to load");
   return await res.json();
 }
 
-const fmtInt=n=>Number.isFinite(n)?n.toLocaleString():"—";
-const fmtPct=n=>Number.isFinite(n)?n.toFixed(2)+"%":"—";
+const fmtInt = n => (typeof n === "number" && Number.isFinite(n)) ? n.toLocaleString() : "—";
+const fmtPct = n => (typeof n === "number" && Number.isFinite(n)) ? (n.toFixed(2) + "%") : "—";
 
 function fmtTime(sec){
-  if(!Number.isFinite(sec)) return "—";
-  const m=Math.floor(sec/60);
-  const s=Math.round(sec%60);
+  if(typeof sec !== "number" || !Number.isFinite(sec)) return "—";
+  const m = Math.floor(sec / 60);
+  const s = Math.round(sec % 60);
   return `${m}:${String(s).padStart(2,"0")}`;
 }
 
-function setDelta(id,val){
-  const el=document.getElementById(id);
-  el.textContent=val||"—";
+function setDelta(id, val){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.textContent = val || "—";
   el.classList.remove("positive","negative");
   if(!val) return;
-  if(val.startsWith("▲")) el.classList.add("positive");
-  if(val.startsWith("▼")) el.classList.add("negative");
+  const t = String(val).trim();
+  if(t.startsWith("▲") || t.startsWith("↑")) el.classList.add("positive");
+  if(t.startsWith("▼") || t.startsWith("↓")) el.classList.add("negative");
 }
 
-function renderKPIs(){
-  document.getElementById("kpiSessions").textContent=fmtInt(REPORT.overall.sessions);
-  document.getElementById("kpiUsers").textContent=fmtInt(REPORT.overall.users);
-  document.getElementById("kpiEngRate").textContent=fmtPct(REPORT.overall.engagementRate);
-  document.getElementById("kpiTime").textContent=fmtTime(REPORT.overall.avgEngagementTimeSec);
-  document.getElementById("kpiConv").textContent=fmtInt(REPORT.overall.conversions);
-  document.getElementById("kpiConvRate").textContent=fmtPct(REPORT.overall.conversionRate);
-
-  setDelta("dSessions",REPORT.deltas.sessions);
-  setDelta("dUsers",REPORT.deltas.users);
-  setDelta("dEngRate",REPORT.deltas.engagementRate);
-  setDelta("dTime",REPORT.deltas.avgEngagementTimeSec);
-  setDelta("dConv",REPORT.deltas.conversions);
-  setDelta("dConvRate",REPORT.deltas.conversionRate);
-}
-
-function renderChannels(){
-  const grid=document.getElementById("channelGrid");
-  grid.innerHTML="";
-
-  REPORT.channels.forEach(c=>{
-    const div=document.createElement("div");
-    div.className="channel";
-    div.innerHTML=`
-      <h3>${c.name}</h3>
-      <div class="cstat"><span>Sessions</span><strong>${fmtInt(c.sessions)}</strong></div>
-      <div class="cstat"><span>Conversions</span><strong>${fmtInt(c.conversions)}</strong></div>
-      <div class="cstat"><span>Conv. Rate</span><strong>${fmtPct(c.conversionRate)}</strong></div>
-    `;
-    grid.appendChild(div);
-  });
-}
-
-function renderTopPages(){
-  const wrap=document.getElementById("topPages");
-  wrap.innerHTML="";
-
-  REPORT.topPages.forEach(p=>{
-    const d=document.createElement("details");
-    d.className="page";
-    d.innerHTML=`
-      <summary>
-        ${p.title}
-        <span>${fmtInt(p.sessions)} sessions</span>
-      </summary>
-      <div class="page-body">
-        <div class="mini"><span>Sessions</span><strong>${fmtInt(p.sessions)}</strong></div>
-        <div class="mini"><span>Conversions</span><strong>${fmtInt(p.conversions)}</strong></div>
-        <div class="mini"><span>Engagement Rate</span><strong>${fmtPct(p.engagementRate)}</strong></div>
-      </div>
-    `;
-    wrap.appendChild(d);
-  });
-}
-
-function buildCharts(){
-  const labels=REPORT.channels.map(c=>c.name);
-
-  new Chart(document.getElementById("sessionsChart"),{
-    type:"bar",
-    data:{
-      labels,
-      datasets:[{
-        label:"Sessions",
-        data:REPORT.channels.map(c=>c.sessions)
-      }]
-    }
-  });
-
-  new Chart(document.getElementById("convChart"),{
-    type:"bar",
-    data:{
-      labels,
-      datasets:[{
-        label:"Conversions",
-        data:REPORT.channels.map(c=>c.conversions)
-      }]
-    }
-  });
-}
-
+/* ✅ Dropdown: wire immediately so it works even if data fails */
 function quarterDropdown(){
   const wrap = document.querySelector(".pill-wrap");
-  const btn = document.getElementById("quarterBtn");
-
+  const btn  = document.getElementById("quarterBtn");
   if(!wrap || !btn) return;
 
   btn.addEventListener("click", (e) => {
+    e.preventDefault();
     e.stopPropagation();
     wrap.classList.toggle("open");
-    btn.setAttribute(
-      "aria-expanded",
-      wrap.classList.contains("open") ? "true" : "false"
-    );
+    btn.setAttribute("aria-expanded", wrap.classList.contains("open") ? "true" : "false");
   });
 
   document.addEventListener("click", () => {
@@ -647,14 +571,105 @@ function quarterDropdown(){
     }
   });
 }
-  
+
+function renderKPIs(){
+  const o = REPORT?.overall || {};
+  const d = REPORT?.deltas || {};
+
+  document.getElementById("kpiSessions").textContent = fmtInt(o.sessions);
+  document.getElementById("kpiUsers").textContent    = fmtInt(o.users);
+  document.getElementById("kpiEngRate").textContent  = fmtPct(o.engagementRate);
+  document.getElementById("kpiTime").textContent     = fmtTime(o.avgEngagementTimeSec);
+  document.getElementById("kpiConv").textContent     = fmtInt(o.conversions);
+  document.getElementById("kpiConvRate").textContent = fmtPct(o.conversionRate);
+
+  setDelta("dSessions", d.sessions);
+  setDelta("dUsers", d.users);
+  setDelta("dEngRate", d.engagementRate);
+  setDelta("dTime", d.avgEngagementTimeSec);
+  setDelta("dConv", d.conversions);
+  setDelta("dConvRate", d.conversionRate);
+}
+
+function renderChannels(){
+  const grid = document.getElementById("channelGrid");
+  if(!grid) return;
+  grid.innerHTML = "";
+
+  (REPORT?.channels || []).forEach(c => {
+    const div = document.createElement("div");
+    div.className = "channel";
+    div.innerHTML = `
+      <h3>${c.name || "Channel"}</h3>
+      <div class="cstat"><span>Sessions</span><strong>${fmtInt(c.sessions)}</strong></div>
+      <div class="cstat"><span>Conversions</span><strong>${fmtInt(c.conversions)}</strong></div>
+      <div class="cstat"><span>Conv. Rate</span><strong>${fmtPct(c.conversionRate)}</strong></div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function renderTopPages(){
+  const wrap = document.getElementById("topPages");
+  if(!wrap) return;
+  wrap.innerHTML = "";
+
+  (REPORT?.topPages || []).forEach(p => {
+    const d = document.createElement("details");
+    d.className = "page";
+    d.innerHTML = `
+      <summary>
+        ${p.title || "Page"}
+        <span>${fmtInt(p.sessions)} sessions</span>
+      </summary>
+      <div class="page-body">
+        <div class="mini"><span>Sessions</span><strong>${fmtInt(p.sessions)}</strong></div>
+        <div class="mini"><span>Conversions</span><strong>${fmtInt(p.conversions)}</strong></div>
+        <div class="mini"><span>Engagement Rate</span><strong>${fmtPct(p.engagementRate)}</strong></div>
+      </div>
+    `;
+    wrap.appendChild(d);
+  });
+}
+
+function buildCharts(){
+  const labels = (REPORT?.channels || []).map(c => c.name);
+  const sessions = (REPORT?.channels || []).map(c => c.sessions || 0);
+  const conversions = (REPORT?.channels || []).map(c => c.conversions || 0);
+
+  const sCtx = document.getElementById("sessionsChart")?.getContext("2d");
+  const cCtx = document.getElementById("convChart")?.getContext("2d");
+  if(!sCtx || !cCtx) return;
+
+  new Chart(sCtx, {
+    type: "bar",
+    data: { labels, datasets: [{ label: "Sessions", data: sessions }] },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  new Chart(cCtx, {
+    type: "bar",
+    data: { labels, datasets: [{ label: "Conversions", data: conversions }] },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+}
+
+/* ✅ Wire dropdown first */
+quarterDropdown();
+
+/* Then load + render */
 (async function init(){
-  REPORT=await loadData();
-  renderKPIs();
-  renderChannels();
-  renderTopPages();
-  buildCharts();
-  quarterDropdown();
+  try{
+    REPORT = await loadData();
+    renderKPIs();
+    renderChannels();
+    renderTopPages();
+    buildCharts();
+  }catch(err){
+    console.error(err);
+    // Dropdown still works because it's wired above
+    alert("Data failed to load. Open console for details (likely web-data.json path/format).");
+  }
 })();
 </script>
 
