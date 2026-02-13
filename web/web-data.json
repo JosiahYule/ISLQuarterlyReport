@@ -1,7 +1,9 @@
-{
-  "quarterLabel": "Q2",
-  "rangeLabel": "Dec–Feb 2026",
+{  
+ "meta": {
+   "quarter": "Q2",
+  "rangeLabel": "Dec–Feb 2026"
   "generatedLabel": "Feb 11, 2026",
+  },
 
   "execSummary": [
     "Sessions increased ▲ 12.4% quarter-over-quarter.",
