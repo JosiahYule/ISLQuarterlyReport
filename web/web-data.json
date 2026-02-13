@@ -1,8 +1,8 @@
-{  
- "meta": {
-   "quarter": "Q2",
-  "rangeLabel": "Dec–Feb 2026"
-  "generatedLabel": "Feb 11, 2026",
+{
+  "meta": {
+    "quarter": "Q2",
+    "rangeLabel": "Dec–Feb 2026",
+    "generatedLabel": "Feb 11, 2026"
   },
 
   "execSummary": [
@@ -10,33 +10,84 @@
     "Direct Hire page drove the most conversions with ▲ 18.1% growth."
   ],
 
- "overall": {
-  "sessions": 0,
-  "users": 0,
-  "engagementRate": 0,
-  "avgEngagementTimeSec": 0,
-  "conversions": 0,
-  "conversionRate": 0
-},
-"deltas": {
-  "sessions": "",
-  "users": "",
-  "engagementRate": "",
-  "avgEngagementTimeSec": "",
-  "conversions": "",
-  "conversionRate": ""
-},
+  "overall": {
+    "sessions": 0,
+    "users": 0,
+    "engagementRate": 0,
+    "avgEngagementTimeSec": 0,
+    "conversions": 0,
+    "conversionRate": 0
+  },
+
+  "deltas": {
+    "sessions": "",
+    "users": "",
+    "engagementRate": "",
+    "avgEngagementTimeSec": "",
+    "conversions": "",
+    "conversionRate": ""
+  },
 
   "channels": [
-    { "key": "organic", "name": "Organic Search", "sessions": 0, "sessionsDelta": "", "conversions": 0, "conversionsDelta": "", "conversionRate": 0, "conversionRateDelta": "" },
-    { "key": "direct",  "name": "Direct",        "sessions": 0, "sessionsDelta": "", "conversions": 0, "conversionsDelta": "", "conversionRate": 0, "conversionRateDelta": "" },
-    { "key": "referral","name": "Referral",      "sessions": 0, "sessionsDelta": "", "conversions": 0, "conversionsDelta": "", "conversionRate": 0, "conversionRateDelta": "" },
-    { "key": "social",  "name": "Social",        "sessions": 0, "sessionsDelta": "", "conversions": 0, "conversionsDelta": "", "conversionRate": 0, "conversionRateDelta": "" }
+    {
+      "key": "organic",
+      "name": "Organic Search",
+      "sessions": 0,
+      "sessionsDelta": "",
+      "conversions": 0,
+      "conversionsDelta": "",
+      "conversionRate": 0,
+      "conversionRateDelta": ""
+    },
+    {
+      "key": "direct",
+      "name": "Direct",
+      "sessions": 0,
+      "sessionsDelta": "",
+      "conversions": 0,
+      "conversionsDelta": "",
+      "conversionRate": 0,
+      "conversionRateDelta": ""
+    },
+    {
+      "key": "referral",
+      "name": "Referral",
+      "sessions": 0,
+      "sessionsDelta": "",
+      "conversions": 0,
+      "conversionsDelta": "",
+      "conversionRate": 0,
+      "conversionRateDelta": ""
+    },
+    {
+      "key": "social",
+      "name": "Social",
+      "sessions": 0,
+      "sessionsDelta": "",
+      "conversions": 0,
+      "conversionsDelta": "",
+      "conversionRate": 0,
+      "conversionRateDelta": ""
+    }
   ],
 
   "topPages": [
-    { "title": "Direct Hire", "path": "/direct-hire", "sessions": 0, "engagementRate": 0, "avgEngagementTimeSec": 0, "conversions": 0 },
-    { "title": "Job Board", "path": "/jobs", "sessions": 0, "engagementRate": 0, "avgEngagementTimeSec": 0, "conversions": 0 }
+    {
+      "title": "Direct Hire",
+      "path": "/direct-hire",
+      "sessions": 0,
+      "engagementRate": 0,
+      "avgEngagementTimeSec": 0,
+      "conversions": 0
+    },
+    {
+      "title": "Job Board",
+      "path": "/jobs",
+      "sessions": 0,
+      "engagementRate": 0,
+      "avgEngagementTimeSec": 0,
+      "conversions": 0
+    }
   ],
 
   "insights": {
@@ -46,3 +97,4 @@
     "next": ""
   }
 }
+
