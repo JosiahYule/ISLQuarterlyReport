@@ -571,6 +571,16 @@ function quarterDropdown(){
     }
   });
 }
+  
+function renderMeta(){
+  const m = REPORT?.meta || {};
+
+  document.getElementById("reportQuarterLabel").textContent =
+    m.quarter || "—";
+
+  document.getElementById("reportRangeLabel").textContent =
+    m.rangeLabel || "—";
+}
 
 function renderKPIs(){
   const o = REPORT?.overall || {};
@@ -661,6 +671,7 @@ quarterDropdown();
 (async function init(){
   try{
     REPORT = await loadData();
+    renderMeta(); 
     renderKPIs();
     renderChannels();
     renderTopPages();
