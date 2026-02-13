@@ -831,31 +831,77 @@ function renderChannels(){
   });
 }
 
+function getPageViews(p){
+  if(typeof p?.pageViews === "number" && Number.isFinite(p.pageViews)) return p.pageViews;
+  if(typeof p?.views === "number" && Number.isFinite(p.views)) return p.views;
+  if(typeof p?.sessions === "number" && Number.isFinite(p.sessions)) return p.sessions; // fallback
+  return undefined;
+}
+
+function getBounceRate(p){
+  // Bounce rate should be a percent number (e.g., 47.2). If you store 0.472, we convert.
+  let v;
+  if(typeof p?.bounceRate === "number" && Number.isFinite(p.bounceRate)) v = p.bounceRate;
+  else if(typeof p?.bounce_rate === "number" && Number.isFinite(p.bounce_rate)) v = p.bounce_rate;
+  else if(typeof p?.bounce === "number" && Number.isFinite(p.bounce)) v = p.bounce;
+  else return undefined;
+
+  return (v <= 1 ? v * 100 : v);
+}
+
+function getAvgTimeOnPageSec(p){
+  if(typeof p?.avgTimeOnPageSec === "number" && Number.isFinite(p.avgTimeOnPageSec)) return p.avgTimeOnPageSec;
+  if(typeof p?.avgTimeSec === "number" && Number.isFinite(p.avgTimeSec)) return p.avgTimeSec;
+  if(typeof p?.avgEngagementTimeSec === "number" && Number.isFinite(p.avgEngagementTimeSec)) return p.avgEngagementTimeSec; // fallback
+  return undefined;
+}
+
 function renderTopPages(){
   const wrap = document.getElementById("topPages");
   if(!wrap) return;
   wrap.innerHTML = "";
 
-  (REPORT?.topPages || []).forEach(p => {
+  // Fixed leadership set (order matters)
+  const ORDER = [
+    "Home Page",
+    "About",
+    "Contract",
+    "Direct Hire",
+    "Find Work",
+    "Team",
+    "Learn",
+    "Contact"
+  ];
+
+  const pages = Array.isArray(REPORT?.topPages) ? REPORT.topPages : [];
+
+  // Lookup map by a stable key in your JSON (recommended: "key")
+  // Accepts "key" OR "name" OR "title"
+  const byKey = new Map();
+  pages.forEach(p => {
+    const raw = (p?.key ?? p?.name ?? p?.title ?? "");
+    const k = String(raw).trim().toLowerCase();
+    if(k) byKey.set(k, p);
+  });
+
+  ORDER.forEach(label => {
+    const p = byKey.get(label.toLowerCase()) || {};
+
+    const views = getPageViews(p);
+    const bounce = getBounceRate(p);
+    const timeSec = getAvgTimeOnPageSec(p);
+
     const d = document.createElement("details");
     d.className = "page";
-
-    // Candidate Actions per page: prefer p.actions, fall back to p.conversions if your JSON still uses it
-    const pageActions =
-      (typeof p?.actions === "number" && Number.isFinite(p.actions)) ? p.actions :
-      (typeof p?.candidateActions === "number" && Number.isFinite(p.candidateActions)) ? p.candidateActions :
-      (typeof p?.conversions === "number" && Number.isFinite(p.conversions)) ? p.conversions :
-      undefined;
-
     d.innerHTML = `
       <summary>
-        ${p.title || "Page"}
-        <span>${fmtInt(p.sessions)} sessions</span>
+        ${label}
+        <span>${fmtInt(views)} views</span>
       </summary>
       <div class="page-body">
-        <div class="mini"><span>Sessions</span><strong>${fmtInt(p.sessions)}</strong></div>
-        <div class="mini"><span>Candidate Actions</span><strong>${fmtInt(pageActions)}</strong></div>
-        <div class="mini"><span>Engagement Rate</span><strong>${fmtPct(p.engagementRate)}</strong></div>
+        <div class="mini"><span>Page Views</span><strong>${fmtInt(views)}</strong></div>
+        <div class="mini"><span>Bounce Rate</span><strong>${fmtPct(bounce)}</strong></div>
+        <div class="mini"><span>Avg Time on Page</span><strong>${fmtTime(timeSec)}</strong></div>
       </div>
     `;
     wrap.appendChild(d);
