@@ -77,6 +77,25 @@
   color:#fff;
   line-height:1;
 }
+
+  .brand-mark{
+  text-decoration:none;
+  cursor:pointer;
+}
+
+.brand-mark:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 16px rgba(0,84,154,.25);
+}
+
+.brand-mark:active{
+  transform:translateY(0px);
+}
+
+  .brand-mark:focus{
+  outline:none;
+  box-shadow:0 0 0 4px rgba(0,112,202,.25), 0 6px 16px rgba(0,0,0,.12);
+}
   
   .brand-mark::after{
     content:"";
@@ -561,7 +580,7 @@
 <!-- TOPBAR -->
 <div class="topbar">
   <div class="brand">
-    <div class="brand-mark">IS</div>
+    <a class="brand-mark" href="https://performancereport.integratedstaffing.com/" aria-label="Back to Performance Report Home">IS</a>
     <div class="brand-text">
       <strong>Integrated Staffing</strong>
       <span>Quarterly Website Performance Report</span>
