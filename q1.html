@@ -377,14 +377,6 @@
       min-height:130px;
       min-width:0;
     }
-    .kpi-card::before{
-      content:"";
-      position:absolute;
-      inset:0 0 auto 0;
-      height:3px;
-      background:linear-gradient(90deg,var(--tone,var(--isl-accent)),transparent);
-      opacity:.7;
-    }
     .kpi-card:hover{
       transform:translateY(-4px);
       box-shadow:0 12px 24px rgba(0,0,0,.1);
@@ -477,18 +469,6 @@
       font-size:18px;
       font-weight:800;
       letter-spacing:-0.02em;
-      flex:0 0 auto;
-    }
-    .platform-tag{
-      font-size:11px;
-      font-weight:700;
-      padding:6px 12px;
-      border-radius:6px;
-      background:rgba(0,112,202,.08);
-      border:1px solid rgba(0,112,202,.15);
-      color:var(--isl-primary);
-      text-transform:uppercase;
-      letter-spacing:.05em;
       flex:0 0 auto;
     }
     .pstats{
@@ -952,7 +932,7 @@
   transform: none;
 }
 
-/* =========================
+  /* =========================
    DELTA ALWAYS ON ITS OWN LINE
    paste at end of <style>
 ========================= */
@@ -983,6 +963,133 @@
   line-height:1;
   white-space:nowrap;
 }
+
+/* =========================
+   KPI HOVER DEFINITIONS (TOOLTIPS)
+   paste at END of <style>
+========================= */
+
+/* Tooltips need overflow visible (your earlier overflow:hidden clips them) */
+.section[aria-label="Quarter totals"]{ overflow: visible !important; }
+.section[aria-label="Platform breakdown"]{ overflow: hidden !important; }
+
+.kpi-card{
+  position: relative;
+  outline: none;
+}
+
+/* Tooltip bubble */
+.kpi-card::after{
+  content: attr(data-tip);
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: calc(100% + 10px);
+  z-index: 50;
+
+  background: rgba(0, 61, 114, 0.96);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 14px;
+  box-shadow: 0 14px 34px rgba(0,0,0,.18);
+
+  padding: 12px 12px;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 500;
+
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition: opacity .16s ease, transform .16s ease;
+}
+
+/* Tooltip arrow */
+.kpi-card::before{
+  content: "";
+  position: absolute;
+  left: 28px;
+  bottom: calc(100% + 4px);
+  z-index: 51;
+
+  width: 10px;
+  height: 10px;
+  background: rgba(0, 61, 114, 0.96);
+  border-left: 1px solid rgba(255,255,255,.14);
+  border-top: 1px solid rgba(255,255,255,.14);
+  transform: rotate(45deg);
+
+  opacity: 0;
+  transition: opacity .16s ease;
+  pointer-events: none;
+}
+
+/* Show on hover + keyboard focus */
+.kpi-card:hover::after,
+.kpi-card:hover::before,
+.kpi-card:focus::after,
+.kpi-card:focus::before,
+.kpi-card:focus-within::after,
+.kpi-card:focus-within::before{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Focus styling */
+.kpi-card:focus{
+  box-shadow: 0 0 0 4px rgba(0,112,202,.16), 0 12px 24px rgba(0,0,0,.10);
+  border-color: rgba(0,112,202,.22);
+}
+
+/* === KPI TOOLTIP FIX: allow tooltip to render outside the card === */
+.kpi-card{
+  overflow: visible !important;   /* this is the missing piece */
+  position: relative;
+  isolation: isolate;             /* keeps tooltip layering reliable */
+}    
+
+/* Mobile: no hover tooltips */
+@media (max-width: 700px){
+  .kpi-card::after,
+  .kpi-card::before{
+    display: none;
+  }
+}
+
+/* KPI TOOLTIP – LESS COMPRESSED */
+.kpi-card::after{
+  left: 50% !important;
+  right: auto !important;
+  transform: translate(-50%, 6px) !important;
+
+  width: max-content;
+  max-width: 320px;
+  min-width: 220px;
+
+  padding: 14px 16px;
+  font-size: 13px;
+  line-height: 1.5;
+
+  text-align: left;
+  white-space: normal;
+}
+
+.kpi-card::before{
+  left: 50% !important;
+  transform: translateX(-50%) rotate(45deg) !important;
+}
+
+.kpi-card:hover::after,
+.kpi-card:focus::after{
+  transform: translate(-50%, 0) !important;
+}    
+
+.platform-badge svg{
+  width: 18px;
+  height: 18px;
+  display:block;
+  fill: currentColor;
+}    
   </style>
 </head>
 
@@ -1011,6 +1118,7 @@
         <div class="pill-menu" id="quarterMenu" role="menu" aria-label="Choose quarter">
           <a class="pill-item" role="menuitem" href="/q1.html">Q1 • Sep–Nov 2025</a>
           <a class="pill-item" role="menuitem" href="/q2.html">Q2 • Dec–Feb 2026</a>
+          <a class="pill-item" role="menuitem" href="/web.html">Website • Q2 • Dec–Feb 2026</a>
         </div>
       </div>
     </div>
@@ -1035,7 +1143,7 @@
       <div class="section-header">
         <div class="section-title">
           <h2>Summary</h2>
-          <p>Executive-level highlights for fast scanning.</p>
+          <p>Highlights at a glance.</p>
         </div>
         <div class="pill" aria-label="Summary type">
           <span class="pill-dot" aria-hidden="true"></span>
@@ -1046,7 +1154,7 @@
       <div class="summary-shell">
         <div class="summary-rail" aria-hidden="true"></div>
         <div class="summary-card" id="execSummaryBox" data-editable="true" aria-label="Editable executive summary">
-          <ul class="summary-list" id="execSummaryList"></ul>
+           <ul class="summary-list" id="execSummaryList" data-editable="true"></ul>
         </div>
       </div>
     </section>
@@ -1060,55 +1168,63 @@
         <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Totals</span></div>
       </div>
 
-      <div class="kpi-grid" aria-label="Total KPI cards">
-        <div class="kpi-card" style="--tone: var(--success);">
-          <div class="kpi-label">Posts</div>
-          <div class="kpi-value" id="kpiPosts">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaPosts">—</span></div>
-        </div>
+<div class="kpi-grid" aria-label="Total KPI cards">
+  <div class="kpi-card" style="--tone: var(--success);" tabindex="0"
+       data-tip="The number of posts published to our accounts during the time frame.">
+    <div class="kpi-label">Posts</div>
+    <div class="kpi-value" id="kpiPosts">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaPosts">—</span></div>
+  </div>
 
-        <div class="kpi-card" style="--tone: var(--isl-accent);">
-          <div class="kpi-label">Post Impressions</div>
-          <div class="kpi-value" id="kpiImpressions">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaImpressions">—</span></div>
-        </div>
+  <div class="kpi-card" style="--tone: var(--isl-accent);" tabindex="0"
+       data-tip="The number of times posts on our Facebook, Instagram, and LinkedIn appeared on someone’s screen.">
+    <div class="kpi-label">Post Impressions</div>
+    <div class="kpi-value" id="kpiImpressions">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaImpressions">—</span></div>
+  </div>
 
-        <div class="kpi-card" style="--tone: var(--warning);">
-          <div class="kpi-label">Reactions & Likes</div>
-          <div class="kpi-value" id="kpiReactions">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaReactions">—</span></div>
-        </div>
+  <div class="kpi-card" style="--tone: var(--warning);" tabindex="0"
+       data-tip="The number of reactions or likes to posts on our pages.">
+    <div class="kpi-label">Reactions & Likes</div>
+    <div class="kpi-value" id="kpiReactions">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaReactions">—</span></div>
+  </div>
 
-        <div class="kpi-card" style="--tone: var(--isl-primary);">
-          <div class="kpi-label">Post Shares</div>
-          <div class="kpi-value" id="kpiShares">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaShares">—</span></div>
-        </div>
+  <div class="kpi-card" style="--tone: var(--isl-primary);" tabindex="0"
+       data-tip="The number of times people shared our Facebook, Instagram, and LinkedIn posts.">
+    <div class="kpi-label">Post Shares</div>
+    <div class="kpi-value" id="kpiShares">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaShares">—</span></div>
+  </div>
 
-        <div class="kpi-card" style="--tone: var(--danger);">
-          <div class="kpi-label">Followers (Total)</div>
-          <div class="kpi-value" id="kpiFollowers">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaFollowers">—</span></div>
-        </div>
+  <div class="kpi-card" style="--tone: var(--danger);" tabindex="0"
+       data-tip="The number of people who followed our accounts.">
+    <div class="kpi-label">Followers (Total)</div>
+    <div class="kpi-value" id="kpiFollowers">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaFollowers">—</span></div>
+  </div>
 
-        <div class="kpi-card" style="--tone: var(--isl-accent-bright);">
-          <div class="kpi-label">Post Link Clicks</div>
-          <div class="kpi-value" id="kpiLinkClicks">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaLinkClicks">—</span></div>
-        </div>
+  <div class="kpi-card" style="--tone: var(--isl-accent-bright);" tabindex="0"
+       data-tip="The number of times people clicked on the links in our posts.">
+    <div class="kpi-label">Post Link Clicks</div>
+    <div class="kpi-value" id="kpiLinkClicks">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaLinkClicks">—</span></div>
+  </div>
 
-        <div class="kpi-card" style="--tone: var(--warning);">
-          <div class="kpi-label">Comments & Replies</div>
-          <div class="kpi-value" id="kpiComments">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaComments">—</span></div>
-        </div>
+  <div class="kpi-card" style="--tone: var(--warning);" tabindex="0"
+       data-tip="The number of comments and replies on our posts during the time frame.">
+    <div class="kpi-label">Comments & Replies</div>
+    <div class="kpi-value" id="kpiComments">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaComments">—</span></div>
+  </div>
 
-        <div class="kpi-card" style="--tone: var(--success);">
-          <div class="kpi-label">Avg Engagement Rate</div>
-          <div class="kpi-value" id="kpiAvgEngRate">—</div>
-          <div class="kpi-sub"><span class="delta" id="deltaAvgEngRate">—</span></div>
-        </div>
-      </div>
+  <div class="kpi-card" style="--tone: var(--success);" tabindex="0"
+       data-tip="The average engagement rate for the posts published to our accounts.">
+    <div class="kpi-label">Avg Engagement Rate</div>
+    <div class="kpi-value" id="kpiAvgEngRate">—</div>
+    <div class="kpi-sub"><span class="delta" id="deltaAvgEngRate">—</span></div>
+  </div>
+</div>
     </section>
 
     <!-- ✅ Platform Breakdown is its own card, and is CLOSED properly before Top Posts -->
@@ -1152,9 +1268,9 @@
       <div class="section-header">
         <div class="section-title">
           <h2>Top Performing Posts</h2>
-          <p>Compact view by platform. Click a post to see details.</p>
+          <p>What posts garnered the most attention and engagement.</p>
         </div>
-        <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Top 3 × 3</span></div>
+        <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Posts by Platform</span></div>
       </div>
 
       <div class="top-compact" id="topCompact"></div>
@@ -1164,7 +1280,7 @@
       <div class="section-header">
         <div class="section-title">
           <h2>Insights, Analysis, and Actions</h2>
-          <p>Write what we're doing right/wrong and the actions management should approve. These boxes are editable.</p>
+          <p>What we're doing right, what we need to work on, and the plan moving forward.</p>
         </div>
         <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Notes</span></div>
       </div>
@@ -1172,7 +1288,7 @@
       <div class="insight-grid">
         <div class="insight-card">
           <h3>What's Working</h3>
-          <div class="body" data-editable="true">
+          <div class="body" id="insWorking" data-editable="true">
             • Engagement is climbing quickly: reactions & likes increased 86.9% quarter-over-quarter.<br>
             • Link clicks rose 122%, showing stronger CTA performance and more traffic-driving content.
           </div>
@@ -1180,7 +1296,7 @@
 
         <div class="insight-card">
           <h3>What's Not Working</h3>
-          <div class="body" data-editable="true">
+          <div class="body" id="insNotWorking" data-editable="true">
             • Add 3–6 gaps or underperforming areas.<br>
             • Example: "Follower growth is positive but slower than engagement gains — we need more follow-driving formats."
           </div>
@@ -1188,7 +1304,7 @@
 
         <div class="insight-card">
           <h3>Actions From This Data</h3>
-          <div class="body" data-editable="true">
+          <div class="body" id="insActions" data-editable="true">
             • Add 3–8 actions (clear, measurable).<br>
             • Example: "Standardize post CTAs and track clicks per 1,000 impressions weekly."
           </div>
@@ -1196,7 +1312,7 @@
 
         <div class="insight-card">
           <h3>Next Quarter Focus</h3>
-          <div class="body" data-editable="true">
+          <div class="body" id="insNext" data-editable="true">
             • Add what you'll prioritize and how you'll measure it.<br>
             • Example: "Increase engagement rate while growing followers by improving distribution and repurposing top themes."
           </div>
@@ -1214,493 +1330,565 @@
 
   </div>
 
-  <script>
-  /* =========================
-     DATA (EDIT THIS ONLY)
-  ========================= */
-  const REPORT = {
-    quarterLabel: "Q1",
-    rangeLabel: "Sep–Nov 2025",
-    generatedLabel: "Feb 10, 2026",
-    execSummary: [
-      "Overall performance increased quarter-over-quarter: impressions ▲ 50.6%, reactions & likes ▲ 86.9%, and link clicks ▲ 122%.",
-      "Average post engagement rate finished at 5.51% (▲ 23.6% vs previous quarter).",
-      "LinkedIn led engagement rate at 6.97% (▲ 34.6%).",
-      "LinkedIn delivered the highest reach (14,337; ▲ 52.8%), while Facebook led page clicks (1,961; ▲ 326%)."
-    ],
-    overall: {
-      posts: 126,
-      impressions: 62690,
-      shares: 166,
-      reactions: 785,
-      followers: 4928,
-      linkClicks: 1597,
-      comments: 35,
-      avgEngagementRate: 5.51
-    },
-    deltas: {
-      posts: "▲ 55.6%",
-      impressions: "▲ 50.6%",
-      shares: "▲ 13.6%",
-      reactions: "▲ 86.9%",
-      followers: "▲ 3.9%",
-      linkClicks: "▲ 122%",
-      comments: "▲ 52.2%",
-      avgEngagementRate: "▲ 23.6%"
-    },
-    platforms: [
-      { key:"linkedin", name:"LinkedIn", badge:"in", tag:"Primary",
-        followers:2644, followersDelta:"▲ 6.3%",
-        engagementRate:6.97, engagementRateDelta:"▲ 34.6%",
-        pageReach:14337, pageReachDelta:"▲ 52.8%",
-        pageClicks:1476, pageClicksDelta:"▲ 106%" },
-      { key:"facebook", name:"Facebook", badge:"f", tag:"Community",
-        followers:1775, followersDelta:"▲ 1.5%",
-        engagementRate:5.38, engagementRateDelta:"▲ 22.2%",
-        pageReach:11447, pageReachDelta:"▲ 108%",
-        pageClicks:1961, pageClicksDelta:"▲ 326%" },
-      { key:"instagram", name:"Instagram", badge:"IG", tag:"Visual",
-        followers:509, followersDelta:"▲ 0.6%",
-        engagementRate:4.48, engagementRateDelta:"▲ 14.1%",
-        pageReach:4172, pageReachDelta:"▲ 30.6%",
-        pageClicks:178, pageClicksDelta:"▲ 78%" }
-    ],
-    topPostsByPlatform: {
-      linkedin: [
-        { title:"Celebrating Lisa's 10 years", description:"", impressions:2235, likes:52, shares:4 },
-        { title:"Welcoming Crystal", description:"", impressions:2613, likes:42, shares:8 },
-        { title:"Chance and Megan 2 Years", description:"", impressions:1549, likes:31, shares:3 }
-      ],
-      facebook: [
-        { title:"Welcoming Crystal", description:"", impressions:2100, likes:27, shares:3 },
-        { title:"Celebrating Lisa's 10 Years", description:"", impressions:828, likes:26, shares:3 },
-        { title:"Celebrating Chance and Megan 2 years", description:"", impressions:636, likes:14, shares:3 }
-      ],
-      instagram: [
-        { title:"Celebrating Lisa's 10 Years", description:"", impressions:510, likes:14, shares:2 },
-        { title:"Gear Up Team Video 1", description:"", impressions:743, likes:12, shares:2 },
-        { title:"Chance and Megan 2 years", description:"", impressions:347, likes:12, shares:0 }
-      ]
-    }
+ <script>
+/* =========================
+   LOAD JSON (report-data.json)
+========================= */
+let REPORT = null;
+
+async function loadReport(){
+  const res = await fetch("./report-data.json", { cache: "no-store" });
+  if(!res.ok) throw new Error("Could not load report-data.json");
+  return await res.json();
+}
+
+/* =========================
+   HELPERS
+========================= */
+const byId = (id) => document.getElementById(id);
+
+const toNumber = (v) => {
+  if (typeof v === "number") return Number.isFinite(v) ? v : null;
+  if (typeof v === "string"){
+    const t = v.trim();
+    if (!t) return null;
+    const n = Number(t.replace(/,/g,""));
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+};
+
+const fmtInt = (n) => (typeof n === "number" && Number.isFinite(n) ? n.toLocaleString() : "—");
+
+const fmtCompact = (n) => {
+  if (typeof n !== "number" || !Number.isFinite(n)) return "—";
+  if (Math.abs(n) >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+  if (Math.abs(n) >= 1_000) return n.toLocaleString();
+  return String(n);
+};
+
+const fmtPct = (n) =>
+  typeof n === "number" && Number.isFinite(n)
+    ? (n.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "%")
+    : "—";
+
+function setText(id, value){
+  const el = byId(id);
+  if (el) el.textContent = value;
+}
+
+function setHTML(id, value){
+  const el = byId(id);
+  if (!el) return;
+  el.innerHTML = (value && String(value).trim()) ? String(value) : "";
+}
+
+function setDelta(el, text){
+  if(!el) return;
+  el.textContent = text || "—";
+  el.classList.remove("positive","negative");
+  if(!text || text === "—") return;
+  const t = String(text).trim();
+  if(t.startsWith("▲") || t.startsWith("↑")) el.classList.add("positive");
+  if(t.startsWith("▼") || t.startsWith("↓")) el.classList.add("negative");
+}
+
+function postEngRate(p){
+  const imp = toNumber(p?.impressions) || 0;
+  const likes = toNumber(p?.likes) || 0;
+  const shares = toNumber(p?.shares) || 0;
+  const eng = likes + shares;
+  return imp > 0 ? (eng / imp) * 100 : 0;
+}
+
+function seriesColors(count){
+  return [
+    "rgba(0,112,202,0.9)",
+    "rgba(0,84,154,0.85)",
+    "rgba(77,163,232,0.8)"
+  ].slice(0, count);
+}
+
+const PLATFORM_ICONS = {
+  linkedin: `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5ZM0.2 8.2H4.8V24H0.2V8.2ZM8.2 8.2H12.6V10.3H12.7C13.3 9.2 14.8 8 17 8C21.7 8 22.6 11.1 22.6 15.1V24H18V16.2C18 14.3 18 11.9 15.4 11.9C12.8 11.9 12.4 14 12.4 16.1V24H7.8V8.2H8.2Z"/>
+    </svg>
+  `,
+  facebook: `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M13.5 24V13.1H17l.5-4.2h-4V6.2c0-1.2.3-2 2.1-2H17.7V.3C17.3.2 16 .1 14.4.1c-3.3 0-5.6 2-5.6 5.8v3H5v4.2h3.8V24h4.7Z"/>
+    </svg>
+  `,
+  instagram: `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7.2 0h9.6C20.8 0 24 3.2 24 7.2v9.6c0 4-3.2 7.2-7.2 7.2H7.2C3.2 24 0 20.8 0 16.8V7.2C0 3.2 3.2 0 7.2 0Zm9.6 2.2H7.2C4.4 2.2 2.2 4.4 2.2 7.2v9.6c0 2.8 2.2 5 5 5h9.6c2.8 0 5-2.2 5-5V7.2c0-2.8-2.2-5-5-5ZM12 6.1a5.9 5.9 0 1 1 0 11.8 5.9 5.9 0 0 1 0-11.8Zm0 2.2a3.7 3.7 0 1 0 0 7.4 3.7 3.7 0 0 0 0-7.4Zm6.6-2.8a1.4 1.4 0 1 1 0 2.8 1.4 1.4 0 0 1 0-2.8Z"/>
+    </svg>
+  `
+};
+
+/* =========================
+   NORMALIZE JSON KEYS (handles older sheets)
+========================= */
+function normalizeReport(raw){
+  const r = raw && typeof raw === "object" ? raw : {};
+
+  // overall: accept both camelCase and lowercase variants
+  const overallIn = r.overall && typeof r.overall === "object" ? r.overall : {};
+  const deltasIn  = r.deltas  && typeof r.deltas  === "object" ? r.deltas  : {};
+
+  const overall = {
+    posts: toNumber(overallIn.posts),
+    impressions: toNumber(overallIn.impressions),
+    shares: toNumber(overallIn.shares),
+    reactions: toNumber(overallIn.reactions),
+    followers: toNumber(overallIn.followers),
+    linkClicks: toNumber(overallIn.linkClicks ?? overallIn.linkclicks),
+    comments: toNumber(overallIn.comments),
+    avgEngagementRate: toNumber(overallIn.avgEngagementRate ?? overallIn.avgengagementrate)
   };
 
-  /* =========================
-     HELPERS
-  ========================= */
-  const byId = (id) => document.getElementById(id);
-
-  const fmtInt = (n) => (typeof n === "number" ? n.toLocaleString() : "—");
-  const fmtCompact = (n) => {
-    if (typeof n !== "number" || Number.isNaN(n)) return "—";
-    if (Math.abs(n) >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
-    if (Math.abs(n) >= 1_000) return n.toLocaleString();
-    return String(n);
+  const deltas = {
+    posts: deltasIn.posts ?? "",
+    impressions: deltasIn.impressions ?? "",
+    shares: deltasIn.shares ?? "",
+    reactions: deltasIn.reactions ?? "",
+    followers: deltasIn.followers ?? "",
+    linkClicks: deltasIn.linkClicks ?? deltasIn.linkclicks ?? "",
+    comments: deltasIn.comments ?? "",
+    avgEngagementRate: deltasIn.avgEngagementRate ?? deltasIn.avgengagementrate ?? ""
   };
-  const fmtPct = (n) =>
-    typeof n === "number"
-      ? (n.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "%")
-      : "—";
 
-  function setText(id, value){
-    const el = byId(id);
-    if (el) el.textContent = value;
-  }
+  // insights: accept either {working,notWorking,actions,next} OR {"What's Working": "..."}
+  const insightsIn = r.insights && typeof r.insights === "object" ? r.insights : {};
+  const insights = {
+    working: insightsIn.working ?? insightsIn["What's Working"] ?? "",
+    notWorking: insightsIn.notWorking ?? insightsIn["What's Not Working"] ?? "",
+    actions: insightsIn.actions ?? insightsIn["Actions From This Data"] ?? "",
+    next: insightsIn.next ?? insightsIn["Next Quarter Focus"] ?? ""
+  };
 
-  function setDelta(el, text){
-    if(!el) return;
-    el.textContent = text || "—";
-    el.classList.remove("positive","negative");
-    if(!text || text === "—") return;
-    const t = text.trim();
-    if(t.startsWith("▲") || t.startsWith("↑")) el.classList.add("positive");
-    if(t.startsWith("▼") || t.startsWith("↓")) el.classList.add("negative");
-  }
+  // platforms: ensure numbers are numbers
+  const platforms = Array.isArray(r.platforms) ? r.platforms.map(p => ({
+    key: p.key,
+    name: p.name,
+    badge: p.badge,
+    tag: p.tag,
+    followers: toNumber(p.followers),
+    followersDelta: p.followersDelta ?? "",
+    engagementRate: toNumber(p.engagementRate),
+    engagementRateDelta: p.engagementRateDelta ?? "",
+    pageReach: toNumber(p.pageReach),
+    pageReachDelta: p.pageReachDelta ?? "",
+    pageClicks: toNumber(p.pageClicks),
+    pageClicksDelta: p.pageClicksDelta ?? ""
+  })) : [];
 
-  function postEngRate(p){
-    const imp = p.impressions || 0;
-    const eng = (p.likes || 0) + (p.shares || 0);
-    return imp > 0 ? (eng / imp) * 100 : 0;
-  }
+  const topPostsByPlatform = r.topPostsByPlatform && typeof r.topPostsByPlatform === "object" ? r.topPostsByPlatform : {
+    linkedin: [], facebook: [], instagram: []
+  };
 
-  function seriesColors(count){
-    return [
-      'rgba(0,112,202,0.9)',
-      'rgba(0,84,154,0.85)',
-      'rgba(77,163,232,0.8)'
-    ].slice(0, count);
-  }
+  return {
+    quarterLabel: r.quarterLabel ?? "Q1",
+    rangeLabel: r.rangeLabel ?? "",
+    generatedLabel: r.generatedLabel ?? "",
+    execSummary: Array.isArray(r.execSummary) ? r.execSummary : [],
+    insights,
+    overall,
+    deltas,
+    platforms,
+    topPostsByPlatform
+  };
+}
 
-  /* =========================
-     HEADER + KPI + SUMMARY
-  ========================= */
-  function renderHeader(){
-    setText("reportQuarterLabel", REPORT.quarterLabel);
-    setText("reportRangeLabel", REPORT.rangeLabel);
-    setText("generatedLabel", REPORT.generatedLabel);
-  }
+/* =========================
+   RENDER: HEADER + KPIs + SUMMARY + INSIGHTS
+========================= */
+function renderHeader(){
+  setText("reportQuarterLabel", REPORT.quarterLabel);
+  setText("reportRangeLabel", REPORT.rangeLabel);
+  setText("generatedLabel", REPORT.generatedLabel);
+}
 
-  function renderKPIs(){
-    setText("kpiPosts", fmtInt(REPORT.overall.posts));
-    setText("kpiImpressions", fmtCompact(REPORT.overall.impressions));
-    setText("kpiShares", fmtInt(REPORT.overall.shares));
-    setText("kpiReactions", fmtInt(REPORT.overall.reactions));
-    setText("kpiFollowers", fmtInt(REPORT.overall.followers));
-    setText("kpiLinkClicks", fmtInt(REPORT.overall.linkClicks));
-    setText("kpiComments", fmtInt(REPORT.overall.comments));
-    setText("kpiAvgEngRate", fmtPct(REPORT.overall.avgEngagementRate));
+function renderKPIs(){
+  setText("kpiPosts", fmtInt(REPORT.overall.posts));
+  setText("kpiImpressions", fmtCompact(REPORT.overall.impressions));
+  setText("kpiShares", fmtInt(REPORT.overall.shares));
+  setText("kpiReactions", fmtInt(REPORT.overall.reactions));
+  setText("kpiFollowers", fmtInt(REPORT.overall.followers));
+  setText("kpiLinkClicks", fmtInt(REPORT.overall.linkClicks));
+  setText("kpiComments", fmtInt(REPORT.overall.comments));
+  setText("kpiAvgEngRate", fmtPct(REPORT.overall.avgEngagementRate));
 
-    setDelta(byId("deltaPosts"), REPORT.deltas.posts);
-    setDelta(byId("deltaImpressions"), REPORT.deltas.impressions);
-    setDelta(byId("deltaShares"), REPORT.deltas.shares);
-    setDelta(byId("deltaReactions"), REPORT.deltas.reactions);
-    setDelta(byId("deltaFollowers"), REPORT.deltas.followers);
-    setDelta(byId("deltaLinkClicks"), REPORT.deltas.linkClicks);
-    setDelta(byId("deltaComments"), REPORT.deltas.comments);
-    setDelta(byId("deltaAvgEngRate"), REPORT.deltas.avgEngagementRate);
-  }
+  setDelta(byId("deltaPosts"), REPORT.deltas.posts);
+  setDelta(byId("deltaImpressions"), REPORT.deltas.impressions);
+  setDelta(byId("deltaShares"), REPORT.deltas.shares);
+  setDelta(byId("deltaReactions"), REPORT.deltas.reactions);
+  setDelta(byId("deltaFollowers"), REPORT.deltas.followers);
+  setDelta(byId("deltaLinkClicks"), REPORT.deltas.linkClicks);
+  setDelta(byId("deltaComments"), REPORT.deltas.comments);
+  setDelta(byId("deltaAvgEngRate"), REPORT.deltas.avgEngagementRate);
+}
 
-  function renderExecutiveSummary(){
-    const ul = byId("execSummaryList");
-    if(!ul) return;
+function renderExecutiveSummary(){
+  const ul = byId("execSummaryList");
+  if(!ul) return;
 
-    ul.innerHTML = "";
-    (REPORT.execSummary || []).forEach(s => {
-      const li = document.createElement("li");
-      const html = String(s)
-        .replace(/(▲\s?\d+(\.\d+)?%)/g, `<span class="summary-badge positive">$1</span>`)
-        .replace(/(▼\s?\d+(\.\d+)?%)/g, `<span class="summary-badge negative">$1</span>`);
+  ul.innerHTML = "";
+  (REPORT.execSummary || []).forEach(s => {
+    const li = document.createElement("li");
+    const html = String(s)
+      .replace(/(▲\s?\d+(\.\d+)?%)/g, `<span class="summary-badge positive">$1</span>`)
+      .replace(/(▼\s?\d+(\.\d+)?%)/g, `<span class="summary-badge negative">$1</span>`);
 
-      li.innerHTML = `
-        <span class="summary-dot" aria-hidden="true"></span>
-        <span class="summary-text">${html}</span>
-      `;
-      ul.appendChild(li);
-    });
-  }
+    li.innerHTML = `
+      <span class="summary-dot" aria-hidden="true"></span>
+      <span class="summary-text">${html}</span>
+    `;
+    ul.appendChild(li);
+  });
+}
 
-  /* =========================
-     PLATFORM CARDS
-  ========================= */
-  function renderPlatforms(){
-    const grid = byId("platformGrid");
-    if(!grid) return;
+/* IMPORTANT:
+   These IDs must exist in your HTML (update them once, then this works):
+   - insWorking
+   - insNotWorking
+   - insActions
+   - insNext
+*/
+function renderInsights(){
+  setHTML("insWorking", REPORT.insights?.working);
+  setHTML("insNotWorking", REPORT.insights?.notWorking);
+  setHTML("insActions", REPORT.insights?.actions);
+  setHTML("insNext", REPORT.insights?.next);
+}
 
-    grid.innerHTML = "";
-    (REPORT.platforms || []).forEach(p => {
-      const card = document.createElement("div");
-      card.className = "platform";
-      card.innerHTML = `
-        <div class="platform-head">
-          <div class="platform-name">
-            <span class="platform-badge" aria-hidden="true">${p.badge || ""}</span>
-            ${p.name || ""}
+/* =========================
+   PLATFORM CARDS
+========================= */
+function renderPlatforms(){
+  const grid = byId("platformGrid");
+  if(!grid) return;
+
+  grid.innerHTML = "";
+
+  (REPORT.platforms || []).forEach(p => {
+    const card = document.createElement("div");
+    card.className = "platform";
+
+    card.innerHTML = `
+      <div class="platform-head">
+        <div class="platform-name">
+          <span class="platform-badge" aria-hidden="true">
+            ${PLATFORM_ICONS[p.key] || ""}
+          </span>
+          ${p.name || ""}
+        </div>
+      </div>
+
+      <div class="pstats">
+        <div class="pstat">
+          <span class="pstat-label">Followers</span>
+          <div class="pstat-row">
+            <strong>${fmtInt(p.followers)}</strong>
+            <span class="delta ${String(p.followersDelta||"").trim().startsWith("▲") ? "positive" : (String(p.followersDelta||"").trim().startsWith("▼") ? "negative" : "")}">
+              ${p.followersDelta || "—"}
+            </span>
           </div>
-          <div class="platform-tag">${p.tag || ""}</div>
         </div>
 
-        <div class="pstats">
-          <div class="pstat">
-            <span class="pstat-label">Followers</span>
-            <div class="pstat-row">
-              <strong>${fmtInt(p.followers)}</strong>
-              <span class="delta ${p.followersDelta?.trim().startsWith("▲") ? "positive" : (p.followersDelta?.trim().startsWith("▼") ? "negative" : "")}">
-                ${p.followersDelta || "—"}
-              </span>
-            </div>
-          </div>
-
-          <div class="pstat">
-            <span class="pstat-label">Post Engagement Rate</span>
-            <div class="pstat-row">
-              <strong>${fmtPct(p.engagementRate)}</strong>
-              <span class="delta ${p.engagementRateDelta?.trim().startsWith("▲") ? "positive" : (p.engagementRateDelta?.trim().startsWith("▼") ? "negative" : "")}">
-                ${p.engagementRateDelta || "—"}
-              </span>
-            </div>
-          </div>
-
-          <div class="pstat">
-            <span class="pstat-label">Page Reach</span>
-            <div class="pstat-row">
-              <strong>${fmtInt(p.pageReach)}</strong>
-              <span class="delta ${p.pageReachDelta?.trim().startsWith("▲") ? "positive" : (p.pageReachDelta?.trim().startsWith("▼") ? "negative" : "")}">
-                ${p.pageReachDelta || "—"}
-              </span>
-            </div>
-          </div>
-
-          <div class="pstat">
-            <span class="pstat-label">Page Clicks</span>
-            <div class="pstat-row">
-              <strong>${fmtInt(p.pageClicks)}</strong>
-              <span class="delta ${p.pageClicksDelta?.trim().startsWith("▲") ? "positive" : (p.pageClicksDelta?.trim().startsWith("▼") ? "negative" : "")}">
-                ${p.pageClicksDelta || "—"}
-              </span>
-            </div>
+        <div class="pstat">
+          <span class="pstat-label">Post Engagement Rate</span>
+          <div class="pstat-row">
+            <strong>${fmtPct(p.engagementRate)}</strong>
+            <span class="delta ${String(p.engagementRateDelta||"").trim().startsWith("▲") ? "positive" : (String(p.engagementRateDelta||"").trim().startsWith("▼") ? "negative" : "")}">
+              ${p.engagementRateDelta || "—"}
+            </span>
           </div>
         </div>
-      `;
-      grid.appendChild(card);
-    });
-  }
 
-  /* =========================
-     TOP POSTS (START CLOSED)
-  ========================= */
-  function renderTopPosts(){
-    const wrap = byId("topCompact");
-    if(!wrap) return;
+        <div class="pstat">
+          <span class="pstat-label">Page Reach</span>
+          <div class="pstat-row">
+            <strong>${fmtInt(p.pageReach)}</strong>
+            <span class="delta ${String(p.pageReachDelta||"").trim().startsWith("▲") ? "positive" : (String(p.pageReachDelta||"").trim().startsWith("▼") ? "negative" : "")}">
+              ${p.pageReachDelta || "—"}
+            </span>
+          </div>
+        </div>
 
-    wrap.innerHTML = "";
+        <div class="pstat">
+          <span class="pstat-label">Page Clicks</span>
+          <div class="pstat-row">
+            <strong>${fmtInt(p.pageClicks)}</strong>
+            <span class="delta ${String(p.pageClicksDelta||"").trim().startsWith("▲") ? "positive" : (String(p.pageClicksDelta||"").trim().startsWith("▼") ? "negative" : "")}">
+              ${p.pageClicksDelta || "—"}
+            </span>
+          </div>
+        </div>
+      </div>
+    `;
 
-    const order = [
-      { key: "linkedin", label: "LinkedIn" },
-      { key: "facebook", label: "Facebook" },
-      { key: "instagram", label: "Instagram" }
-    ];
+    grid.appendChild(card);
+  });
+}
 
-    order.forEach(({key, label}) => {
-      const posts = (REPORT.topPostsByPlatform?.[key] || [])
-        .slice(0,3)
-        .map(p => ({...p, engagementRate: postEngRate(p)}))
-        .sort((a,b) => (b.engagementRate||0) - (a.engagementRate||0));
+/* =========================
+   TOP POSTS (START CLOSED)
+========================= */
+function renderTopPosts(){
+  const wrap = byId("topCompact");
+  if(!wrap) return;
 
-      const totalImpressions = posts.reduce((sum,p) => sum + (p.impressions||0), 0);
-      const avgER = posts.length ? (posts.reduce((sum,p)=>sum+(p.engagementRate||0),0) / posts.length) : 0;
+  wrap.innerHTML = "";
 
-      const platform = document.createElement("details");
-      platform.className = "platform-acc";
-      platform.open = false;
+  const order = [
+    { key: "linkedin", label: "LinkedIn" },
+    { key: "facebook", label: "Facebook" },
+    { key: "instagram", label: "Instagram" }
+  ];
 
-      platform.innerHTML = `
+  order.forEach(({key, label}) => {
+    const posts = (REPORT.topPostsByPlatform?.[key] || [])
+      .slice(0,3)
+      .map(p => ({...p, engagementRate: postEngRate(p)}))
+      .sort((a,b) => (b.engagementRate||0) - (a.engagementRate||0));
+
+    const totalImpressions = posts.reduce((sum,p) => sum + (toNumber(p.impressions)||0), 0);
+    const avgER = posts.length ? (posts.reduce((sum,p)=>sum+(p.engagementRate||0),0) / posts.length) : 0;
+
+    const platform = document.createElement("details");
+    platform.className = "platform-acc";
+    platform.open = false;
+
+    platform.innerHTML = `
+      <summary>
+        <div class="sum-left">
+          <span class="platform-pill">${label}</span>
+          <span class="platform-meta">Top 3 • ${fmtInt(totalImpressions)} impressions • Avg ER ${fmtPct(avgER)}</span>
+        </div>
+        <span class="chev" aria-hidden="true">⌄</span>
+      </summary>
+      <div class="platform-body"></div>
+    `;
+
+    const body = platform.querySelector(".platform-body");
+
+    posts.forEach((p, idx) => {
+      const mini = document.createElement("details");
+      mini.className = "post-mini";
+      const erText = fmtPct(p.engagementRate || 0);
+
+      mini.innerHTML = `
         <summary>
-          <div class="sum-left">
-            <span class="platform-pill">${label}</span>
-            <span class="platform-meta">Top 3 • ${fmtInt(totalImpressions)} impressions • Avg ER ${fmtPct(avgER)}</span>
+          <div class="rank">#${idx+1}</div>
+          <div class="ptitle">${p.title || (label + " Post")}</div>
+          <div class="quick">
+            <span><strong>${fmtInt(toNumber(p.impressions) || 0)}</strong> impr.</span>
+            <span><strong>${erText}</strong> ER</span>
           </div>
-          <span class="chev" aria-hidden="true">⌄</span>
         </summary>
-        <div class="platform-body"></div>
+
+        <div class="post-details">
+          <div class="mini-stat"><span>Impressions</span><strong>${fmtInt(toNumber(p.impressions) || 0)}</strong></div>
+          <div class="mini-stat"><span>Likes</span><strong>${fmtInt(toNumber(p.likes) || 0)}</strong></div>
+          <div class="mini-stat"><span>Shares</span><strong>${fmtInt(toNumber(p.shares) || 0)}</strong></div>
+          <div class="mini-stat"><span>Eng. Rate</span><strong>${erText}</strong></div>
+          <div class="math">Eng. Rate = (likes + shares) ÷ impressions = (${fmtInt(toNumber(p.likes)||0)} + ${fmtInt(toNumber(p.shares)||0)}) ÷ ${fmtInt(toNumber(p.impressions)||0)}</div>
+        </div>
       `;
-
-      const body = platform.querySelector(".platform-body");
-
-      posts.forEach((p, idx) => {
-        const mini = document.createElement("details");
-        mini.className = "post-mini";
-
-        const erText = fmtPct(p.engagementRate || 0);
-
-        mini.innerHTML = `
-          <summary>
-            <div class="rank">#${idx+1}</div>
-            <div class="ptitle">${p.title || (label + " Post")}</div>
-            <div class="quick">
-              <span><strong>${fmtInt(p.impressions || 0)}</strong> impr.</span>
-              <span><strong>${erText}</strong> ER</span>
-            </div>
-          </summary>
-
-          <div class="post-details">
-            <div class="mini-stat"><span>Impressions</span><strong>${fmtInt(p.impressions || 0)}</strong></div>
-            <div class="mini-stat"><span>Likes</span><strong>${fmtInt(p.likes || 0)}</strong></div>
-            <div class="mini-stat"><span>Shares</span><strong>${fmtInt(p.shares || 0)}</strong></div>
-            <div class="mini-stat"><span>Eng. Rate</span><strong>${erText}</strong></div>
-            <div class="math">Eng. Rate = (likes + shares) ÷ impressions = (${fmtInt(p.likes||0)} + ${fmtInt(p.shares||0)}) ÷ ${fmtInt(p.impressions||0)}</div>
-          </div>
-        `;
-
-        body.appendChild(mini);
-      });
-
-      wrap.appendChild(platform);
+      body.appendChild(mini);
     });
-  }
 
-  /* =========================
-     CHARTS (BAR <-> PIE)
-  ========================= */
-  Chart.defaults.font.family = 'Gotham, Gotham SSm, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
-  Chart.defaults.color = '#64748B';
+    wrap.appendChild(platform);
+  });
+}
 
-  const commonTooltip = {
-    backgroundColor: 'rgba(0,61,114,0.95)',
-    padding: 14,
-    titleFont: { size: 13, weight: '700' },
-    bodyFont: { size: 12, weight: '500' },
-    cornerRadius: 10,
-    displayColors: false
-  };
+/* =========================
+   CHARTS (BAR <-> PIE)
+========================= */
+Chart.defaults.font.family = 'Gotham, Gotham SSm, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+Chart.defaults.color = "#64748B";
 
-  let reachChart, engChart;
+const commonTooltip = {
+  backgroundColor: "rgba(0,61,114,0.95)",
+  padding: 14,
+  titleFont: { size: 13, weight: "700" },
+  bodyFont: { size: 12, weight: "500" },
+  cornerRadius: 10,
+  displayColors: false
+};
 
-  function getChartSeries(){
-    const labels = (REPORT.platforms || []).map(p => p.name);
-    const reach = (REPORT.platforms || []).map(p => p.pageReach || 0);
-    const er = (REPORT.platforms || []).map(p => p.engagementRate || 0);
-    return { labels, reach, er };
-  }
+let reachChart, engChart;
 
-  function buildReach(type){
-    const canvas = byId("reachChart");
-    if(!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if(reachChart) reachChart.destroy();
+function getChartSeries(){
+  const labels = (REPORT.platforms || []).map(p => p.name);
+  const reach = (REPORT.platforms || []).map(p => toNumber(p.pageReach) || 0);
+  const er = (REPORT.platforms || []).map(p => toNumber(p.engagementRate) || 0);
+  return { labels, reach, er };
+}
 
-    const { labels, reach } = getChartSeries();
-    const colors = seriesColors(labels.length);
+function buildReach(type){
+  const canvas = byId("reachChart");
+  if(!canvas) return;
+  const ctx = canvas.getContext("2d");
+  if(reachChart) reachChart.destroy();
 
-    reachChart = new Chart(ctx, {
-      type,
-      data: {
-        labels,
-        datasets: [{
-          label: "Page Reach",
-          data: reach,
-          backgroundColor: type === "pie" ? colors : colors,
-          borderColor: type === "pie" ? "#fff" : ['#0070CA', '#00549A', '#4DA3E8'],
-          borderWidth: type === "pie" ? 2 : 0,
-          borderRadius: type === "bar" ? 8 : 0
-        }]
+  const { labels, reach } = getChartSeries();
+  const colors = seriesColors(labels.length);
+
+  reachChart = new Chart(ctx, {
+    type,
+    data: {
+      labels,
+      datasets: [{
+        label: "Page Reach",
+        data: reach,
+        backgroundColor: colors,
+        borderColor: type === "pie" ? "#fff" : ["#0070CA", "#00549A", "#4DA3E8"],
+        borderWidth: type === "pie" ? 2 : 0,
+        borderRadius: type === "bar" ? 8 : 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: type === "pie", labels: { boxWidth: 10, boxHeight: 10 } },
+        tooltip: commonTooltip
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: type === "pie", labels: { boxWidth: 10, boxHeight: 10 } },
-          tooltip: commonTooltip
+      scales: type === "bar" ? {
+        y: {
+          beginAtZero: true,
+          grid: { color: "rgba(0,0,0,0.04)", drawBorder: false },
+          ticks: { font: { size: 11, weight: "500" }, color: "#64748B" },
+          border: { display: false }
         },
-        scales: type === "bar" ? {
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-            ticks: { font: { size: 11, weight: '500' }, color: '#64748B' },
-            border: { display: false }
-          },
-          x: {
-            grid: { display: false, drawBorder: false },
-            ticks: { font: { size: 12, weight: '700' }, color: '#0B1220' },
-            border: { display: false }
-          }
-        } : {}
-      }
-    });
-  }
+        x: {
+          grid: { display: false, drawBorder: false },
+          ticks: { font: { size: 12, weight: "700" }, color: "#0B1220" },
+          border: { display: false }
+        }
+      } : {}
+    }
+  });
+}
 
-  function buildEng(type){
-    const canvas = byId("engRateChart");
-    if(!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if(engChart) engChart.destroy();
+function buildEng(type){
+  const canvas = byId("engRateChart");
+  if(!canvas) return;
+  const ctx = canvas.getContext("2d");
+  if(engChart) engChart.destroy();
 
-    const { labels, er } = getChartSeries();
-    const colors = seriesColors(labels.length);
+  const { labels, er } = getChartSeries();
+  const colors = seriesColors(labels.length);
 
-    engChart = new Chart(ctx, {
-      type,
-      data: {
-        labels,
-        datasets: [{
-          label: "Post Engagement Rate (%)",
-          data: er,
-          backgroundColor: type === "pie" ? colors : 'rgba(0,112,202,0.15)',
-          borderColor: type === "pie" ? "#fff" : "#0070CA",
-          borderWidth: type === "pie" ? 2 : 2,
-          borderRadius: type === "bar" ? 8 : 0
-        }]
+  engChart = new Chart(ctx, {
+    type,
+    data: {
+      labels,
+      datasets: [{
+        label: "Post Engagement Rate (%)",
+        data: er,
+        backgroundColor: type === "pie" ? colors : "rgba(0,112,202,0.15)",
+        borderColor: type === "pie" ? "#fff" : "#0070CA",
+        borderWidth: type === "pie" ? 2 : 2,
+        borderRadius: type === "bar" ? 8 : 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: type === "pie", labels: { boxWidth: 10, boxHeight: 10 } },
+        tooltip: commonTooltip
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: type === "pie", labels: { boxWidth: 10, boxHeight: 10 } },
-          tooltip: commonTooltip
-        },
-        scales: type === "bar" ? {
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-            ticks: {
-              font: { size: 11, weight: '500' },
-              color: '#64748B',
-              callback: (v) => v + "%"
-            },
-            border: { display: false }
+      scales: type === "bar" ? {
+        y: {
+          beginAtZero: true,
+          grid: { color: "rgba(0,0,0,0.04)", drawBorder: false },
+          ticks: {
+            font: { size: 11, weight: "500" },
+            color: "#64748B",
+            callback: (v) => v + "%"
           },
-          x: {
-            grid: { display: false, drawBorder: false },
-            ticks: { font: { size: 12, weight: '700' }, color: '#0B1220' },
-            border: { display: false }
-          }
-        } : {}
-      }
+          border: { display: false }
+        },
+        x: {
+          grid: { display: false, drawBorder: false },
+          ticks: { font: { size: 12, weight: "700" }, color: "#0B1220" },
+          border: { display: false }
+        }
+      } : {}
+    }
+  });
+}
+
+function wireChartToggles(){
+  document.querySelectorAll(".ct-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const chart = btn.getAttribute("data-chart"); // reach | eng
+      const type = btn.getAttribute("data-type");   // bar | pie
+
+      const group = btn.parentElement;
+      group.querySelectorAll(".ct-btn").forEach(b => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+
+      if(chart === "reach") buildReach(type);
+      if(chart === "eng") buildEng(type);
     });
-  }
+  });
+}
 
-  function wireChartToggles(){
-    const btns = document.querySelectorAll(".ct-btn");
-    if(!btns.length) return;
+/* =========================
+   EDIT LOCK (?edit=1)
+========================= */
+function lockEditing(){
+  const canEdit = new URLSearchParams(window.location.search).get("edit") === "1";
+  document.querySelectorAll('[data-editable="true"]').forEach(el => {
+    el.setAttribute("contenteditable", canEdit ? "true" : "false");
+  });
+}
 
-    btns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const chart = btn.getAttribute("data-chart"); // reach | eng
-        const type = btn.getAttribute("data-type");   // bar | pie
+/* =========================
+   QUARTER DROPDOWN
+========================= */
+function quarterDropdown(){
+  const wrap = document.querySelector(".pill-wrap");
+  const btn = document.getElementById("quarterBtn");
+  if(!wrap || !btn) return;
 
-        const group = btn.parentElement;
-        group.querySelectorAll(".ct-btn").forEach(b => b.classList.remove("is-active"));
-        btn.classList.add("is-active");
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    wrap.classList.toggle("open");
+    btn.setAttribute("aria-expanded", wrap.classList.contains("open") ? "true" : "false");
+  });
 
-        if(chart === "reach") buildReach(type);
-        if(chart === "eng") buildEng(type);
-      });
-    });
-  }
+  document.addEventListener("click", () => {
+    wrap.classList.remove("open");
+    btn.setAttribute("aria-expanded","false");
+  });
 
-  /* =========================
-     EDIT LOCK (?edit=1)
-  ========================= */
-  function lockEditing(){
-    const params = new URLSearchParams(window.location.search);
-    const canEdit = params.get("edit") === "1";
-    document.querySelectorAll('[data-editable="true"]').forEach(el => {
-      el.setAttribute("contenteditable", canEdit ? "true" : "false");
-    });
-  }
-
-  /* =========================
-     QUARTER DROPDOWN
-  ========================= */
-  function quarterDropdown(){
-    const wrap = document.querySelector(".pill-wrap");
-    const btn = document.getElementById("quarterBtn");
-    if(!wrap || !btn) return;
-
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      wrap.classList.toggle("open");
-      btn.setAttribute("aria-expanded", wrap.classList.contains("open") ? "true" : "false");
-    });
-
-    document.addEventListener("click", () => {
+  document.addEventListener("keydown", (e) => {
+    if(e.key === "Escape"){
       wrap.classList.remove("open");
       btn.setAttribute("aria-expanded","false");
-    });
+    }
+  });
+}
 
-    document.addEventListener("keydown", (e) => {
-      if(e.key === "Escape"){
-        wrap.classList.remove("open");
-        btn.setAttribute("aria-expanded","false");
-      }
-    });
-  }
+/* =========================
+   INIT
+========================= */
+(async function init(){
+  try{
+    const raw = await loadReport();
+    REPORT = normalizeReport(raw);
 
-  /* =========================
-     INIT
-  ========================= */
-  (function init(){
     renderHeader();
     renderKPIs();
     renderExecutiveSummary();
+    renderInsights();          // ✅ pulls from REPORT.insights.*
     renderPlatforms();
     renderTopPosts();
 
@@ -1710,8 +1898,13 @@
 
     lockEditing();
     quarterDropdown();
-  })();
-  </script>
+
+  } catch(err){
+    console.error(err);
+    alert("Report data failed to load. Check that report-data.json is in the same folder as this page.");
+  }
+})();
+</script>
 </body>
 </html>
 
