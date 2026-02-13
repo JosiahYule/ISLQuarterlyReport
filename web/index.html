@@ -615,13 +615,13 @@
   </div>
 </div>
 
-  <!-- HERO -->
+<!-- HERO -->
 <section class="hero">
   <div class="hero-grid">
     <div>
       <h1>Website Performance Overview</h1>
       <p class="subtitle">
-        A quarterly snapshot of traffic, engagement, and conversion performance across Integrated Staffing’s website.
+        A quarterly snapshot of traffic, engagement, and high intent actions across Integrated Staffing’s website.
         Built from GA4 analytics and channel-level acquisition data.
       </p>
     </div>
@@ -634,89 +634,83 @@
   </div>
 </section>
 
-  <!-- KPIs -->
-  <section class="section">
-    <div class="section-header">
-      <div class="section-title">
-        <h2>Quarter Totals</h2>
-        <p>Core website metrics across all channels.</p>
-      </div>
+<!-- KPIs -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-title">
+      <h2>Quarter Totals</h2>
+      <p>Core website reach, engagement, and intent signals across all channels.</p>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Visits</div>
+      <div class="kpi-value" id="kpiSessions">—</div>
+      <span class="delta" id="dSessions">—</span>
     </div>
 
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label">Sessions</div>
-        <div class="kpi-value" id="kpiSessions">—</div>
-        <span class="delta" id="dSessions">—</span>
-      </div>
-
-      <div class="kpi-card">
-        <div class="kpi-label">Users</div>
-        <div class="kpi-value" id="kpiUsers">—</div>
-        <span class="delta" id="dUsers">—</span>
-      </div>
-
-      <div class="kpi-card">
-        <div class="kpi-label">Engagement Rate</div>
-        <div class="kpi-value" id="kpiEngRate">—</div>
-        <span class="delta" id="dEngRate">—</span>
-      </div>
-
-      <div class="kpi-card">
-        <div class="kpi-label">Avg Engagement Time</div>
-        <div class="kpi-value" id="kpiTime">—</div>
-        <span class="delta" id="dTime">—</span>
-      </div>
-
-      <div class="kpi-card">
-        <div class="kpi-label">Conversions</div>
-        <div class="kpi-value" id="kpiConv">—</div>
-        <span class="delta" id="dConv">—</span>
-      </div>
-
-      <div class="kpi-card">
-        <div class="kpi-label">Conversion Rate</div>
-        <div class="kpi-value" id="kpiConvRate">—</div>
-        <span class="delta" id="dConvRate">—</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- CHANNELS -->
-  <section class="section">
-    <div class="section-header">
-      <div class="section-title">
-        <h2>Traffic Channels</h2>
-        <p>Where website visitors are coming from.</p>
-      </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Website Users</div>
+      <div class="kpi-value" id="kpiUsers">—</div>
+      <span class="delta" id="dUsers">—</span>
     </div>
 
-    <div class="channel-grid" id="channelGrid"></div>
-
-    <div class="charts">
-      <div class="chart-card">
-        <div class="chart-title">Sessions by Channel</div>
-        <div class="chart-wrap"><canvas id="sessionsChart"></canvas></div>
-      </div>
-
-      <div class="chart-card">
-        <div class="chart-title">Conversions by Channel</div>
-        <div class="chart-wrap"><canvas id="convChart"></canvas></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TOP PAGES -->
-  <section class="section">
-    <div class="section-header">
-      <div class="section-title">
-        <h2>Top Landing Pages</h2>
-        <p>The pages driving the most traffic and conversions.</p>
-      </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Engagement Rate</div>
+      <div class="kpi-value" id="kpiEngRate">—</div>
+      <span class="delta" id="dEngRate">—</span>
     </div>
 
-    <div id="topPages"></div>
-  </section>
+    <div class="kpi-card">
+      <div class="kpi-label">Avg Time on Site</div>
+      <div class="kpi-value" id="kpiTime">—</div>
+      <span class="delta" id="dTime">—</span>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-label">Candidate Actions</div>
+      <div class="kpi-value" id="kpiActions">—</div>
+      <span class="delta" id="dActions">—</span>
+    </div>
+  </div>
+</section>
+
+<!-- CHANNELS -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-title">
+      <h2>Traffic Channels</h2>
+      <p>Where website visitors are coming from.</p>
+    </div>
+  </div>
+
+  <div class="channel-grid" id="channelGrid"></div>
+
+  <div class="charts">
+    <div class="chart-card">
+      <div class="chart-title">Sessions by Channel</div>
+      <div class="chart-wrap"><canvas id="sessionsChart"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Engagement Rate by Channel</div>
+      <div class="chart-wrap"><canvas id="engChart"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- TOP PAGES -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-title">
+      <h2>Top Landing Pages</h2>
+      <p>The pages driving the most traffic and highest intent actions.</p>
+    </div>
+  </div>
+
+  <div id="topPages"></div>
+</section>
 
 </div>
 
@@ -776,6 +770,20 @@ function quarterDropdown(){
   });
 }
 
+/* Candidate Actions: we prefer an explicit field, but fall back to conversions if your JSON still uses it */
+function getActionsFromOverall(o){
+  if(typeof o?.actions === "number" && Number.isFinite(o.actions)) return o.actions;
+  if(typeof o?.candidateActions === "number" && Number.isFinite(o.candidateActions)) return o.candidateActions;
+  if(typeof o?.conversions === "number" && Number.isFinite(o.conversions)) return o.conversions; // fallback
+  return undefined;
+}
+function getActionsDeltaFromDeltas(d){
+  if(d?.actions) return d.actions;
+  if(d?.candidateActions) return d.candidateActions;
+  if(d?.conversions) return d.conversions; // fallback
+  return undefined;
+}
+
 function renderKPIs(){
   const o = REPORT?.overall || {};
   const d = REPORT?.deltas || {};
@@ -784,15 +792,20 @@ function renderKPIs(){
   document.getElementById("kpiUsers").textContent    = fmtInt(o.users);
   document.getElementById("kpiEngRate").textContent  = fmtPct(o.engagementRate);
   document.getElementById("kpiTime").textContent     = fmtTime(o.avgEngagementTimeSec);
-  document.getElementById("kpiConv").textContent     = fmtInt(o.conversions);
-  document.getElementById("kpiConvRate").textContent = fmtPct(o.conversionRate);
+
+  // ✅ New KPI: Candidate Actions (replaces conversions + conversion rate)
+  const actions = getActionsFromOverall(o);
+  const actionsEl = document.getElementById("kpiActions");
+  if(actionsEl) actionsEl.textContent = fmtInt(actions);
 
   setDelta("dSessions", d.sessions);
   setDelta("dUsers", d.users);
   setDelta("dEngRate", d.engagementRate);
   setDelta("dTime", d.avgEngagementTimeSec);
-  setDelta("dConv", d.conversions);
-  setDelta("dConvRate", d.conversionRate);
+
+  // If your delta for time is a number of seconds, you might want it formatted.
+  // For now we keep your existing delta style (▲ / ▼ text coming from JSON).
+  setDelta("dActions", getActionsDeltaFromDeltas(d));
 }
 
 function renderChannels(){
@@ -800,14 +813,19 @@ function renderChannels(){
   if(!grid) return;
   grid.innerHTML = "";
 
+  const totalSessions = (REPORT?.channels || []).reduce((sum, c) => sum + (c.sessions || 0), 0);
+
   (REPORT?.channels || []).forEach(c => {
     const div = document.createElement("div");
     div.className = "channel";
+
+    const share = totalSessions > 0 ? ( (c.sessions || 0) / totalSessions * 100 ) : undefined;
+
     div.innerHTML = `
       <h3>${c.name || "Channel"}</h3>
       <div class="cstat"><span>Sessions</span><strong>${fmtInt(c.sessions)}</strong></div>
-      <div class="cstat"><span>Conversions</span><strong>${fmtInt(c.conversions)}</strong></div>
-      <div class="cstat"><span>Conv. Rate</span><strong>${fmtPct(c.conversionRate)}</strong></div>
+      <div class="cstat"><span>Share of Traffic</span><strong>${fmtPct(share)}</strong></div>
+      <div class="cstat"><span>Engagement Rate</span><strong>${fmtPct(c.engagementRate)}</strong></div>
     `;
     grid.appendChild(div);
   });
@@ -821,6 +839,14 @@ function renderTopPages(){
   (REPORT?.topPages || []).forEach(p => {
     const d = document.createElement("details");
     d.className = "page";
+
+    // Candidate Actions per page: prefer p.actions, fall back to p.conversions if your JSON still uses it
+    const pageActions =
+      (typeof p?.actions === "number" && Number.isFinite(p.actions)) ? p.actions :
+      (typeof p?.candidateActions === "number" && Number.isFinite(p.candidateActions)) ? p.candidateActions :
+      (typeof p?.conversions === "number" && Number.isFinite(p.conversions)) ? p.conversions :
+      undefined;
+
     d.innerHTML = `
       <summary>
         ${p.title || "Page"}
@@ -828,7 +854,7 @@ function renderTopPages(){
       </summary>
       <div class="page-body">
         <div class="mini"><span>Sessions</span><strong>${fmtInt(p.sessions)}</strong></div>
-        <div class="mini"><span>Conversions</span><strong>${fmtInt(p.conversions)}</strong></div>
+        <div class="mini"><span>Candidate Actions</span><strong>${fmtInt(pageActions)}</strong></div>
         <div class="mini"><span>Engagement Rate</span><strong>${fmtPct(p.engagementRate)}</strong></div>
       </div>
     `;
@@ -836,25 +862,41 @@ function renderTopPages(){
   });
 }
 
+let _sessionsChart = null;
+let _engChart = null;
+
 function buildCharts(){
-  const labels = (REPORT?.channels || []).map(c => c.name);
+  const labels   = (REPORT?.channels || []).map(c => c.name);
   const sessions = (REPORT?.channels || []).map(c => c.sessions || 0);
-  const conversions = (REPORT?.channels || []).map(c => c.conversions || 0);
+
+  // Engagement rate chart expects a percent number (e.g., 62.5). If your JSON is 0.625, adjust below.
+  const engRatesRaw = (REPORT?.channels || []).map(c => (typeof c.engagementRate === "number" ? c.engagementRate : 0));
+  const engRates = engRatesRaw.map(v => (v <= 1 ? v * 100 : v)); // supports either 0-1 or 0-100 inputs
 
   const sCtx = document.getElementById("sessionsChart")?.getContext("2d");
-  const cCtx = document.getElementById("convChart")?.getContext("2d");
-  if(!sCtx || !cCtx) return;
+  const eCtx = document.getElementById("engChart")?.getContext("2d");
+  if(!sCtx || !eCtx) return;
 
-  new Chart(sCtx, {
+  // Destroy previous charts if re-rendered
+  if(_sessionsChart) _sessionsChart.destroy();
+  if(_engChart) _engChart.destroy();
+
+  _sessionsChart = new Chart(sCtx, {
     type: "bar",
     data: { labels, datasets: [{ label: "Sessions", data: sessions }] },
     options: { responsive: true, maintainAspectRatio: false }
   });
 
-  new Chart(cCtx, {
+  _engChart = new Chart(eCtx, {
     type: "bar",
-    data: { labels, datasets: [{ label: "Conversions", data: conversions }] },
-    options: { responsive: true, maintainAspectRatio: false }
+    data: { labels, datasets: [{ label: "Engagement Rate (%)", data: engRates }] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true, suggestedMax: 100 }
+      }
+    }
   });
 }
 
@@ -871,7 +913,6 @@ quarterDropdown();
     buildCharts();
   }catch(err){
     console.error(err);
-    // Dropdown still works because it's wired above
     alert("Data failed to load. Open console for details (likely web-data.json path/format).");
   }
 })();
