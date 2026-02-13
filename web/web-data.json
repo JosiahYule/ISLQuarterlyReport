@@ -6,8 +6,8 @@
   },
 
   "execSummary": [
-    "Sessions increased ▲ 12.4% quarter-over-quarter.",
-    "Direct Hire page drove the most conversions with ▲ 18.1% growth."
+    "Total visits increased ▲ 12.4% quarter-over-quarter.",
+    "Direct Hire content attracted strong interest and remained a top destination for high-intent traffic."
   ],
 
   "overall": {
@@ -15,8 +15,8 @@
     "users": 0,
     "engagementRate": 0,
     "avgEngagementTimeSec": 0,
-    "conversions": 0,
-    "conversionRate": 0
+    "actions": 0,
+    "formSubmissions": 0
   },
 
   "deltas": {
@@ -24,8 +24,8 @@
     "users": "",
     "engagementRate": "",
     "avgEngagementTimeSec": "",
-    "conversions": "",
-    "conversionRate": ""
+    "actions": "",
+    "formSubmissions": ""
   },
 
   "channels": [
@@ -34,59 +34,83 @@
       "name": "Organic Search",
       "sessions": 0,
       "sessionsDelta": "",
-      "conversions": 0,
-      "conversionsDelta": "",
-      "conversionRate": 0,
-      "conversionRateDelta": ""
+      "engagementRate": 0,
+      "engagementRateDelta": ""
     },
     {
       "key": "direct",
       "name": "Direct",
       "sessions": 0,
       "sessionsDelta": "",
-      "conversions": 0,
-      "conversionsDelta": "",
-      "conversionRate": 0,
-      "conversionRateDelta": ""
+      "engagementRate": 0,
+      "engagementRateDelta": ""
     },
     {
       "key": "referral",
       "name": "Referral",
       "sessions": 0,
       "sessionsDelta": "",
-      "conversions": 0,
-      "conversionsDelta": "",
-      "conversionRate": 0,
-      "conversionRateDelta": ""
+      "engagementRate": 0,
+      "engagementRateDelta": ""
     },
     {
       "key": "social",
       "name": "Social",
       "sessions": 0,
       "sessionsDelta": "",
-      "conversions": 0,
-      "conversionsDelta": "",
-      "conversionRate": 0,
-      "conversionRateDelta": ""
+      "engagementRate": 0,
+      "engagementRateDelta": ""
     }
   ],
 
   "topPages": [
     {
-      "title": "Direct Hire",
-      "path": "/direct-hire",
-      "sessions": 0,
-      "engagementRate": 0,
-      "avgEngagementTimeSec": 0,
-      "conversions": 0
+      "key": "home page",
+      "pageViews": 0,
+      "bounceRate": 0,
+      "avgTimeOnPageSec": 0
     },
     {
-      "title": "Job Board",
-      "path": "/jobs",
-      "sessions": 0,
-      "engagementRate": 0,
-      "avgEngagementTimeSec": 0,
-      "conversions": 0
+      "key": "about",
+      "pageViews": 0,
+      "bounceRate": 0,
+      "avgTimeOnPageSec": 0
+    },
+    {
+      "key": "contract",
+      "pageViews": 0,
+      "bounceRate": 0,
+      "avgTimeOnPageSec": 0
+    },
+    {
+      "key": "direct hire",
+      "pageViews": 0,
+      "bounceRate": 0,
+      "avgTimeOnPageSec": 0
+    },
+    {
+      "key": "find work",
+      "pageViews": 0,
+      "bounceRate": 0,
+      "avgTimeOnPageSec": 0
+    },
+    {
+      "key": "team",
+      "pageViews": 0,
+      "bounceRate": 0,
+      "avgTimeOnPageSec": 0
+    },
+    {
+      "key": "learn",
+      "pageViews": 0,
+      "bounceRate": 0,
+      "avgTimeOnPageSec": 0
+    },
+    {
+      "key": "contact",
+      "pageViews": 0,
+      "bounceRate": 0,
+      "avgTimeOnPageSec": 0
     }
   ],
 
@@ -97,4 +121,5 @@
     "next": ""
   }
 }
+
 
