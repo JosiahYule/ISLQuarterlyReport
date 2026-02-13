@@ -80,6 +80,21 @@
       color:var(--muted);
     }
 
+    .brand-text{
+  display:flex;
+  flex-direction:column;
+  line-height:1.15;
+}
+
+.brand-text strong{
+  display:block;
+}
+
+.brand-text span{
+  display:block;
+  margin-top:2px;
+}
+
     .pill{
       display:inline-flex;
       align-items:center;
@@ -403,20 +418,20 @@
       </div>
     </div>
 
-<button class="pill pill-trigger" id="quarterBtn" type="button" aria-haspopup="menu" aria-expanded="false">
-  <span class="pill-dot" aria-hidden="true"></span>
-  <strong class="pill-label" id="pillLabel">Web</strong>
-  <span class="pill-caret" aria-hidden="true">▾</span>
-</button>
+<div class="pill-wrap" aria-label="Report selector">
+  <button class="pill pill-trigger" id="quarterBtn" type="button" aria-haspopup="menu" aria-expanded="false">
+    <span class="pill-dot" aria-hidden="true"></span>
+    <strong class="pill-label" id="pillLabel">Web</strong>
+    <span class="pill-caret" aria-hidden="true">▾</span>
+  </button>
 
+  <div class="pill-menu" id="quarterMenu" role="menu" aria-label="Choose report">
+    <a class="pill-item" role="menuitem" href="/q1.html">Q1 • Sep–Nov 2025</a>
+    <a class="pill-item" role="menuitem" href="/q2.html">Q2 • Dec–Feb 2026</a>
+    <a class="pill-item" role="menuitem" href="/web/">Website • Q2 • Dec–Feb 2026</a>
+  </div>
+</div>
 
-        <div class="pill-menu" id="quarterMenu" role="menu" aria-label="Choose quarter">
-          <a class="pill-item" role="menuitem" href="/q1.html">Q1 • Sep–Nov 2025</a>
-          <a class="pill-item" role="menuitem" href="/q2.html">Q2 • Dec–Feb 2026</a>
-          <a class="pill-item" role="menuitem" href="/web/">Website • Q2 • Dec–Feb 2026</a>
-        </div>
-      </div>
-    </div>
 
   <!-- HERO -->
   <section class="hero">
@@ -568,16 +583,6 @@ function quarterDropdown(){
     }
   });
 }
-  
-function renderMeta(){
-  const m = REPORT?.meta || {};
-
-  document.getElementById("reportQuarterLabel").textContent =
-    m.quarter || "—";
-
-  document.getElementById("reportRangeLabel").textContent =
-    m.rangeLabel || "—";
-}
 
 function renderKPIs(){
   const o = REPORT?.overall || {};
@@ -668,7 +673,6 @@ quarterDropdown();
 (async function init(){
   try{
     REPORT = await loadData();
-    renderMeta(); 
     renderKPIs();
     renderChannels();
     renderTopPages();
