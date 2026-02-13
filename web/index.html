@@ -543,6 +543,127 @@
 }
 .hero-chip strong{font-weight:700}
 
+  /* ============= EXECUTIVE SUMMARY ============= */
+.summary-shell{
+  position:relative;
+  display:grid;
+  grid-template-columns: 6px 1fr;
+  gap:20px;
+  align-items:stretch;
+}
+.summary-rail{
+  border-radius:999px;
+  background:linear-gradient(
+    180deg,
+    rgba(0,112,202,.0),
+    rgba(0,112,202,.5),
+    rgba(0,84,154,.4),
+    rgba(0,112,202,.0)
+  );
+  box-shadow:0 0 12px rgba(0,112,202,.2);
+}
+.summary-card{
+  background:var(--card);
+  border:1px solid rgba(0,0,0,.05);
+  border-radius:var(--radius-lg);
+  padding:18px;
+}
+.summary-card[contenteditable="true"]:focus{
+  outline:none;
+  border-color:rgba(0,112,202,.4);
+  box-shadow:0 0 0 4px rgba(0,112,202,.1), 0 8px 24px rgba(0,0,0,.08);
+}
+.summary-list{
+  list-style:none;
+  display:grid;
+  gap:10px;
+}
+.summary-list li{
+  display:grid;
+  grid-template-columns: 20px 1fr;
+  gap:12px;
+  align-items:flex-start;
+  padding:12px 14px;
+  border-radius:var(--radius-md);
+  background:#fff;
+  border:1px solid rgba(0,0,0,.05);
+}
+.summary-dot{
+  width:10px;height:10px;
+  border-radius:999px;
+  margin-top:5px;
+  background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
+  box-shadow:0 0 0 3px rgba(0,112,202,.10);
+}
+.summary-text{
+  font-size:14px;
+  color:var(--text);
+  line-height:1.6;
+  font-weight:400;
+}
+.summary-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:3px 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:700;
+  border:1px solid;
+  white-space:nowrap;
+  vertical-align:baseline;
+  margin:0 2px;
+}
+.summary-badge.positive{
+  background:rgba(16,185,129,.1);
+  color:#059669;
+  border-color:rgba(16,185,129,.25);
+}
+.summary-badge.negative{
+  background:rgba(239,68,68,.1);
+  color:#DC2626;
+  border-color:rgba(239,68,68,.25);
+}
+
+/* ============= INSIGHTS ============= */
+.insight-grid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0,1fr));
+  gap:16px;
+}
+.insight-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:24px;
+  box-shadow:0 1px 3px rgba(0,0,0,.04);
+  transition:var(--transition);
+  min-width:0;
+}
+.insight-card h3{
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:14px;
+}
+.insight-card .body{
+  color:var(--text);
+  font-size:14px;
+  line-height:1.7;
+  font-weight:400;
+  overflow-wrap:anywhere;
+}
+.insight-card .body[contenteditable="true"]:focus{
+  outline:none;
+  border-radius:var(--radius-md);
+  box-shadow:0 0 0 4px rgba(0,112,202,.1);
+  padding:12px;
+  margin:-12px;
+  background:rgba(245,248,250,.6);
+}
+
   /* ============= RESPONSIVE ============= */
   @media (max-width:1100px){
     .charts{grid-template-columns:1fr}
@@ -550,6 +671,7 @@
     .kpi-grid{grid-template-columns:repeat(2, minmax(0,1fr))}
     .hero-grid{grid-template-columns:1fr}
     .hero-meta{justify-content:flex-start}
+    .insight-grid{grid-template-columns:1fr;}
    }
 
   @media (max-width:700px){
@@ -637,6 +759,26 @@
   </div>
 </section>
 
+<section class="section" aria-label="Executive summary">
+  <div class="section-header">
+    <div class="section-title">
+      <h2>Summary</h2>
+      <p>Highlights at a glance.</p>
+    </div>
+    <div class="pill" aria-label="Summary type">
+      <span class="pill-dot" aria-hidden="true"></span>
+      <span>Executive Highlights</span>
+    </div>
+  </div>
+
+  <div class="summary-shell">
+    <div class="summary-rail" aria-hidden="true"></div>
+    <div class="summary-card" id="execSummaryBox" data-editable="true" aria-label="Editable executive summary">
+      <ul class="summary-list" id="execSummaryList" data-editable="true"></ul>
+    </div>
+  </div>
+</section>
+  
 <!-- KPIs -->
 <section class="section">
   <div class="section-header">
@@ -719,6 +861,38 @@
   </div>
 
   <div id="topPages"></div>
+
+  <section class="section" aria-label="Insights and analysis">
+  <div class="section-header">
+    <div class="section-title">
+      <h2>Insights, Analysis, and Actions</h2>
+      <p>What’s working, what needs attention, and the focus moving forward.</p>
+    </div>
+    <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Notes</span></div>
+  </div>
+
+  <div class="insight-grid">
+    <div class="insight-card">
+      <h3>What’s Working</h3>
+      <div class="body" id="insWorking" data-editable="true"></div>
+    </div>
+
+    <div class="insight-card">
+      <h3>What’s Not Working</h3>
+      <div class="body" id="insNotWorking" data-editable="true"></div>
+    </div>
+
+    <div class="insight-card">
+      <h3>Actions From This Data</h3>
+      <div class="body" id="insActions" data-editable="true"></div>
+    </div>
+
+    <div class="insight-card">
+      <h3>Next Quarter Focus</h3>
+      <div class="body" id="insNext" data-editable="true"></div>
+    </div>
+  </div>
+</section>
 </section>
 
 </div>
@@ -793,6 +967,47 @@ function getActionsDeltaFromDeltas(d){
   return undefined;
 }
 
+function setHTML(id, value){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.innerHTML = (value && String(value).trim()) ? String(value) : "";
+}
+
+function renderExecutiveSummary(){
+  const ul = document.getElementById("execSummaryList");
+  if(!ul) return;
+
+  ul.innerHTML = "";
+  (REPORT?.execSummary || []).forEach(s => {
+    const li = document.createElement("li");
+    const html = String(s)
+      .replace(/(▲\s?\d+(\.\d+)?%)/g, `<span class="summary-badge positive">$1</span>`)
+      .replace(/(▼\s?\d+(\.\d+)?%)/g, `<span class="summary-badge negative">$1</span>`);
+
+    li.innerHTML = `
+      <span class="summary-dot" aria-hidden="true"></span>
+      <span class="summary-text">${html}</span>
+    `;
+    ul.appendChild(li);
+  });
+}
+
+function renderInsights(){
+  const ins = REPORT?.insights || {};
+  setHTML("insWorking", ins.working);
+  setHTML("insNotWorking", ins.notWorking);
+  setHTML("insActions", ins.actions);
+  setHTML("insNext", ins.next);
+}
+
+/* Optional: lock editing unless ?edit=1 */
+function lockEditing(){
+  const canEdit = new URLSearchParams(window.location.search).get("edit") === "1";
+  document.querySelectorAll('[data-editable="true"]').forEach(el => {
+    el.setAttribute("contenteditable", canEdit ? "true" : "false");
+  });
+}
+  
 function renderKPIs(){
   const o = REPORT?.overall || {};
   const d = REPORT?.deltas || {};
@@ -968,6 +1183,8 @@ quarterDropdown();
     renderChannels();
     renderTopPages();
     buildCharts();
+    renderExecutiveSummary();
+    renderInsights();
   }catch(err){
     console.error(err);
     alert("Data failed to load. Open console for details (likely web-data.json path/format).");
