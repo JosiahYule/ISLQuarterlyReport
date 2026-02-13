@@ -352,58 +352,67 @@
    DROPDOWN MENU (TOP RIGHT)
 ========================= */
 
-.pill-wrap{
-  position:relative;
-  display:inline-flex;
-}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 16px;
+      border-radius:999px;
+      background:var(--card);
+      border:1px solid var(--border);
+      box-shadow:0 1px 3px rgba(0,0,0,.06);
+      font-size:13px;
+      font-weight:600;
+      color:var(--text);
+      white-space:nowrap;
+      transition:var(--transition);
+    }
+    .pill:hover{
+      box-shadow:0 4px 12px rgba(0,0,0,.08);
+      transform:translateY(-1px);
+    }
+    .pill-dot{
+      width:8px;height:8px;
+      border-radius:99px;
+      background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
+      box-shadow:0 0 0 3px rgba(0,112,202,.15);
+      flex:0 0 auto;
+    }
 
-.pill-trigger{
-  border:none;
-  cursor:pointer;
-  background:#fff;
-}
-
-.pill-caret{
-  margin-left:10px;
-  font-size:12px;
-  opacity:.7;
-}
-
-.pill-menu{
-  position:absolute;
-  right:0;
-  top:calc(100% + 10px);
-  min-width:220px;
-  background:#fff;
-  border:1px solid rgba(0,0,0,.10);
-  border-radius:14px;
-  box-shadow:0 14px 30px rgba(0,0,0,.14);
-  padding:8px;
-  display:none;
-  z-index:999;
-}
-
-.pill-wrap.open .pill-menu{
-  display:block;
-}
-
-.pill-item{
-  display:block;
-  padding:10px 12px;
-  border-radius:12px;
-  text-decoration:none;
-  font-size:13px;
-  font-weight:700;
-  color:var(--text);
-}
-
-.pill-item:hover{
-  background:rgba(0,112,202,.08);
-}
-
-.pill-wrap{ position:relative; z-index: 9999; }
-.pill-trigger{ position:relative; z-index: 10000; }
-.pill-menu{ z-index: 10001; }
+    /* ============= QUARTER DROPDOWN MENU ============= */
+    .pill-wrap{ position:relative; display:inline-flex; }
+    .pill-trigger{
+      border:none;
+      cursor:pointer;
+      appearance:none;
+      -webkit-appearance:none;
+      font: inherit;
+      background: var(--card);
+    }
+    .pill-caret{ margin-left:10px; font-size:12px; opacity:.7; }
+    .pill-range{ display:none; } /* ✅ hide range in the top pill */
+    .pill-menu{
+      position:absolute;
+      right:0;
+      top:calc(100% + 10px);
+      min-width:240px;
+      background:#fff;
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:14px;
+      box-shadow:0 14px 30px rgba(0,0,0,.14);
+      padding:8px;
+      display:none;
+      z-index:100;
+    }
+    .pill-wrap.open .pill-menu{ display:block; }
+    .pill-item{
+      display:block;
+      padding:10px 12px;
+      border-radius:12px;
+      text-decoration:none;
+      font-size:13px;
+      font-weight:600;
+      color:var(--text);
+    }
+    .pill-item:hover{ background:rgba(0,112,202,.08); }
   </style>
 </head>
 
