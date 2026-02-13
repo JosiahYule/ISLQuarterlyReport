@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Integrated Staffing — Quarterly Website Performance Report</title>
+
+  <link href="https://fonts.cdnfonts.com/css/gotham" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --isl-navy:#003D72;
+      --isl-primary:#00549A;
+      --isl-accent:#0070CA;
+
+      --bg:#FAFBFC;
+      --card:#FFFFFF;
+      --border:rgba(0,0,0,.06);
+      --shadow:0 2px 8px rgba(0,0,0,.04), 0 12px 24px rgba(0,0,0,.06);
+
+      --text:#0B1220;
+      --muted:#64748B;
+
+      --success:#10B981;
+      --danger:#EF4444;
+
+      --radius-xl:24px;
+      --radius-lg:16px;
+      --radius-md:12px;
+
+      --font:"Gotham","Gotham SSm",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      --transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      font-family:var(--font);
+      background:var(--bg);
+      color:var(--text);
+      line-height:1.6;
+      padding:32px 0;
+    }
+
+    .container{max-width:1240px;margin:0 auto;padding:0 24px}
+
+    /* TOPBAR */
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:22px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+
+    .brand-mark{
+      width:46px;height:46px;
+      border-radius:14px;
+      background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
+      display:grid;
+      place-items:center;
+      color:#fff;
+      font-weight:900;
+    }
+
+    .brand-text strong{
+      font-size:14px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      font-weight:800;
+    }
+
+    .brand-text span{
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 16px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid var(--border);
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .pill-dot{
+      width:8px;height:8px;
+      border-radius:99px;
+      background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
+    }
+
+    /* HERO */
+    .hero{
+      border-radius:var(--radius-xl);
+      padding:44px;
+      background:linear-gradient(135deg,#003D72,#00549A,#0070CA);
+      color:#fff;
+      margin-bottom:26px;
+      box-shadow:0 18px 44px rgba(0,84,154,.25);
+    }
+
+    .hero h1{
+      font-size:40px;
+      font-weight:900;
+      margin-bottom:10px;
+    }
+
+    .hero p{
+      opacity:.92;
+      font-size:15px;
+      max-width:720px;
+    }
+
+    /* SECTION */
+    .section{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:var(--radius-xl);
+      padding:30px;
+      box-shadow:var(--shadow);
+      margin-bottom:22px;
+    }
+
+    .section-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+      padding-bottom:14px;
+      border-bottom:2px solid rgba(0,112,202,.08);
+      margin-bottom:22px;
+    }
+
+    .section-title h2{
+      font-size:18px;
+      font-weight:900;
+      color:var(--isl-navy);
+    }
+
+    .section-title p{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:4px;
+    }
+
+    /* KPI GRID */
+    .kpi-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:16px;
+    }
+
+    .kpi-card{
+      border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+      padding:18px;
+      background:#fff;
+      transition:var(--transition);
+    }
+
+    .kpi-card:hover{
+      transform:translateY(-3px);
+      box-shadow:0 14px 26px rgba(0,0,0,.08);
+    }
+
+    .kpi-label{
+      font-size:11px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted);
+    }
+
+    .kpi-value{
+      font-size:28px;
+      font-weight:900;
+      margin:10px 0;
+    }
+
+    .delta{
+      display:inline-flex;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      border:1px solid;
+    }
+
+    .delta.positive{
+      background:rgba(16,185,129,.1);
+      border-color:rgba(16,185,129,.25);
+      color:var(--success);
+    }
+
+    .delta.negative{
+      background:rgba(239,68,68,.1);
+      border-color:rgba(239,68,68,.25);
+      color:var(--danger);
+    }
+
+    /* CHANNEL GRID */
+    .channel-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:16px;
+    }
+
+    .channel{
+      border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+      padding:22px;
+      transition:var(--transition);
+    }
+
+    .channel:hover{
+      transform:translateY(-3px);
+      box-shadow:0 14px 26px rgba(0,0,0,.08);
+    }
+
+    .channel h3{
+      font-size:15px;
+      font-weight:900;
+      margin-bottom:16px;
+      color:var(--isl-navy);
+    }
+
+    .cstat{
+      margin-bottom:12px;
+    }
+
+    .cstat span{
+      display:block;
+      font-size:11px;
+      color:var(--muted);
+      text-transform:uppercase;
+      font-weight:800;
+      margin-bottom:6px;
+    }
+
+    .cstat strong{
+      font-size:18px;
+      font-weight:900;
+    }
+
+    /* CHARTS */
+    .charts{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+      margin-top:18px;
+    }
+
+    .chart-card{
+      border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+      padding:20px;
+      min-height:340px;
+    }
+
+    .chart-title{
+      font-size:12px;
+      font-weight:900;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:10px;
+    }
+
+    .chart-wrap{
+      height:260px;
+    }
+
+    /* TOP PAGES */
+    details.page{
+      border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+      margin-bottom:12px;
+      overflow:hidden;
+    }
+
+    details.page summary{
+      cursor:pointer;
+      padding:16px;
+      font-weight:900;
+      display:flex;
+      justify-content:space-between;
+      background:#fff;
+    }
+
+    .page-body{
+      padding:16px;
+      background:rgba(245,248,250,.6);
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+    }
+
+    .mini{
+      border:1px solid var(--border);
+      border-radius:var(--radius-md);
+      padding:12px;
+      background:#fff;
+    }
+
+    .mini span{
+      font-size:10px;
+      color:var(--muted);
+      font-weight:800;
+      text-transform:uppercase;
+    }
+
+    .mini strong{
+      display:block;
+      font-size:16px;
+      font-weight:900;
+      margin-top:6px;
+    }
+
+    /* RESPONSIVE */
+    @media(max-width:950px){
+      .kpi-grid,.channel-grid{grid-template-columns:1fr}
+      .charts{grid-template-columns:1fr}
+      .page-body{grid-template-columns:1fr}
+    }
+
+    /* =========================
+   DROPDOWN MENU (TOP RIGHT)
+========================= */
+
+.pill-wrap{
+  position:relative;
+  display:inline-flex;
+}
+
+.pill-trigger{
+  border:none;
+  cursor:pointer;
+  background:#fff;
+}
+
+.pill-caret{
+  margin-left:10px;
+  font-size:12px;
+  opacity:.7;
+}
+
+.pill-menu{
+  position:absolute;
+  right:0;
+  top:calc(100% + 10px);
+  min-width:220px;
+  background:#fff;
+  border:1px solid rgba(0,0,0,.10);
+  border-radius:14px;
+  box-shadow:0 14px 30px rgba(0,0,0,.14);
+  padding:8px;
+  display:none;
+  z-index:999;
+}
+
+.pill-wrap.open .pill-menu{
+  display:block;
+}
+
+.pill-item{
+  display:block;
+  padding:10px 12px;
+  border-radius:12px;
+  text-decoration:none;
+  font-size:13px;
+  font-weight:700;
+  color:var(--text);
+}
+
+.pill-item:hover{
+  background:rgba(0,112,202,.08);
+}
+
+.pill-wrap{ position:relative; z-index: 9999; }
+.pill-trigger{ position:relative; z-index: 10000; }
+.pill-menu{ z-index: 10001; }
+  </style>
+</head>
+
+<body>
+<div class="container">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">IS</div>
+      <div class="brand-text">
+        <strong>Integrated Staffing</strong>
+        <span>Quarterly Website Performance Report</span>
+      </div>
+    </div>
+
+<div class="pill-wrap" aria-label="Report period selector">
+        <button class="pill pill-trigger" id="quarterBtn" type="button" aria-haspopup="menu" aria-expanded="false">
+          <span class="pill-dot" aria-hidden="true"></span>
+          <span>
+            <strong id="reportQuarterLabel">Q1</strong>
+            <span class="pill-range"> <span id="reportRangeLabel">Sep–Nov 2025</span></span>
+          </span>
+          <span class="pill-caret" aria-hidden="true">▾</span>
+        </button>
+
+        <div class="pill-menu" id="quarterMenu" role="menu" aria-label="Choose quarter">
+          <a class="pill-item" role="menuitem" href="/q1.html">Q1 • Sep–Nov 2025</a>
+          <a class="pill-item" role="menuitem" href="/q2.html">Q2 • Dec–Feb 2026</a>
+          <a class="pill-item" role="menuitem" href="/web.html">Website • Q2 • Dec–Feb 2026</a>
+        </div>
+      </div>
+    </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1>Website Performance Overview</h1>
+    <p>
+      A quarterly snapshot of traffic, engagement, and conversion performance across Integrated Staffing’s website.
+      Built from GA4 analytics and channel-level acquisition data.
+    </p>
+  </section>
+
+  <!-- KPIs -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <h2>Quarter Totals</h2>
+        <p>Core website metrics across all channels.</p>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Sessions</div>
+        <div class="kpi-value" id="kpiSessions">—</div>
+        <span class="delta" id="dSessions">—</span>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Users</div>
+        <div class="kpi-value" id="kpiUsers">—</div>
+        <span class="delta" id="dUsers">—</span>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Engagement Rate</div>
+        <div class="kpi-value" id="kpiEngRate">—</div>
+        <span class="delta" id="dEngRate">—</span>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Avg Engagement Time</div>
+        <div class="kpi-value" id="kpiTime">—</div>
+        <span class="delta" id="dTime">—</span>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Conversions</div>
+        <div class="kpi-value" id="kpiConv">—</div>
+        <span class="delta" id="dConv">—</span>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Conversion Rate</div>
+        <div class="kpi-value" id="kpiConvRate">—</div>
+        <span class="delta" id="dConvRate">—</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHANNELS -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <h2>Traffic Channels</h2>
+        <p>Where website visitors are coming from.</p>
+      </div>
+    </div>
+
+    <div class="channel-grid" id="channelGrid"></div>
+
+    <div class="charts">
+      <div class="chart-card">
+        <div class="chart-title">Sessions by Channel</div>
+        <div class="chart-wrap"><canvas id="sessionsChart"></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-title">Conversions by Channel</div>
+        <div class="chart-wrap"><canvas id="convChart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOP PAGES -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <h2>Top Landing Pages</h2>
+        <p>The pages driving the most traffic and conversions.</p>
+      </div>
+    </div>
+
+    <div id="topPages"></div>
+  </section>
+
+</div>
+
+<script>
+let REPORT = null;
+
+async function loadData(){
+  const res = await fetch("./web-data.json", { cache: "no-store" });
+  if(!res.ok) throw new Error("web-data.json not found or failed to load");
+  return await res.json();
+}
+
+const fmtInt = n => (typeof n === "number" && Number.isFinite(n)) ? n.toLocaleString() : "—";
+const fmtPct = n => (typeof n === "number" && Number.isFinite(n)) ? (n.toFixed(2) + "%") : "—";
+
+function fmtTime(sec){
+  if(typeof sec !== "number" || !Number.isFinite(sec)) return "—";
+  const m = Math.floor(sec / 60);
+  const s = Math.round(sec % 60);
+  return `${m}:${String(s).padStart(2,"0")}`;
+}
+
+function setDelta(id, val){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.textContent = val || "—";
+  el.classList.remove("positive","negative");
+  if(!val) return;
+  const t = String(val).trim();
+  if(t.startsWith("▲") || t.startsWith("↑")) el.classList.add("positive");
+  if(t.startsWith("▼") || t.startsWith("↓")) el.classList.add("negative");
+}
+
+/* ✅ Dropdown: wire immediately so it works even if data fails */
+function quarterDropdown(){
+  const wrap = document.querySelector(".pill-wrap");
+  const btn  = document.getElementById("quarterBtn");
+  if(!wrap || !btn) return;
+
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    wrap.classList.toggle("open");
+    btn.setAttribute("aria-expanded", wrap.classList.contains("open") ? "true" : "false");
+  });
+
+  document.addEventListener("click", () => {
+    wrap.classList.remove("open");
+    btn.setAttribute("aria-expanded","false");
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if(e.key === "Escape"){
+      wrap.classList.remove("open");
+      btn.setAttribute("aria-expanded","false");
+    }
+  });
+}
+
+function renderKPIs(){
+  const o = REPORT?.overall || {};
+  const d = REPORT?.deltas || {};
+
+  document.getElementById("kpiSessions").textContent = fmtInt(o.sessions);
+  document.getElementById("kpiUsers").textContent    = fmtInt(o.users);
+  document.getElementById("kpiEngRate").textContent  = fmtPct(o.engagementRate);
+  document.getElementById("kpiTime").textContent     = fmtTime(o.avgEngagementTimeSec);
+  document.getElementById("kpiConv").textContent     = fmtInt(o.conversions);
+  document.getElementById("kpiConvRate").textContent = fmtPct(o.conversionRate);
+
+  setDelta("dSessions", d.sessions);
+  setDelta("dUsers", d.users);
+  setDelta("dEngRate", d.engagementRate);
+  setDelta("dTime", d.avgEngagementTimeSec);
+  setDelta("dConv", d.conversions);
+  setDelta("dConvRate", d.conversionRate);
+}
+
+function renderChannels(){
+  const grid = document.getElementById("channelGrid");
+  if(!grid) return;
+  grid.innerHTML = "";
+
+  (REPORT?.channels || []).forEach(c => {
+    const div = document.createElement("div");
+    div.className = "channel";
+    div.innerHTML = `
+      <h3>${c.name || "Channel"}</h3>
+      <div class="cstat"><span>Sessions</span><strong>${fmtInt(c.sessions)}</strong></div>
+      <div class="cstat"><span>Conversions</span><strong>${fmtInt(c.conversions)}</strong></div>
+      <div class="cstat"><span>Conv. Rate</span><strong>${fmtPct(c.conversionRate)}</strong></div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function renderTopPages(){
+  const wrap = document.getElementById("topPages");
+  if(!wrap) return;
+  wrap.innerHTML = "";
+
+  (REPORT?.topPages || []).forEach(p => {
+    const d = document.createElement("details");
+    d.className = "page";
+    d.innerHTML = `
+      <summary>
+        ${p.title || "Page"}
+        <span>${fmtInt(p.sessions)} sessions</span>
+      </summary>
+      <div class="page-body">
+        <div class="mini"><span>Sessions</span><strong>${fmtInt(p.sessions)}</strong></div>
+        <div class="mini"><span>Conversions</span><strong>${fmtInt(p.conversions)}</strong></div>
+        <div class="mini"><span>Engagement Rate</span><strong>${fmtPct(p.engagementRate)}</strong></div>
+      </div>
+    `;
+    wrap.appendChild(d);
+  });
+}
+
+function buildCharts(){
+  const labels = (REPORT?.channels || []).map(c => c.name);
+  const sessions = (REPORT?.channels || []).map(c => c.sessions || 0);
+  const conversions = (REPORT?.channels || []).map(c => c.conversions || 0);
+
+  const sCtx = document.getElementById("sessionsChart")?.getContext("2d");
+  const cCtx = document.getElementById("convChart")?.getContext("2d");
+  if(!sCtx || !cCtx) return;
+
+  new Chart(sCtx, {
+    type: "bar",
+    data: { labels, datasets: [{ label: "Sessions", data: sessions }] },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  new Chart(cCtx, {
+    type: "bar",
+    data: { labels, datasets: [{ label: "Conversions", data: conversions }] },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+}
+
+/* ✅ Wire dropdown first */
+quarterDropdown();
+
+/* Then load + render */
+(async function init(){
+  try{
+    REPORT = await loadData();
+    renderKPIs();
+    renderChannels();
+    renderTopPages();
+    buildCharts();
+  }catch(err){
+    console.error(err);
+    // Dropdown still works because it's wired above
+    alert("Data failed to load. Open console for details (likely web-data.json path/format).");
+  }
+})();
+</script>
+
+</body>
+</html>
