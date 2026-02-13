@@ -348,12 +348,12 @@
   }
 
   /* ============= CHANNEL CARDS (your Web section) ============= */
-  .channel-grid{
-    display:grid;
-    grid-template-columns:repeat(3, minmax(0,1fr));
-    gap:16px;
-  }
-
+.channel-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
   .channel{
     background:var(--card);
     border:1px solid var(--border);
@@ -546,7 +546,7 @@
   /* ============= RESPONSIVE ============= */
   @media (max-width:1100px){
     .charts{grid-template-columns:1fr}
-    .channel-grid{grid-template-columns:1fr}
+    .channel-grid{grid-template-columns: repeat(2, 1fr)}
     .kpi-grid{grid-template-columns:repeat(2, minmax(0,1fr))}
     .hero-grid{grid-template-columns:1fr}
     .hero-meta{justify-content:flex-start}
@@ -557,6 +557,9 @@
     .hero{padding:32px 24px}
     .hero h1{font-size:32px}
     .section{padding:24px 20px}
+     .channel-grid {
+    grid-template-columns: 1fr;
+  }
 
     .topbar{
       flex-direction:column;
@@ -672,6 +675,12 @@
       <div class="kpi-label">Candidate Actions</div>
       <div class="kpi-value" id="kpiActions">—</div>
       <span class="delta" id="dActions">—</span>
+    </div>
+
+    <div class="kpi-card">
+     <div class="kpi-label">Form Submissions</div>
+     <div class="kpi-value" id="kpiForms">—</div>
+     <span class="delta" id="dForms">—</span>
     </div>
   </div>
 </section>
@@ -792,6 +801,7 @@ function renderKPIs(){
   document.getElementById("kpiUsers").textContent    = fmtInt(o.users);
   document.getElementById("kpiEngRate").textContent  = fmtPct(o.engagementRate);
   document.getElementById("kpiTime").textContent     = fmtTime(o.avgEngagementTimeSec);
+  document.getElementById("kpiForms").textContent    = fmtInt(o.formSubmissions);
 
   // ✅ New KPI: Candidate Actions (replaces conversions + conversion rate)
   const actions = getActionsFromOverall(o);
@@ -802,6 +812,7 @@ function renderKPIs(){
   setDelta("dUsers", d.users);
   setDelta("dEngRate", d.engagementRate);
   setDelta("dTime", d.avgEngagementTimeSec);
+  setDelta("dForms", d.formSubmissions);
 
   // If your delta for time is a number of seconds, you might want it formatted.
   // For now we keep your existing delta style (▲ / ▼ text coming from JSON).
