@@ -64,23 +64,35 @@
   .brand{display:flex;align-items:center;gap:14px;min-width:0}
 
 .brand-mark{
-  width:48px;height:48px;
+  width:48px;
+  height:48px;
   border-radius:12px;
   background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
   box-shadow:0 4px 12px rgba(0,84,154,.2), inset 0 1px 0 rgba(255,255,255,.2);
   position:relative;
   overflow:hidden;
+
   display:grid;
   place-items:center;
+
   font-size:20px;
   font-weight:900;
   color:#fff;
   line-height:1;
-}
 
-  .brand-mark{
   text-decoration:none;
   cursor:pointer;
+  transition:var(--transition);
+}
+
+/* ✅ IMPORTANT: make sure the overlay can't block clicks */
+.brand-mark::after{
+  content:"";
+  position:absolute;
+  inset:-40%;
+  background:radial-gradient(circle, rgba(255,255,255,.3), transparent 60%);
+  transform:rotate(25deg);
+  pointer-events:none;   /* <-- this is the missing piece */
 }
 
 .brand-mark:hover{
@@ -89,13 +101,14 @@
 }
 
 .brand-mark:active{
-  transform:translateY(0px);
+  transform:translateY(0);
 }
 
-  .brand-mark:focus{
+.brand-mark:focus{
   outline:none;
   box-shadow:0 0 0 4px rgba(0,112,202,.25), 0 6px 16px rgba(0,0,0,.12);
 }
+
   
   .brand-mark::after{
     content:"";
