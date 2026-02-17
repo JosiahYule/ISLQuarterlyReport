@@ -1091,6 +1091,7 @@
 
 /* Tooltips need overflow visible (your earlier overflow:hidden clips them) */
 .section[aria-label="Quarter totals"]{ overflow: visible !important; }
+.section[aria-label="Platform breakdown"]{ overflow: hidden !important; }
 
 .kpi-card{
   position: relative;
@@ -1360,6 +1361,35 @@
     <div class="kpi-sub"><span class="delta" id="deltaAvgEngRate">—</span></div>
   </div>
 </div>
+    </section>
+
+    <!-- ✅ Platform Breakdown is its own card, and is CLOSED properly before Top Posts -->
+    <section class="section" aria-label="Platform breakdown">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>Platform Breakdown</h2>
+          <p>For each platform: Followers, Post Engagement Rate, Page Reach, Page Clicks.</p>
+        </div>
+        <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>By platform</span></div>
+      </div>
+
+      <div class="platform-grid" id="platformGrid"></div>
+
+      <div class="charts">
+        <div class="chart-card" aria-label="LinkedIn audience and reach snapshot">
+          <div class="chart-head">
+            <div class="chart-title">LinkedIn Audience & Reach</div>
+          </div>
+          <div class="chart-wrap" id="liReachSnapshot"></div>
+        </div>
+
+        <div class="chart-card" aria-label="LinkedIn engagement snapshot">
+          <div class="chart-head">
+            <div class="chart-title">LinkedIn Engagement Snapshot</div>
+          </div>
+          <div class="chart-wrap" id="liEngSnapshot"></div>
+        </div>
+      </div>
     </section>
 
     <section class="section" aria-label="Top posts">
@@ -2069,6 +2099,10 @@ function brandDropdown(){
     renderInsights();          // ✅ pulls from REPORT.insights.*
     renderTopPosts();
 
+    renderPlatforms();
+    renderTopPosts();
+
+    renderLinkedInSnapshots();
 
     lockEditing();
     quarterDropdown();
