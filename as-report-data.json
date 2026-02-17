@@ -47,30 +47,6 @@
       "pageReachDelta": "\u25b2 44.1%",
       "pageClicks": 1322,
       "pageClicksDelta": "\u25b2 84%"
-    },
-    {
-      "key": "facebook",
-      "name": "Facebook",
-      "followers": 1610,
-      "followersDelta": "\u25b2 3.8%",
-      "engagementRate": 6.12,
-      "engagementRateDelta": "\u25b2 27.4%",
-      "pageReach": 10670,
-      "pageReachDelta": "\u25b2 73.5%",
-      "pageClicks": 2014,
-      "pageClicksDelta": "\u25b2 148%"
-    },
-    {
-      "key": "instagram",
-      "name": "Instagram",
-      "followers": 562,
-      "followersDelta": "\u25b2 1.1%",
-      "engagementRate": 3.94,
-      "engagementRateDelta": "\u25b2 9.2%",
-      "pageReach": 3895,
-      "pageReachDelta": "\u25b2 22.8%",
-      "pageClicks": 236,
-      "pageClicksDelta": "\u25b2 65%"
     }
   ],
   "topPostsByPlatform": {
@@ -92,46 +68,6 @@
         "impressions": 1934,
         "likes": 41,
         "shares": 6
-      }
-    ],
-    "facebook": [
-      {
-        "title": "Now Hiring: Senior Bookkeepers",
-        "impressions": 1456,
-        "likes": 33,
-        "shares": 5
-      },
-      {
-        "title": "Controller Placement Success Story",
-        "impressions": 1672,
-        "likes": 29,
-        "shares": 4
-      },
-      {
-        "title": "Tax Season Talent Guide",
-        "impressions": 1824,
-        "likes": 31,
-        "shares": 5
-      }
-    ],
-    "instagram": [
-      {
-        "title": "Meet Our Recruiting Team",
-        "impressions": 512,
-        "likes": 18,
-        "shares": 1
-      },
-      {
-        "title": "Day-in-the-Life: Staff Accountant",
-        "impressions": 608,
-        "likes": 20,
-        "shares": 1
-      },
-      {
-        "title": "Client Win Announcement",
-        "impressions": 704,
-        "likes": 17,
-        "shares": 2
       }
     ]
   }

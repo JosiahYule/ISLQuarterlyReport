@@ -47,30 +47,6 @@
       "pageReachDelta": "\u25b2 49.2%",
       "pageClicks": 1188,
       "pageClicksDelta": "\u25b2 77%"
-    },
-    {
-      "key": "facebook",
-      "name": "Facebook",
-      "followers": 1496,
-      "followersDelta": "\u25b2 3.2%",
-      "engagementRate": 5.48,
-      "engagementRateDelta": "\u25b2 18.6%",
-      "pageReach": 9845,
-      "pageReachDelta": "\u25b2 61.7%",
-      "pageClicks": 1724,
-      "pageClicksDelta": "\u25b2 119%"
-    },
-    {
-      "key": "instagram",
-      "name": "Instagram",
-      "followers": 528,
-      "followersDelta": "\u25b2 1.4%",
-      "engagementRate": 4.13,
-      "engagementRateDelta": "\u25b2 10.8%",
-      "pageReach": 3560,
-      "pageReachDelta": "\u25b2 19.5%",
-      "pageClicks": 198,
-      "pageClicksDelta": "\u25b2 52%"
     }
   ],
   "topPostsByPlatform": {
@@ -92,46 +68,6 @@
         "impressions": 1682,
         "likes": 33,
         "shares": 4
-      }
-    ],
-    "facebook": [
-      {
-        "title": "Now Hiring: Office Manager",
-        "impressions": 1398,
-        "likes": 27,
-        "shares": 4
-      },
-      {
-        "title": "Administrative Interview Tips",
-        "impressions": 1526,
-        "likes": 26,
-        "shares": 3
-      },
-      {
-        "title": "Team Spotlight: Recruiting Ops",
-        "impressions": 1488,
-        "likes": 28,
-        "shares": 4
-      }
-    ],
-    "instagram": [
-      {
-        "title": "Recruiter Q&A Clip",
-        "impressions": 486,
-        "likes": 16,
-        "shares": 1
-      },
-      {
-        "title": "Career Tip Tuesday",
-        "impressions": 558,
-        "likes": 15,
-        "shares": 1
-      },
-      {
-        "title": "Open Role Highlights",
-        "impressions": 624,
-        "likes": 14,
-        "shares": 2
       }
     ]
   }
