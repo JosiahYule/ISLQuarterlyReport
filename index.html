@@ -81,6 +81,10 @@
   text-decoration:none;
   cursor:pointer;
   transition:var(--transition);
+  border:none;
+  outline:none;
+  appearance:none;
+  -webkit-appearance:none;
 }
 
 .brand-mark.brand-as{
@@ -100,9 +104,10 @@
   transform:translateY(0);
 }
 
-.brand-mark:focus{
+.brand-mark:focus,
+.brand-mark:focus-visible{
   outline:none;
-  box-shadow:0 0 0 3px rgba(0,112,202,.22);
+  box-shadow:none;
 }
 
 .brand-menu{
