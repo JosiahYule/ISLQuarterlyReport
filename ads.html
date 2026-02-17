@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Integrated Staffing - Quarterly Digital Media Performance Report</title>
+  <title>Administrative Staffing - Quarterly Digital Media Performance Report</title>
 
   <link href="https://fonts.cdnfonts.com/css/gotham" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <style>
     :root{
-      --isl-navy:#003D72;
-      --isl-primary:#00549A;
-      --isl-accent:#0070CA;
-      --isl-accent-bright:#4DA3E8;
+      --isl-navy:#0E3A4B;
+      --isl-primary:#0F5B78;
+      --isl-accent:#1A87B1;
+      --isl-accent-bright:#56B7DB;
 
       --bg:#FAFBFC;
       --card:#FFFFFF;
@@ -1200,7 +1200,7 @@
     <div class="topbar">
       <div class="brand">
         <div class="brand-menu-wrap">
-          <button class="brand-mark" id="brandToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Choose brand">ISL</button>
+          <button class="brand-mark brand-ads" id="brandToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Choose brand">ADS</button>
           <div class="brand-menu" role="menu" aria-label="Brand selector">
             <button class="brand-option" type="button" role="menuitem" data-brand="isl" data-label="ISL" data-name="Integrated Staffing" data-href="./index.html">
               <span class="brand-option-mark isl" aria-hidden="true">ISL</span>
@@ -1217,7 +1217,7 @@
           </div>
         </div>
         <div class="brand-text">
-          <strong id="brandNameLabel">Integrated Staffing</strong>
+          <strong id="brandNameLabel">Administrative Staffing</strong>
           <span>Quarterly Digital Media Performance Report</span>
         </div>
       </div>
@@ -1245,7 +1245,7 @@
         <div>
           <h1>Quarterly Performance Report</h1>
           <div class="subtitle">
-            A high-level snapshot of Integrated Staffing's digital media performance across LinkedIn, Facebook, and Instagram.
+            A high-level snapshot of Administrative Staffing's digital media performance across LinkedIn, Facebook, and Instagram.
           </div>
         </div>
         <div class="hero-meta" aria-label="Report metadata">
@@ -1441,7 +1441,7 @@
       <div class="divider" aria-hidden="true"></div>
       <p><strong>Prepared by:</strong> Josiah Yule</p>
       <p style="margin-top:10px;">
-        <a href="https://integratedstaffing.ca" target="_blank" rel="noopener">Integrated Staffing</a>
+        <a href="#" target="_self" rel="noopener">Administrative Staffing</a>
       </p>
     </div>
 
@@ -1454,8 +1454,8 @@
 let REPORT = null;
 
 async function loadReport(){
-  const res = await fetch("./report-data.json", { cache: "no-store" });
-  if(!res.ok) throw new Error("Could not load report-data.json");
+  const res = await fetch("./ads-report-data.json", { cache: "no-store" });
+  if(!res.ok) throw new Error("Could not load ads-report-data.json");
   return await res.json();
 }
 
@@ -2069,7 +2069,7 @@ function brandDropdown(){
 
   } catch(err){
     console.error(err);
-    alert("Report data failed to load. Check that report-data.json is in the same folder as this page.");
+    alert("Report data failed to load. Check that ads-report-data.json is in the same folder as this page.");
   }
 })();
 </script>
