@@ -659,6 +659,22 @@
       display:block;
     }
 
+    .snapshot-grid{display:grid;gap:12px}
+    .snapshot-item{
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px 14px;
+      background:rgba(245,248,250,.45);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      font-size:13px;
+    }
+    .snapshot-item strong{font-size:16px;color:var(--text);font-weight:800}
+    .snapshot-item .delta{font-size:12px}
+    .snapshot-note{font-size:12px;color:var(--muted)}
+
     /* Chart toggle (Bar/Pie) */
     .chart-toggle{
       display:inline-flex;
@@ -1360,26 +1376,18 @@
       <div class="platform-grid" id="platformGrid"></div>
 
       <div class="charts">
-        <div class="chart-card" aria-label="Reach chart">
+        <div class="chart-card" aria-label="LinkedIn audience and reach snapshot">
           <div class="chart-head">
-            <div class="chart-title">Page Reach by Platform</div>
-            <div class="chart-toggle" role="group" aria-label="Reach chart type">
-              <button type="button" class="ct-btn is-active" data-chart="reach" data-type="bar">Bar</button>
-              <button type="button" class="ct-btn" data-chart="reach" data-type="pie">Pie</button>
-            </div>
+            <div class="chart-title">LinkedIn Audience & Reach</div>
           </div>
-          <div class="chart-wrap"><canvas id="reachChart"></canvas></div>
+          <div class="chart-wrap" id="liReachSnapshot"></div>
         </div>
 
-        <div class="chart-card" aria-label="Engagement rate chart">
+        <div class="chart-card" aria-label="LinkedIn engagement snapshot">
           <div class="chart-head">
-            <div class="chart-title">Post Engagement Rate by Platform</div>
-            <div class="chart-toggle" role="group" aria-label="Engagement chart type">
-              <button type="button" class="ct-btn is-active" data-chart="eng" data-type="bar">Bar</button>
-              <button type="button" class="ct-btn" data-chart="eng" data-type="pie">Pie</button>
-            </div>
+            <div class="chart-title">LinkedIn Engagement Snapshot</div>
           </div>
-          <div class="chart-wrap"><canvas id="engRateChart"></canvas></div>
+          <div class="chart-wrap" id="liEngSnapshot"></div>
         </div>
       </div>
     </section>
@@ -1390,7 +1398,7 @@
           <h2>Top Performing Posts</h2>
           <p>What posts garnered the most attention and engagement.</p>
         </div>
-        <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Posts by Platform</span></div>
+        <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>LinkedIn Top Posts</span></div>
       </div>
 
       <div class="top-compact" id="topCompact"></div>
@@ -1772,65 +1780,87 @@ function renderTopPosts(){
 
   wrap.innerHTML = "";
 
-  const order = [
-    { key: "linkedin", label: "LinkedIn" }
-  ];
+  const label = "LinkedIn";
+  const posts = (REPORT.topPostsByPlatform?.linkedin || [])
+    .slice(0,3)
+    .map(p => ({...p, engagementRate: postEngRate(p)}))
+    .sort((a,b) => (b.engagementRate||0) - (a.engagementRate||0));
 
-  order.forEach(({key, label}) => {
-    const posts = (REPORT.topPostsByPlatform?.[key] || [])
-      .slice(0,3)
-      .map(p => ({...p, engagementRate: postEngRate(p)}))
-      .sort((a,b) => (b.engagementRate||0) - (a.engagementRate||0));
+  const totalImpressions = posts.reduce((sum,p) => sum + (toNumber(p.impressions)||0), 0);
+  const avgER = posts.length ? (posts.reduce((sum,p)=>sum+(p.engagementRate||0),0) / posts.length) : 0;
 
-    const totalImpressions = posts.reduce((sum,p) => sum + (toNumber(p.impressions)||0), 0);
-    const avgER = posts.length ? (posts.reduce((sum,p)=>sum+(p.engagementRate||0),0) / posts.length) : 0;
+  const head = document.createElement("div");
+  head.className = "platform-acc";
+  head.innerHTML = `
+    <div class="platform-body" style="border-top:none;">
+      <div class="sum-left">
+        <span class="platform-pill">${label}</span>
+        <span class="platform-meta">Top 3 • ${fmtInt(totalImpressions)} impressions • Avg ER ${fmtPct(avgER)}</span>
+      </div>
+    </div>
+  `;
+  wrap.appendChild(head);
 
-    const platform = document.createElement("details");
-    platform.className = "platform-acc";
-    platform.open = false;
+  posts.forEach((p, idx) => {
+    const mini = document.createElement("details");
+    mini.className = "post-mini";
+    mini.open = true;
+    const erText = fmtPct(p.engagementRate || 0);
 
-    platform.innerHTML = `
+    mini.innerHTML = `
       <summary>
-        <div class="sum-left">
-          <span class="platform-pill">${label}</span>
-          <span class="platform-meta">Top 3 • ${fmtInt(totalImpressions)} impressions • Avg ER ${fmtPct(avgER)}</span>
+        <div class="rank">#${idx+1}</div>
+        <div class="ptitle">${p.title || (label + " Post")}</div>
+        <div class="quick">
+          <span><strong>${fmtInt(toNumber(p.impressions) || 0)}</strong> impr.</span>
+          <span><strong>${erText}</strong> ER</span>
         </div>
-        <span class="chev" aria-hidden="true">⌄</span>
       </summary>
-      <div class="platform-body"></div>
+
+      <div class="post-details">
+        <div class="mini-stat"><span>Impressions</span><strong>${fmtInt(toNumber(p.impressions) || 0)}</strong></div>
+        <div class="mini-stat"><span>Likes</span><strong>${fmtInt(toNumber(p.likes) || 0)}</strong></div>
+        <div class="mini-stat"><span>Shares</span><strong>${fmtInt(toNumber(p.shares) || 0)}</strong></div>
+        <div class="mini-stat"><span>Eng. Rate</span><strong>${erText}</strong></div>
+        <div class="math">Eng. Rate = (likes + shares) ÷ impressions = (${fmtInt(toNumber(p.likes)||0)} + ${fmtInt(toNumber(p.shares)||0)}) ÷ ${fmtInt(toNumber(p.impressions)||0)}</div>
+      </div>
     `;
-
-    const body = platform.querySelector(".platform-body");
-
-    posts.forEach((p, idx) => {
-      const mini = document.createElement("details");
-      mini.className = "post-mini";
-      const erText = fmtPct(p.engagementRate || 0);
-
-      mini.innerHTML = `
-        <summary>
-          <div class="rank">#${idx+1}</div>
-          <div class="ptitle">${p.title || (label + " Post")}</div>
-          <div class="quick">
-            <span><strong>${fmtInt(toNumber(p.impressions) || 0)}</strong> impr.</span>
-            <span><strong>${erText}</strong> ER</span>
-          </div>
-        </summary>
-
-        <div class="post-details">
-          <div class="mini-stat"><span>Impressions</span><strong>${fmtInt(toNumber(p.impressions) || 0)}</strong></div>
-          <div class="mini-stat"><span>Likes</span><strong>${fmtInt(toNumber(p.likes) || 0)}</strong></div>
-          <div class="mini-stat"><span>Shares</span><strong>${fmtInt(toNumber(p.shares) || 0)}</strong></div>
-          <div class="mini-stat"><span>Eng. Rate</span><strong>${erText}</strong></div>
-          <div class="math">Eng. Rate = (likes + shares) ÷ impressions = (${fmtInt(toNumber(p.likes)||0)} + ${fmtInt(toNumber(p.shares)||0)}) ÷ ${fmtInt(toNumber(p.impressions)||0)}</div>
-        </div>
-      `;
-      body.appendChild(mini);
-    });
-
-    wrap.appendChild(platform);
+    wrap.appendChild(mini);
   });
 }
+
+function renderLinkedInSnapshots(){
+  const reachEl = byId("liReachSnapshot");
+  const engEl = byId("liEngSnapshot");
+  if(!reachEl || !engEl) return;
+
+  const li = (REPORT.platforms || []).find(p => p.key === "linkedin") || {};
+  const posts = (REPORT.topPostsByPlatform?.linkedin || []).slice(0,3);
+  const totalLikes = posts.reduce((s,p)=>s+(toNumber(p.likes)||0),0);
+  const totalShares = posts.reduce((s,p)=>s+(toNumber(p.shares)||0),0);
+  const totalImp = posts.reduce((s,p)=>s+(toNumber(p.impressions)||0),0);
+  const topPost = posts.reduce((best,p)=>((toNumber(p.impressions)||0) > (toNumber(best?.impressions)||0) ? p : best), null);
+
+  reachEl.innerHTML = `
+    <div class="snapshot-grid">
+      <div class="snapshot-item"><span>Followers</span><span><strong>${fmtInt(toNumber(li.followers)||0)}</strong> <span class="delta">${li.followersDelta||"—"}</span></span></div>
+      <div class="snapshot-item"><span>Page Reach</span><span><strong>${fmtInt(toNumber(li.pageReach)||0)}</strong> <span class="delta">${li.pageReachDelta||"—"}</span></span></div>
+      <div class="snapshot-item"><span>Page Clicks</span><span><strong>${fmtInt(toNumber(li.pageClicks)||0)}</strong> <span class="delta">${li.pageClicksDelta||"—"}</span></span></div>
+      <div class="snapshot-note">Single-platform report: LinkedIn only.</div>
+    </div>
+  `;
+
+  engEl.innerHTML = `
+    <div class="snapshot-grid">
+      <div class="snapshot-item"><span>Engagement Rate</span><span><strong>${fmtPct(toNumber(li.engagementRate)||0)}</strong> <span class="delta">${li.engagementRateDelta||"—"}</span></span></div>
+      <div class="snapshot-item"><span>Top 3 Likes</span><span><strong>${fmtInt(totalLikes)}</strong></span></div>
+      <div class="snapshot-item"><span>Top 3 Shares</span><span><strong>${fmtInt(totalShares)}</strong></span></div>
+      <div class="snapshot-item"><span>Top Post</span><span><strong>${topPost?.title || "—"}</strong></span></div>
+      <div class="snapshot-note">Top 3 posts total impressions: ${fmtInt(totalImp)}.</div>
+    </div>
+  `;
+}
+
 
 /* =========================
    CHARTS (BAR <-> PIE)
@@ -2070,9 +2100,7 @@ function brandDropdown(){
     renderPlatforms();
     renderTopPosts();
 
-    buildReach("bar");
-    buildEng("bar");
-    wireChartToggles();
+    renderLinkedInSnapshots();
 
     lockEditing();
     quarterDropdown();
