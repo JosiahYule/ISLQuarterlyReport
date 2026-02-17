@@ -3,17 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Integrated Staffing - Quarterly Digital Media Performance Report</title>
+  <title>Accountant Staffing - Quarterly Digital Media Performance Report</title>
 
   <link href="https://fonts.cdnfonts.com/css/gotham" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <style>
     :root{
-      --isl-navy:#003D72;
-      --isl-primary:#00549A;
-      --isl-accent:#0070CA;
-      --isl-accent-bright:#4DA3E8;
+      --isl-navy:#7A4A00;
+      --isl-primary:#C77800;
+      --isl-accent:#F0A31A;
+      --isl-accent-bright:#FFD070;
+      --isl-primary-rgb:199,120,0;
+      --isl-accent-rgb:240,163,26;
+      --isl-accent-bright-rgb:255,208,112;
 
       --bg:#FAFBFC;
       --card:#FFFFFF;
@@ -157,7 +160,7 @@
 
 .brand-option:hover,
 .brand-option:focus-visible{
-  background:rgba(0,84,154,.08);
+  background:rgba(var(--isl-primary-rgb),.08);
   outline:none;
 }
 
@@ -219,7 +222,7 @@
       width:8px;height:8px;
       border-radius:99px;
       background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
-      box-shadow:0 0 0 3px rgba(0,112,202,.15);
+      box-shadow:0 0 0 3px rgba(var(--isl-accent-rgb),.15);
       flex:0 0 auto;
     }
 
@@ -258,18 +261,18 @@
       font-weight:600;
       color:var(--text);
     }
-    .pill-item:hover{ background:rgba(0,112,202,.08); }
+    .pill-item:hover{ background:rgba(var(--isl-accent-rgb),.08); }
 
     /* ============= HERO ============= */
     .hero{
       border-radius:var(--radius-xl);
       padding:48px 40px;
       background:
-        radial-gradient(ellipse 1200px 600px at 30% -10%, rgba(77,163,232,.18), transparent 70%),
-        linear-gradient(135deg, #003D72 0%, #00549A 50%, #0070CA 100%);
+        radial-gradient(ellipse 1200px 600px at 30% -10%, rgba(var(--isl-accent-bright-rgb),.18), transparent 70%),
+        linear-gradient(135deg, var(--isl-navy) 0%, var(--isl-primary) 50%, var(--isl-accent) 100%);
       color:#fff;
       position:relative;overflow:hidden;
-      box-shadow:0 20px 40px rgba(0,84,154,.2), inset 0 1px 0 rgba(255,255,255,.15);
+      box-shadow:0 20px 40px rgba(var(--isl-primary-rgb),.2), inset 0 1px 0 rgba(255,255,255,.15);
       border:1px solid rgba(255,255,255,.1);
       margin-bottom:32px;
     }
@@ -278,7 +281,7 @@
       position:absolute;
       inset:-150px -200px auto auto;
       width:600px;height:600px;
-      background:radial-gradient(circle, rgba(77,163,232,.4), transparent 70%);
+      background:radial-gradient(circle, rgba(var(--isl-accent-bright-rgb),.4), transparent 70%);
       filter:blur(80px);
       opacity:.5;
       animation:heroGlow 10s ease-in-out infinite alternate;
@@ -348,7 +351,7 @@
       justify-content:space-between;
       gap:20px;
       padding-bottom:16px;
-      border-bottom:2px solid rgba(0,112,202,.08);
+      border-bottom:2px solid rgba(var(--isl-accent-rgb),.08);
       margin-bottom:24px;
     }
     .section-title h2{
@@ -377,12 +380,12 @@
       border-radius:999px;
       background:linear-gradient(
         180deg,
-        rgba(0,112,202,.0),
-        rgba(0,112,202,.5),
-        rgba(0,84,154,.4),
-        rgba(0,112,202,.0)
+        rgba(var(--isl-accent-rgb),.0),
+        rgba(var(--isl-accent-rgb),.5),
+        rgba(var(--isl-primary-rgb),.4),
+        rgba(var(--isl-accent-rgb),.0)
       );
-      box-shadow:0 0 12px rgba(0,112,202,.2);
+      box-shadow:0 0 12px rgba(var(--isl-accent-rgb),.2);
     }
     .summary-card{
       background:var(--card);
@@ -394,8 +397,8 @@
     }
     .summary-card[contenteditable="true"]:focus{
       outline:none;
-      border-color:rgba(0,112,202,.4);
-      box-shadow:0 0 0 4px rgba(0,112,202,.1), 0 8px 24px rgba(0,0,0,.08);
+      border-color:rgba(var(--isl-accent-rgb),.4);
+      box-shadow:0 0 0 4px rgba(var(--isl-accent-rgb),.1), 0 8px 24px rgba(0,0,0,.08);
     }
     .summary-list{
       list-style:none;
@@ -425,7 +428,7 @@
       border-radius:999px;
       margin-top:5px;
       background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
-      box-shadow:0 0 0 3px rgba(0,112,202,.10);
+      box-shadow:0 0 0 3px rgba(var(--isl-accent-rgb),.10);
     }
     .summary-text{
       font-size:14px;
@@ -481,7 +484,7 @@
     .kpi-card:hover{
       transform:translateY(-4px);
       box-shadow:0 12px 24px rgba(0,0,0,.1);
-      border-color:rgba(0,112,202,.15);
+      border-color:rgba(var(--isl-accent-rgb),.15);
     }
     .kpi-label{
       font-size:11px;
@@ -541,7 +544,7 @@
     .platform:hover{
       transform:translateY(-4px);
       box-shadow:0 12px 24px rgba(0,0,0,.1);
-      border-color:rgba(0,112,202,.15);
+      border-color:rgba(var(--isl-accent-rgb),.15);
     }
     .platform-head{
       display:flex;
@@ -564,8 +567,8 @@
       width:40px;height:40px;
       border-radius:10px;
       display:grid;place-items:center;
-      background:linear-gradient(135deg,rgba(0,112,202,.1),rgba(0,112,202,.15));
-      border:1px solid rgba(0,112,202,.2);
+      background:linear-gradient(135deg,rgba(var(--isl-accent-rgb),.1),rgba(var(--isl-accent-rgb),.15));
+      border:1px solid rgba(var(--isl-accent-rgb),.2);
       color:var(--isl-primary);
       font-size:18px;
       font-weight:800;
@@ -727,8 +730,8 @@
       gap:8px;
       padding:8px 14px;
       border-radius:8px;
-      background:linear-gradient(135deg,rgba(0,112,202,.1),rgba(0,112,202,.15));
-      border:1px solid rgba(0,112,202,.2);
+      background:linear-gradient(135deg,rgba(var(--isl-accent-rgb),.1),rgba(var(--isl-accent-rgb),.15));
+      border:1px solid rgba(var(--isl-accent-rgb),.2);
       color:var(--isl-navy);
       font-weight:800;
       font-size:13px;
@@ -748,14 +751,14 @@
       width:36px;height:36px;
       border-radius:var(--radius-md);
       display:grid;place-items:center;
-      background:rgba(0,112,202,.08);
-      border:1px solid rgba(0,112,202,.12);
+      background:rgba(var(--isl-accent-rgb),.08);
+      border:1px solid rgba(var(--isl-accent-rgb),.12);
       color:var(--isl-primary);
       font-weight:900;
       transition:var(--transition);
       flex:0 0 auto;
     }
-    .platform-acc[open] .chev{ transform:rotate(180deg); background:rgba(0,112,202,.12); }
+    .platform-acc[open] .chev{ transform:rotate(180deg); background:rgba(var(--isl-accent-rgb),.12); }
 
     .platform-body{
       padding:16px;
@@ -791,8 +794,8 @@
       font-weight:900;
       font-size:13px;
       color:var(--isl-navy);
-      background:linear-gradient(135deg,rgba(0,112,202,.1),rgba(0,112,202,.15));
-      border:1px solid rgba(0,112,202,.2);
+      background:linear-gradient(135deg,rgba(var(--isl-accent-rgb),.1),rgba(var(--isl-accent-rgb),.15));
+      border:1px solid rgba(var(--isl-accent-rgb),.2);
     }
     .ptitle{
       min-width:0;
@@ -854,8 +857,8 @@
       font-weight:400;
       padding:12px 14px;
       border-radius:var(--radius-md);
-      background:rgba(0,112,202,.05);
-      border:1px solid rgba(0,112,202,.1);
+      background:rgba(var(--isl-accent-rgb),.05);
+      border:1px solid rgba(var(--isl-accent-rgb),.1);
     }
 
     /* ============= INSIGHTS ============= */
@@ -891,7 +894,7 @@
     .insight-card .body[contenteditable="true"]:focus{
       outline:none;
       border-radius:var(--radius-md);
-      box-shadow:0 0 0 4px rgba(0,112,202,.1);
+      box-shadow:0 0 0 4px rgba(var(--isl-accent-rgb),.1);
       padding:12px;
       margin:-12px;
       background:rgba(245,248,250,.6);
@@ -910,7 +913,7 @@
       width:200px;
       height:2px;
       margin:24px auto;
-      background:linear-gradient(90deg,transparent,rgba(0,112,202,.4),transparent);
+      background:linear-gradient(90deg,transparent,rgba(var(--isl-accent-rgb),.4),transparent);
       border-radius:999px;
     }
     .footer a{
@@ -1138,8 +1141,8 @@
 
 /* Focus styling */
 .kpi-card:focus{
-  box-shadow: 0 0 0 4px rgba(0,112,202,.16), 0 12px 24px rgba(0,0,0,.10);
-  border-color: rgba(0,112,202,.22);
+  box-shadow: 0 0 0 4px rgba(var(--isl-accent-rgb),.16), 0 12px 24px rgba(0,0,0,.10);
+  border-color: rgba(var(--isl-accent-rgb),.22);
 }
 
 /* === KPI TOOLTIP FIX: allow tooltip to render outside the card === */
@@ -1200,7 +1203,7 @@
     <div class="topbar">
       <div class="brand">
         <div class="brand-menu-wrap">
-          <button class="brand-mark" id="brandToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Choose brand">ISL</button>
+          <button class="brand-mark brand-as" id="brandToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Choose brand">AS</button>
           <div class="brand-menu" role="menu" aria-label="Brand selector">
             <button class="brand-option" type="button" role="menuitem" data-brand="isl" data-label="ISL" data-name="Integrated Staffing" data-href="./index.html">
               <span class="brand-option-mark isl" aria-hidden="true">ISL</span>
@@ -1217,7 +1220,7 @@
           </div>
         </div>
         <div class="brand-text">
-          <strong id="brandNameLabel">Integrated Staffing</strong>
+          <strong id="brandNameLabel">Accountant Staffing</strong>
           <span>Quarterly Digital Media Performance Report</span>
         </div>
       </div>
@@ -1245,11 +1248,11 @@
         <div>
           <h1>Quarterly Performance Report</h1>
           <div class="subtitle">
-            A high-level snapshot of Integrated Staffing's digital media performance across LinkedIn, Facebook, and Instagram.
+            A high-level snapshot of Accountant Staffing's LinkedIn performance this quarter.
           </div>
         </div>
         <div class="hero-meta" aria-label="Report metadata">
-          <div class="hero-chip"><strong>Platforms:</strong> LinkedIn • Facebook • Instagram</div>
+          <div class="hero-chip"><strong>Platforms:</strong> LinkedIn</div>
           <div class="hero-chip"><strong>Generated:</strong> <span id="generatedLabel">Feb 10, 2026</span></div>
           <div class="hero-chip"><strong>Data source:</strong> Hootsuite</div>
         </div>
@@ -1441,7 +1444,7 @@
       <div class="divider" aria-hidden="true"></div>
       <p><strong>Prepared by:</strong> Josiah Yule</p>
       <p style="margin-top:10px;">
-        <a href="https://integratedstaffing.ca" target="_blank" rel="noopener">Integrated Staffing</a>
+        <a href="#" target="_self" rel="noopener">Accountant Staffing</a>
       </p>
     </div>
 
@@ -1454,8 +1457,8 @@
 let REPORT = null;
 
 async function loadReport(){
-  const res = await fetch("./report-data.json", { cache: "no-store" });
-  if(!res.ok) throw new Error("Could not load report-data.json");
+  const res = await fetch("./as-report-data.json", { cache: "no-store" });
+  if(!res.ok) throw new Error("Could not load as-report-data.json");
   return await res.json();
 }
 
@@ -1518,11 +1521,21 @@ function postEngRate(p){
   return imp > 0 ? (eng / imp) * 100 : 0;
 }
 
+const cssVars = getComputedStyle(document.documentElement);
+const BRAND = {
+  primary: cssVars.getPropertyValue("--isl-primary").trim(),
+  accent: cssVars.getPropertyValue("--isl-accent").trim(),
+  bright: cssVars.getPropertyValue("--isl-accent-bright").trim(),
+  primaryRgb: cssVars.getPropertyValue("--isl-primary-rgb").trim(),
+  accentRgb: cssVars.getPropertyValue("--isl-accent-rgb").trim(),
+  brightRgb: cssVars.getPropertyValue("--isl-accent-bright-rgb").trim()
+};
+
 function seriesColors(count){
   return [
-    "rgba(0,112,202,0.9)",
-    "rgba(0,84,154,0.85)",
-    "rgba(77,163,232,0.8)"
+    `rgba(${BRAND.accentRgb},0.9)`,
+    `rgba(${BRAND.primaryRgb},0.85)`,
+    `rgba(${BRAND.brightRgb},0.8)`
   ].slice(0, count);
 }
 
@@ -1689,7 +1702,7 @@ function renderPlatforms(){
 
   grid.innerHTML = "";
 
-  (REPORT.platforms || []).forEach(p => {
+  (REPORT.platforms || []).filter(p => p.key === "linkedin").forEach(p => {
     const card = document.createElement("div");
     card.className = "platform";
 
@@ -1760,9 +1773,7 @@ function renderTopPosts(){
   wrap.innerHTML = "";
 
   const order = [
-    { key: "linkedin", label: "LinkedIn" },
-    { key: "facebook", label: "Facebook" },
-    { key: "instagram", label: "Instagram" }
+    { key: "linkedin", label: "LinkedIn" }
   ];
 
   order.forEach(({key, label}) => {
@@ -1862,7 +1873,7 @@ function buildReach(type){
         label: "Page Reach",
         data: reach,
         backgroundColor: colors,
-        borderColor: type === "pie" ? "#fff" : ["#0070CA", "#00549A", "#4DA3E8"],
+        borderColor: type === "pie" ? "#fff" : [BRAND.accent, BRAND.primary, BRAND.bright],
         borderWidth: type === "pie" ? 2 : 0,
         borderRadius: type === "bar" ? 8 : 0
       }]
@@ -1907,8 +1918,8 @@ function buildEng(type){
       datasets: [{
         label: "Post Engagement Rate (%)",
         data: er,
-        backgroundColor: type === "pie" ? colors : "rgba(0,112,202,0.15)",
-        borderColor: type === "pie" ? "#fff" : "#0070CA",
+        backgroundColor: type === "pie" ? colors : `rgba(${BRAND.accentRgb},0.15)`,
+        borderColor: type === "pie" ? "#fff" : BRAND.accent,
         borderWidth: type === "pie" ? 2 : 2,
         borderRadius: type === "bar" ? 8 : 0
       }]
@@ -2069,7 +2080,7 @@ function brandDropdown(){
 
   } catch(err){
     console.error(err);
-    alert("Report data failed to load. Check that report-data.json is in the same folder as this page.");
+    alert("Report data failed to load. Check that as-report-data.json is in the same folder as this page.");
   }
 })();
 </script>
