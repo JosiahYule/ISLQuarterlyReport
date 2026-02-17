@@ -1210,6 +1210,55 @@
   display:block;
   fill: currentColor;
 }    
+
+
+    .section-nav{
+      position: fixed;
+      left: 18px;
+      bottom: 18px;
+      z-index: 1100;
+      width: min(240px, calc(100vw - 36px));
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 10px 24px rgba(0,0,0,.08);
+    }
+    .section-nav-title{
+      margin: 0 0 8px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+    }
+    .section-nav-list{
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 6px;
+    }
+    .section-nav-link{
+      display: block;
+      padding: 7px 9px;
+      border-radius: 8px;
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 13px;
+      line-height: 1.2;
+      border: 1px solid transparent;
+      transition: background .16s ease, border-color .16s ease, color .16s ease;
+    }
+    .section-nav-link:hover,
+    .section-nav-link:focus-visible{
+      background: rgba(var(--isl-accent-rgb), .09);
+      border-color: rgba(var(--isl-accent-rgb), .2);
+      color: var(--isl-primary);
+      outline: none;
+    }
+
   </style>
 </head>
 
@@ -1361,35 +1410,6 @@
     <div class="kpi-sub"><span class="delta" id="deltaAvgEngRate">—</span></div>
   </div>
 </div>
-    </section>
-
-    <!-- ✅ Platform Breakdown is its own card, and is CLOSED properly before Top Posts -->
-    <section class="section" aria-label="Platform breakdown">
-      <div class="section-header">
-        <div class="section-title">
-          <h2>Platform Breakdown</h2>
-          <p>For each platform: Followers, Post Engagement Rate, Page Reach, Page Clicks.</p>
-        </div>
-        <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>By platform</span></div>
-      </div>
-
-      <div class="platform-grid" id="platformGrid"></div>
-
-      <div class="charts">
-        <div class="chart-card" aria-label="LinkedIn audience and reach snapshot">
-          <div class="chart-head">
-            <div class="chart-title">LinkedIn Audience & Reach</div>
-          </div>
-          <div class="chart-wrap" id="liReachSnapshot"></div>
-        </div>
-
-        <div class="chart-card" aria-label="LinkedIn engagement snapshot">
-          <div class="chart-head">
-            <div class="chart-title">LinkedIn Engagement Snapshot</div>
-          </div>
-          <div class="chart-wrap" id="liEngSnapshot"></div>
-        </div>
-      </div>
     </section>
 
     <section class="section" aria-label="Top posts">
@@ -2085,6 +2105,38 @@ function brandDropdown(){
   });
 }
 
+
+function initSectionNav(){
+  const sections = Array.from(document.querySelectorAll("section.section"));
+  const items = sections
+    .map((section) => {
+      const titleEl = section.querySelector("h2");
+      if(!titleEl) return null;
+      const title = titleEl.textContent?.trim();
+      if(!title) return null;
+      if(!section.id){
+        section.id = `section-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`;
+      }
+      return { id: section.id, title };
+    })
+    .filter(Boolean);
+
+  if(!items.length) return;
+
+  const nav = document.createElement("nav");
+  nav.className = "section-nav";
+  nav.setAttribute("aria-label", "Section navigation");
+
+  nav.innerHTML = `
+    <p class="section-nav-title">On this page</p>
+    <ul class="section-nav-list">
+      ${items.map(item => `<li><a class="section-nav-link" href="#${item.id}">${item.title}</a></li>`).join("")}
+    </ul>
+  `;
+
+  document.body.appendChild(nav);
+}
+
 /* =========================
    INIT
 ========================= */
@@ -2107,6 +2159,7 @@ function brandDropdown(){
     lockEditing();
     quarterDropdown();
     brandDropdown();
+    initSectionNav();
 
   } catch(err){
     console.error(err);
