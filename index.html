@@ -64,9 +64,9 @@
     .brand{display:flex;align-items:center;gap:14px;min-width:0}
     .brand-menu-wrap{position:relative;display:inline-flex}
 .brand-mark{
-  width:48px;
-  height:48px;
-  border-radius:12px;
+  width:44px;
+  height:44px;
+  border-radius:11px;
   background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
   box-shadow:0 4px 12px rgba(0,84,154,.2), inset 0 1px 0 rgba(255,255,255,.2);
   position:relative;
@@ -75,7 +75,7 @@
   display:grid;
   place-items:center;
 
-  font-size:20px;
+  font-size:17px;
   font-weight:900;
   color:#fff;
   line-height:1;
@@ -119,20 +119,30 @@
 
 .brand-menu{
   position:absolute;
-  top:calc(100% + 12px);
+  top:calc(100% + 4px);
   left:0;
-  min-width:290px;
+  min-width:260px;
   background:#fff;
-  border:1px solid rgba(0,0,0,.1);
-  border-radius:16px;
-  padding:10px;
-  box-shadow:0 16px 30px rgba(0,0,0,.14);
+  border:1px solid rgba(15,23,42,.08);
+  border-radius:14px;
+  padding:8px;
+  box-shadow:0 12px 28px rgba(2,8,23,.14);
   display:none;
   z-index:120;
 }
 
+.brand-menu-wrap::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:100%;
+  height:8px;
+}
+
 .brand-menu-wrap:hover .brand-menu,
-.brand-menu-wrap:focus-within .brand-menu{
+.brand-menu-wrap:focus-within .brand-menu,
+.brand-menu-wrap.open .brand-menu{
   display:block;
 }
 
@@ -140,14 +150,15 @@
   width:100%;
   border:none;
   background:transparent;
-  border-radius:12px;
-  padding:10px;
+  border-radius:10px;
+  padding:8px;
   display:flex;
   align-items:center;
-  gap:12px;
+  gap:10px;
   text-align:left;
   cursor:pointer;
   font:inherit;
+  transition:var(--transition);
 }
 
 .brand-option:hover,
@@ -157,13 +168,13 @@
 }
 
 .brand-option-mark{
-  width:64px;
-  height:50px;
-  border-radius:10px;
+  width:54px;
+  height:40px;
+  border-radius:9px;
   color:#fff;
   display:grid;
   place-items:center;
-  font-size:24px;
+  font-size:20px;
   font-weight:800;
   flex:0 0 auto;
 }
@@ -173,7 +184,7 @@
 .brand-option-mark.ads{background:linear-gradient(135deg,#0F5B78,#1C8DB5);}
 
 .brand-option-label{
-  font-size:17px;
+  font-size:15px;
   font-weight:600;
   color:var(--text);
 }
@@ -1194,7 +1205,7 @@
     <div class="topbar">
       <div class="brand">
         <div class="brand-menu-wrap">
-          <button class="brand-mark" id="brandToggle" type="button" aria-haspopup="menu" aria-label="Choose brand">ISL</button>
+          <button class="brand-mark" id="brandToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Choose brand">ISL</button>
           <div class="brand-menu" role="menu" aria-label="Brand selector">
             <button class="brand-option" type="button" role="menuitem" data-brand="isl" data-label="ISL" data-name="Integrated Staffing">
               <span class="brand-option-mark isl" aria-hidden="true">ISL</span>
@@ -1989,10 +2000,22 @@ function quarterDropdown(){
 }
 
 function brandDropdown(){
+  const wrap = document.querySelector(".brand-menu-wrap");
   const toggle = document.getElementById("brandToggle");
   const brandName = document.getElementById("brandNameLabel");
   const options = document.querySelectorAll(".brand-option");
-  if(!toggle || !brandName || !options.length) return;
+  if(!wrap || !toggle || !brandName || !options.length) return;
+
+  const closeMenu = () => {
+    wrap.classList.remove("open");
+    toggle.setAttribute("aria-expanded", "false");
+  };
+
+  toggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    wrap.classList.toggle("open");
+    toggle.setAttribute("aria-expanded", wrap.classList.contains("open") ? "true" : "false");
+  });
 
   options.forEach(option => {
     option.addEventListener("click", () => {
@@ -2006,7 +2029,17 @@ function brandDropdown(){
       toggle.classList.remove("brand-as", "brand-ads");
       if(brand === "as") toggle.classList.add("brand-as");
       if(brand === "ads") toggle.classList.add("brand-ads");
+
+      closeMenu();
     });
+  });
+
+  document.addEventListener("click", (e) => {
+    if(!wrap.contains(e.target)) closeMenu();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if(e.key === "Escape") closeMenu();
   });
 }
 
