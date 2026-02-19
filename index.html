@@ -1741,6 +1741,22 @@ function setText(id, value){
   if (el) el.textContent = value;
 }
 
+function computeEngRatePercent(p){
+  const impr = toNumber(p?.impressions);
+  if(!impr || impr <= 0) return null;
+
+  // Prefer "engagements" if it exists (your payload has it)
+  const eng = toNumber(p?.engagements);
+  if(eng !== null) return (eng / impr) * 100;
+
+  // Fallback: likes + comments + shares
+  const likes = toNumber(p?.likes) || 0;
+  const comments = toNumber(p?.comments) || 0;
+  const shares = toNumber(p?.shares) || 0;
+
+  return ((likes + comments + shares) / impr) * 100;
+}   
+   
 function setHTML(id, value){
   const el = byId(id);
   if (!el) return;
@@ -2308,25 +2324,35 @@ function normalizeEngRatePercent(v){
 function normalizePostsPayload(payload){
   // Expecting either { posts:[...] } OR just an array
   const arr = Array.isArray(payload) ? payload : (payload?.posts || []);
-  return arr.map(p => ({
-    title: p.title ?? p.postName ?? p.post ?? "",
-    date: p.date ?? "",
-    url: p.url ?? "",
-    platforms: Array.isArray(p.platforms) ? p.platforms : (String(p.platforms || p.platform || "").split(",").map(s=>s.trim()).filter(Boolean)),
-    impressions: toNumber(p.impressions),
-    engagements: toNumber(p.engagements),
-    engagementRate:
-  normalizeEngRatePercent(p.engagementRate) ??
-  normalizeEngRatePercent(p["Engagement Rate"]) ??
-  normalizeEngRatePercent(p.engagement_rate) ??
-  normalizeEngRatePercent(p.er) ??
-  null,
-    engagementHealth: p.engagementHealth ?? p.health ?? "",
-    likes: toNumber(p.likes),
-    comments: toNumber(p.comments),
-    shares: toNumber(p.shares),
-    notes: p.notes ?? ""
-  }));
+
+  return arr.map(p => {
+    const er =
+      normalizeEngRatePercent?.(p.engagementRate) ??
+      normalizeEngRatePercent?.(p["Engagement Rate"]) ??
+      normalizeEngRatePercent?.(p.engagement_rate) ??
+      normalizeEngRatePercent?.(p.er) ??
+      null;
+
+    return {
+      title: p.title ?? p.postName ?? p.post ?? "",
+      date: p.date ?? "",
+      url: p.url ?? "",
+      platforms: Array.isArray(p.platforms)
+        ? p.platforms
+        : (String(p.platforms || p.platform || "")
+            .split(",")
+            .map(s => s.trim())
+            .filter(Boolean)),
+      impressions: toNumber(p.impressions),
+      engagements: toNumber(p.engagements),
+      engagementRate: (er !== null ? er : computeEngRatePercent(p)),
+      engagementHealth: p.engagementHealth ?? p.health ?? "",
+      likes: toNumber(p.likes),
+      comments: toNumber(p.comments),
+      shares: toNumber(p.shares),
+      notes: p.notes ?? ""
+    };
+  });
 }
 
 function renderPostsTable(){
