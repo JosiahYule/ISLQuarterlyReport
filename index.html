@@ -1757,6 +1757,15 @@ function computeEngRatePercent(p){
 
   return ((likes + comments + shares) / impr) * 100;
 }   
+
+function classifyEngagementHealth(rate){
+  if (rate === null || typeof rate !== "number") return "";
+
+  if (rate > 10) return "Very Strong";
+  if (rate >= 6) return "Strong";
+  if (rate >= 4) return "Moderate";
+  return "Low";
+}                       
    
 function setHTML(id, value){
   const el = byId(id);
@@ -2322,17 +2331,64 @@ function normalizeEngRatePercent(v){
   return n;
 }
    
+function classifyEngagementHealth(rate){
+  if (rate === null || typeof rate !== "number" || !Number.isFinite(rate)) return "";
+  if (rate > 10) return "Very Strong";
+  if (rate >= 6) return "Strong";
+  if (rate >= 4) return "Moderate";
+  return "Low";
+}
+
+/* If your sheet ever stores ER as "6.1%" or 0.061, this normalizes to percent */
+function normalizeEngRatePercent(v){
+  if (v === null || v === undefined) return null;
+
+  // numbers
+  if (typeof v === "number" && Number.isFinite(v)){
+    // If it's <= 1, assume it's a fraction (0.061) and convert to percent (6.1)
+    return v <= 1 ? v * 100 : v;
+  }
+
+  // strings like "6.1%" or "0.061"
+  if (typeof v === "string"){
+    const s = v.trim();
+    if (!s) return null;
+
+    const cleaned = s.replace("%","").replace(/,/g,"");
+    const n = Number(cleaned);
+    if (!Number.isFinite(n)) return null;
+
+    // If original had %, it’s already percent
+    if (s.includes("%")) return n;
+
+    // Otherwise if <=1 treat as fraction
+    return n <= 1 ? n * 100 : n;
+  }
+
+  return null;
+}
+
+/* Compute ER from engagements/impressions if missing */
+function computeEngRatePercent(p){
+  const imp = toNumber(p?.impressions) || 0;
+  const eng = toNumber(p?.engagements) || 0;
+  return imp > 0 ? (eng / imp) * 100 : null;
+}
+
 function normalizePostsPayload(payload){
   // Expecting either { posts:[...] } OR just an array
   const arr = Array.isArray(payload) ? payload : (payload?.posts || []);
 
   return arr.map(p => {
     const er =
-      normalizeEngRatePercent?.(p.engagementRate) ??
-      normalizeEngRatePercent?.(p["Engagement Rate"]) ??
-      normalizeEngRatePercent?.(p.engagement_rate) ??
-      normalizeEngRatePercent?.(p.er) ??
+      normalizeEngRatePercent(p.engagementRate) ??
+      normalizeEngRatePercent(p["Engagement Rate"]) ??
+      normalizeEngRatePercent(p.engagement_rate) ??
+      normalizeEngRatePercent(p.er) ??
       null;
+
+    const engagementRate = (er !== null ? er : computeEngRatePercent(p));
+    const engagementHealth = classifyEngagementHealth(engagementRate);
 
     return {
       title: p.title ?? p.postName ?? p.post ?? "",
@@ -2340,14 +2396,17 @@ function normalizePostsPayload(payload){
       url: p.url ?? "",
       platforms: Array.isArray(p.platforms)
         ? p.platforms
-        : (String(p.platforms || p.platform || "")
+        : String(p.platforms || p.platform || "")
             .split(",")
             .map(s => s.trim())
-            .filter(Boolean)),
+            .filter(Boolean),
+
       impressions: toNumber(p.impressions),
       engagements: toNumber(p.engagements),
-      engagementRate: (er !== null ? er : computeEngRatePercent(p)),
-      engagementHealth: p.engagementHealth ?? p.health ?? "",
+
+      engagementRate,          // now always a usable percent (or null)
+      engagementHealth,        // auto-generated label
+
       likes: toNumber(p.likes),
       comments: toNumber(p.comments),
       shares: toNumber(p.shares),
@@ -2355,6 +2414,7 @@ function normalizePostsPayload(payload){
     };
   });
 }
+
 
 function renderPostsTable(){
   const table = byId("postsTable");
