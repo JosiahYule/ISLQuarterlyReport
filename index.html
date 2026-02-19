@@ -1622,15 +1622,47 @@ async function loadReport(){
 /* =========================
    LOAD POSTS JSON (Apps Script Web App)
 ========================= */
+/* =========================
+   LOAD POSTS JSON (Apps Script Web App)
+========================= */
+
 const POSTS_ENDPOINT = "https://script.google.com/macros/s/AKfycbyALQglX-zAHYwcYrD2bd6XBChlxXq5UrXPq41xGsY_PTolJ_Vaapd05RuiF5qRwqb1/exec";
 
-async function loadPosts(){
-  if(!POSTS_ENDPOINT || POSTS_ENDPOINT.includes("https://script.google.com/macros/s/AKfycbyALQglX-zAHYwcYrD2bd6XBChlxXq5UrXPq41xGsY_PTolJ_Vaapd05RuiF5qRwqb1/exec")) return { posts: [] };
+async function loadPosts() {
+  try {
+    if (!POSTS_ENDPOINT) {
+      console.warn("POSTS_ENDPOINT not defined.");
+      return { posts: [] };
+    }
 
-  const res = await fetch(POSTS_ENDPOINT, { cache: "no-store" });
-  if(!res.ok) throw new Error("Could not load posts JSON");
-  return await res.json();
-}   
+    const res = await fetch(POSTS_ENDPOINT, {
+      method: "GET",
+      cache: "no-store",
+      headers: {
+        "Accept": "application/json"
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error(`Posts request failed: ${res.status} ${res.statusText}`);
+    }
+
+    const data = await res.json();
+
+    // Validate structure
+    if (!data || !Array.isArray(data.posts)) {
+      console.warn("Posts JSON format unexpected:", data);
+      return { posts: [] };
+    }
+
+    console.log(`Loaded ${data.posts.length} posts from Apps Script.`);
+    return data;
+
+  } catch (err) {
+    console.error("Error loading posts:", err);
+    return { posts: [] };
+  }
+}
 
 /* =========================
    HELPERS
