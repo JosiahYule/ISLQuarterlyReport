@@ -1191,6 +1191,136 @@
   display:block;
   fill: currentColor;
 }    
+
+/* ============= ALL POSTS (SCROLLABLE TABLE) ============= */
+.table-shell{
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  background:#fff;
+  overflow:hidden;
+}
+
+.table-toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 16px;
+  border-bottom:1px solid rgba(0,0,0,.06);
+  background:rgba(245,248,250,.55);
+}
+
+.table-tools{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.table-input{
+  width:320px;
+  max-width:100%;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid rgba(0,0,0,.10);
+  background:#fff;
+  font-family:var(--font);
+  font-size:13px;
+  color:var(--text);
+  outline:none;
+}
+
+.table-input:focus{
+  border-color:rgba(0,112,202,.35);
+  box-shadow:0 0 0 4px rgba(0,112,202,.10);
+}
+
+.table-select{
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid rgba(0,0,0,.10);
+  background:#fff;
+  font-family:var(--font);
+  font-size:13px;
+  color:var(--text);
+  outline:none;
+}
+
+.table-wrap{
+  max-height:560px;
+  overflow:auto;
+}
+
+.post-table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  font-size:13px;
+}
+
+.post-table thead th{
+  position:sticky;
+  top:0;
+  z-index:3;
+  text-align:left;
+  padding:12px 14px;
+  background:#fff;
+  border-bottom:1px solid rgba(0,0,0,.08);
+  font-size:11px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+  font-weight:800;
+  white-space:nowrap;
+}
+
+.post-table tbody td{
+  padding:12px 14px;
+  border-bottom:1px solid rgba(0,0,0,.06);
+  vertical-align:top;
+}
+
+.post-table tbody tr:hover{
+  background:rgba(0,112,202,.04);
+}
+
+.post-table a{
+  color:var(--isl-primary);
+  font-weight:800;
+  text-decoration:none;
+}
+
+.post-table a:hover{ text-decoration:underline; }
+
+.health-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(0,0,0,.08);
+  background:#fff;
+  font-size:12px;
+  font-weight:800;
+  white-space:nowrap;
+}
+
+.health-dot{
+  width:8px;height:8px;border-radius:999px;
+  box-shadow:0 0 0 3px rgba(0,0,0,.06);
+}
+
+.health-very-strong .health-dot{ background:#2563EB; box-shadow:0 0 0 3px rgba(37,99,235,.15); }
+.health-strong .health-dot{ background:#10B981; box-shadow:0 0 0 3px rgba(16,185,129,.15); }
+.health-moderate .health-dot{ background:#F59E0B; box-shadow:0 0 0 3px rgba(245,158,11,.18); }
+.health-low .health-dot{ background:#EF4444; box-shadow:0 0 0 3px rgba(239,68,68,.15); }
+
+.table-empty{
+  padding:18px 16px;
+  color:var(--muted);
+  font-size:13px;
+}    
   </style>
 </head>
 
@@ -1393,6 +1523,36 @@
       <div class="top-compact" id="topCompact"></div>
     </section>
 
+    <section class="section" aria-label="All posts">
+  <div class="section-header">
+    <div class="section-title">
+      <h2>All Posts This Quarter</h2>
+      <p>Scrollable list pulled from your Notion export sheet.</p>
+    </div>
+    <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Full list</span></div>
+  </div>
+
+  <div class="table-shell">
+    <div class="table-toolbar">
+      <div class="table-tools">
+        <input id="postsSearch" class="table-input" type="search" placeholder="Search post name, platform, notes..." aria-label="Search posts">
+        <select id="postsPlatform" class="table-select" aria-label="Filter by platform">
+          <option value="all">All platforms</option>
+          <option value="linkedin">LinkedIn</option>
+          <option value="facebook">Facebook</option>
+          <option value="instagram">Instagram</option>
+        </select>
+      </div>
+      <div class="pill" aria-label="Post count"><span class="pill-dot" aria-hidden="true"></span><span><strong id="postsCount">0</strong> posts</span></div>
+    </div>
+
+    <div class="table-wrap" role="region" aria-label="Posts table scroll area">
+      <table class="post-table" id="postsTable"></table>
+      <div class="table-empty" id="postsEmpty" style="display:none;">No posts match your filters.</div>
+    </div>
+  </div>
+</section>
+
     <section class="section" aria-label="Insights and analysis">
       <div class="section-header">
         <div class="section-title">
@@ -1460,6 +1620,19 @@ async function loadReport(){
 }
 
 /* =========================
+   LOAD POSTS JSON (Apps Script Web App)
+========================= */
+const POSTS_ENDPOINT = "https://script.google.com/macros/s/AKfycbyALQglX-zAHYwcYrD2bd6XBChlxXq5UrXPq41xGsY_PTolJ_Vaapd05RuiF5qRwqb1/exec";
+
+async function loadPosts(){
+  if(!POSTS_ENDPOINT || POSTS_ENDPOINT.includes("https://script.google.com/macros/s/AKfycbyALQglX-zAHYwcYrD2bd6XBChlxXq5UrXPq41xGsY_PTolJ_Vaapd05RuiF5qRwqb1/exec")) return { posts: [] };
+
+  const res = await fetch(POSTS_ENDPOINT, { cache: "no-store" });
+  if(!res.ok) throw new Error("Could not load posts JSON");
+  return await res.json();
+}   
+
+/* =========================
    HELPERS
 ========================= */
 const byId = (id) => document.getElementById(id);
@@ -1474,6 +1647,29 @@ const toNumber = (v) => {
   }
   return null;
 };
+
+ function escapeHtml(str){
+  return String(str ?? "").replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[m]));
+}
+
+function normPlatformToken(s){
+  const t = String(s || "").toLowerCase();
+  if(t.includes("linked")) return "linkedin";
+  if(t.includes("face")) return "facebook";
+  if(t.includes("insta")) return "instagram";
+  return "";
+}
+
+function healthClass(health){
+  const h = String(health || "").toLowerCase().trim();
+  if(h === "very strong") return "health-very-strong";
+  if(h === "strong") return "health-strong";
+  if(h === "moderate") return "health-moderate";
+  if(h === "low") return "health-low";
+  return "";
+}  
 
 const fmtInt = (n) => (typeof n === "number" && Number.isFinite(n) ? n.toLocaleString() : "—");
 
@@ -2044,6 +2240,123 @@ function brandDropdown(){
   });
 }
 
+ let POSTS_RAW = [];   // full list
+let POSTS_VIEW = [];  // filtered list
+
+function normalizePostsPayload(payload){
+  // Expecting either { posts:[...] } OR just an array
+  const arr = Array.isArray(payload) ? payload : (payload?.posts || []);
+  return arr.map(p => ({
+    title: p.title ?? p.postName ?? p.post ?? "",
+    date: p.date ?? "",
+    url: p.url ?? "",
+    platforms: Array.isArray(p.platforms) ? p.platforms : (String(p.platforms || p.platform || "").split(",").map(s=>s.trim()).filter(Boolean)),
+    impressions: toNumber(p.impressions),
+    engagements: toNumber(p.engagements),
+    engagementRate: toNumber(p.engagementRate ?? p.engagement_rate ?? p.er),
+    engagementHealth: p.engagementHealth ?? p.health ?? "",
+    likes: toNumber(p.likes),
+    comments: toNumber(p.comments),
+    shares: toNumber(p.shares),
+    notes: p.notes ?? ""
+  }));
+}
+
+function renderPostsTable(){
+  const table = byId("postsTable");
+  const empty = byId("postsEmpty");
+  const count = byId("postsCount");
+  if(!table || !empty || !count) return;
+
+  count.textContent = String(POSTS_VIEW.length);
+
+  if(!POSTS_VIEW.length){
+    table.innerHTML = "";
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>Post</th>
+        <th>Date</th>
+        <th>Platforms</th>
+        <th>Impr.</th>
+        <th>Eng.</th>
+        <th>ER</th>
+        <th>Health</th>
+        <th>Likes</th>
+        <th>Comments</th>
+        <th>Shares</th>
+        <th>Link</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${POSTS_VIEW.map(p => {
+        const plats = (p.platforms || []).join(", ");
+        const hClass = healthClass(p.engagementHealth);
+        const hLabel = escapeHtml(p.engagementHealth || "—");
+
+        return `
+          <tr>
+            <td><strong>${escapeHtml(p.title)}</strong></td>
+            <td>${escapeHtml(p.date)}</td>
+            <td>${escapeHtml(plats || "—")}</td>
+            <td>${fmtInt(p.impressions)}</td>
+            <td>${fmtInt(p.engagements)}</td>
+            <td>${fmtPct(p.engagementRate)}</td>
+            <td>
+              <span class="health-pill ${hClass}">
+                <span class="health-dot" aria-hidden="true"></span>
+                ${hLabel}
+              </span>
+            </td>
+            <td>${fmtInt(p.likes)}</td>
+            <td>${fmtInt(p.comments)}</td>
+            <td>${fmtInt(p.shares)}</td>
+            <td>${p.url ? `<a href="${p.url}" target="_blank" rel="noopener">Open</a>` : "—"}</td>
+            <td>${escapeHtml(p.notes)}</td>
+          </tr>
+        `;
+      }).join("")}
+    </tbody>
+  `;
+}
+
+function applyPostsFilters(){
+  const q = String(byId("postsSearch")?.value || "").toLowerCase().trim();
+  const plat = String(byId("postsPlatform")?.value || "all").toLowerCase();
+
+  POSTS_VIEW = POSTS_RAW.filter(p => {
+    const pTokens = (p.platforms || []).map(normPlatformToken).filter(Boolean);
+    const matchesPlatform = (plat === "all") ? true : pTokens.includes(plat);
+
+    if(!q) return matchesPlatform;
+
+    const hay = [
+      p.title, p.date, (p.platforms || []).join(", "),
+      String(p.impressions ?? ""), String(p.engagements ?? ""),
+      String(p.engagementRate ?? ""), String(p.engagementHealth ?? ""),
+      String(p.likes ?? ""), String(p.comments ?? ""), String(p.shares ?? ""),
+      p.notes
+    ].join(" ").toLowerCase();
+
+    return matchesPlatform && hay.includes(q);
+  });
+
+  renderPostsTable();
+}
+
+function wirePostsFilters(){
+  const search = byId("postsSearch");
+  const select = byId("postsPlatform");
+  if(search) search.addEventListener("input", applyPostsFilters);
+  if(select) select.addEventListener("change", applyPostsFilters);
+}  
+
 /* =========================
    INIT
 ========================= */
@@ -2058,6 +2371,11 @@ function brandDropdown(){
     renderInsights();          // ✅ pulls from REPORT.insights.*
     renderPlatforms();
     renderTopPosts();
+     const postsPayload = await loadPosts();
+    POSTS_RAW = normalizePostsPayload(postsPayload);
+    POSTS_VIEW = POSTS_RAW.slice();
+    wirePostsFilters();
+    renderPostsTable();
 
     buildReach("bar");
     buildEng("bar");
