@@ -1602,174 +1602,748 @@
 
 <script>
 /* =========================
-   1. CONFIGURATION & LOADING
+   REPORT DASHBOARD (FIXED)
+   - Uses your Apps Script JSON shape
+   - One endpoint for all sections
 ========================= */
-let REPORT = null;
-let POSTS_RAW = [];
+
+let RAW = null;
+let ALL_POSTS = [];
+let FILTERED_POSTS = [];
 
 const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbwBjPHqzQnbGgummslYHAInko7zS5-DQc90sHt4fnRqGfiTqMG1tK4vgHK6WZycLFNK/exec";
-const DEFAULT_REPORT = "islq2"; 
+const DEFAULT_REPORT = "islq2";
 
-async function loadReport(){
-  const params = new URLSearchParams(window.location.search);
-  const reportKey = String(params.get("report") || DEFAULT_REPORT).toLowerCase();
-  const url = `${REPORT_ENDPOINT}?report=${encodeURIComponent(reportKey)}&nocache=1`;
-  
-  const res = await fetch(url, { cache: "no-store" });
-  if(!res.ok) throw new Error(`Fetch failed: ${res.status}`);
-  return await res.json();
+// Front-end labels (optional but helpful)
+const REPORT_LABELS = {
+  islq1: { quarter: "Q1", range: "Sep–Nov 2025" },
+  islq2: { quarter: "Q2", range: "Dec–Feb 2026" },
+};
+
+// ---------- small helpers ----------
+const $ = (id) => document.getElementById(id);
+
+function escHtml(s){
+  return String(s ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 }
 
-/* =========================
-   2. DATA NORMALIZATION
-========================= */
-function toNumber(v) {
-  if (typeof v === "number") return v;
-  if (typeof v === "string") {
-    const cleaned = v.replace(/[%\s,]/g, "");
-    return cleaned === "" ? null : Number(cleaned);
+function isNum(n){ return typeof n === "number" && Number.isFinite(n); }
+
+function toNumber(v){
+  if (v === null || v === undefined) return null;
+  if (typeof v === "number") return Number.isFinite(v) ? v : null;
+  const s = String(v).trim();
+  if (!s) return null;
+  // remove commas/spaces/% and parse
+  const cleaned = s.replace(/,/g,"").replace(/\s+/g,"").replace(/%/g,"");
+  if (!/^[-]?\d+(\.\d+)?$/.test(cleaned)) return null;
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : null;
+}
+
+function fmtInt(v){
+  const n = toNumber(v);
+  return (n === null) ? "—" : n.toLocaleString();
+}
+
+function fmtPct(v){
+  const n = toNumber(v);
+  return (n === null) ? "—" : `${n.toFixed(2)}%`;
+}
+
+function normalizePlatformValue(s){
+  const t = String(s ?? "").toLowerCase();
+  if (t.includes("linkedin")) return "linkedin";
+  if (t.includes("facebook")) return "facebook";
+  if (t.includes("instagram")) return "instagram";
+  return "";
+}
+
+function healthClassFromText(h){
+  const s = String(h ?? "").toLowerCase();
+  if (s.includes("very strong")) return "health-very-strong";
+  if (s.includes("strong")) return "health-strong";
+  if (s.includes("moderate")) return "health-moderate";
+  if (s.includes("low")) return "health-low";
+  return "";
+}
+
+function deltaClass(deltaObj){
+  // deltaObj from Apps Script looks like: { raw, percent, direction }
+  const dir = deltaObj && typeof deltaObj === "object" ? deltaObj.direction : null;
+  if (dir === "up") return "positive";
+  if (dir === "down") return "negative";
+  return "";
+}
+
+function deltaText(deltaObj){
+  if (!deltaObj) return "—";
+  if (typeof deltaObj === "string") return deltaObj;
+  if (typeof deltaObj === "object" && deltaObj.raw) return deltaObj.raw;
+  return "—";
+}
+
+function pickKey(obj, candidates){
+  // returns first matching key in obj (case-insensitive)
+  if (!obj || typeof obj !== "object") return null;
+  const keys = Object.keys(obj);
+  const lowerMap = new Map(keys.map(k => [k.toLowerCase(), k]));
+  for (const c of candidates){
+    const found = lowerMap.get(String(c).toLowerCase());
+    if (found) return found;
+  }
+  // fuzzy contains
+  for (const c of candidates){
+    const cl = String(c).toLowerCase();
+    const match = keys.find(k => k.toLowerCase().includes(cl));
+    if (match) return match;
   }
   return null;
 }
 
-function normalizeReport(raw) {
-  // Identify the specific sheet name from your screenshot
-  const sheetKey = "Social Media Posts 2e116c47273a804987e0e289971eee44";
-  const rawPosts = Array.isArray(raw?.[sheetKey]) ? raw[sheetKey] : [];
+function formatGeneratedLabel(iso){
+  try{
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "";
+    // e.g., Feb 10, 2026
+    return d.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" });
+  }catch{
+    return "";
+  }
+}
 
-  // Map the Spreadsheet headers to our UI object
-  const posts = rawPosts.map(p => {
-    const imp = toNumber(p["Impressions"]);
-    const eng = toNumber(p["Engagements"]);
-    
-    // Engagement Rate Handling (LinkedIn style: Eng/Imp)
-    let er = toNumber(p["Engagement Rate"]);
-    if (er === null && imp > 0) er = (eng / imp) * 100;
+// ---------- loading ----------
+async function loadReport(){
+  const params = new URLSearchParams(window.location.search);
+  const reportKey = String(params.get("report") || DEFAULT_REPORT).toLowerCase();
+  const url = `${REPORT_ENDPOINT}?report=${encodeURIComponent(reportKey)}&nocache=1`;
+  const res = await fetch(url, { cache: "no-store" });
+  if(!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+  const json = await res.json();
+  if (json && json.error) throw new Error(json.message || "Endpoint returned error");
+  json.__reportKey = reportKey;
+  return json;
+}
 
-    // Clean "Engagement Health" (removes emojis like 🔵 or 🟢 for CSS matching)
-    const healthRaw = String(p["Engagement Health"] || "").replace(/[^a-zA-Z\s]/g, "").trim();
+// ---------- render: header labels ----------
+function renderHeader(meta){
+  const key = meta.__reportKey || DEFAULT_REPORT;
+  const labels = REPORT_LABELS[key] || { quarter: "Quarter", range: "" };
 
-    return {
-      title: p["Post Name"] || "Untitled Post",
-      date: p["Date"] || "",
-      url: p["URL"] || "#",
-      platforms: String(p["Platforms"] || "").split(",").map(s => s.trim()),
-      impressions: imp,
-      engagements: eng,
-      engagementRate: er,
-      health: healthRaw,
-      notes: p["Notes"] || ""
-    };
-  });
+  const qEl = $("reportQuarterLabel");
+  const rEl = $("reportRangeLabel");
+  const gEl = $("generatedLabel");
 
-  return {
-    quarterLabel: raw?.quarterLabel || "Quarterly Report",
-    rangeLabel: raw?.rangeLabel || "",
-    posts: posts,
-    // Extracting totals from 'Quarter Totals' tab logic
-    totals: raw?.quarterTotals || []
+  if (qEl) qEl.textContent = labels.quarter;
+  if (rEl) rEl.textContent = labels.range;
+
+  if (gEl){
+    const gen = meta.generatedAt || "";
+    gEl.textContent = formatGeneratedLabel(gen) || gEl.textContent || "";
+  }
+}
+
+// ---------- render: summary ----------
+function renderSummary(bullets){
+  const ul = $("execSummaryList");
+  if (!ul) return;
+  ul.innerHTML = "";
+
+  const list = Array.isArray(bullets) ? bullets : [];
+  if (!list.length){
+    ul.innerHTML = `<li><span class="summary-dot"></span><div class="summary-text">No summary bullets found.</div></li>`;
+    return;
+  }
+
+  ul.innerHTML = list.map(b => `
+    <li>
+      <span class="summary-dot" aria-hidden="true"></span>
+      <div class="summary-text">${escHtml(b)}</div>
+    </li>
+  `).join("");
+}
+
+// ---------- render: quarter totals KPIs ----------
+function renderQuarterTotals(rows){
+  const data = Array.isArray(rows) ? rows : [];
+
+  // Map by normalized field name
+  const map = {};
+  for (const r of data){
+    const field = String(r.field ?? "").trim().toLowerCase();
+    if (!field) continue;
+    map[field] = r;
+  }
+
+  // Helpers to set KPI
+  const setKpi = (valueId, deltaId, row) => {
+    const vEl = $(valueId);
+    const dEl = $(deltaId);
+    if (vEl) vEl.textContent = (row ? fmtInt(row.value) : "—");
+
+    if (dEl){
+      const txt = row ? deltaText(row.delta) : "—";
+      dEl.textContent = txt;
+
+      dEl.classList.remove("positive","negative");
+      const cls = row ? deltaClass(row.delta) : "";
+      if (cls) dEl.classList.add(cls);
+    }
   };
+
+  // Engagement rate is usually percent; use fmtPct if your sheet stores actual percent numbers
+  const setKpiPct = (valueId, deltaId, row) => {
+    const vEl = $(valueId);
+    const dEl = $(deltaId);
+
+    if (vEl){
+      // If value already comes as percent number (e.g. 6.3), show 6.30%
+      const n = toNumber(row?.value);
+      vEl.textContent = (n === null) ? "—" : `${n.toFixed(2)}%`;
+    }
+
+    if (dEl){
+      const txt = row ? deltaText(row.delta) : "—";
+      dEl.textContent = txt;
+
+      dEl.classList.remove("positive","negative");
+      const cls = row ? deltaClass(row.delta) : "";
+      if (cls) dEl.classList.add(cls);
+    }
+  };
+
+  // Match your sheet field names as best as possible
+  // Adjust these strings to match your Quarter Totals "Field" column exactly if needed.
+  const findRow = (needles) => {
+    for (const n of needles){
+      const key = String(n).toLowerCase();
+      if (map[key]) return map[key];
+    }
+    // fuzzy search
+    const keys = Object.keys(map);
+    for (const n of needles){
+      const nl = String(n).toLowerCase();
+      const found = keys.find(k => k.includes(nl));
+      if (found) return map[found];
+    }
+    return null;
+  };
+
+  setKpi("kpiPosts","deltaPosts", findRow(["posts"]));
+  setKpi("kpiImpressions","deltaImpressions", findRow(["post impressions","impressions"]));
+  setKpi("kpiReactions","deltaReactions", findRow(["reactions & likes","reactions","likes"]));
+  setKpi("kpiShares","deltaShares", findRow(["post shares","shares"]));
+  setKpi("kpiFollowers","deltaFollowers", findRow(["followers (total)","followers"]));
+  setKpi("kpiLinkClicks","deltaLinkClicks", findRow(["post link clicks","link clicks","clicks"]));
+  setKpi("kpiComments","deltaComments", findRow(["comments & replies","comments","replies"]));
+  setKpiPct("kpiAvgEngRate","deltaAvgEngRate", findRow(["avg engagement rate","average engagement rate","engagement rate"]));
 }
 
-/* =========================
-   3. UI HELPERS & RENDERING
-========================= */
-const PLATFORM_ICONS = {
-  linkedin: `<svg style="width:16px; height:16px; fill:#0077b5;" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>`,
-  facebook: `<svg style="width:16px; height:16px; fill:#1877f2;" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>`,
-  instagram: `<svg style="width:16px; height:16px; fill:#e4405f;" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>`
-};
+// ---------- render: platform breakdown ----------
+let reachChart = null;
+let engChart = null;
 
-function getHealthClass(h) {
-  const s = h.toLowerCase();
-  if (s.includes("very strong")) return "h-very-strong";
-  if (s.includes("strong")) return "h-strong";
-  if (s.includes("moderate")) return "h-moderate";
-  if (s.includes("low")) return "h-low";
-  return "";
-}
+function renderPlatformBreakdown(rows){
+  const grid = $("platformGrid");
+  if (!grid) return;
 
-function renderTable() {
-  const tbody = document.getElementById("posts-body");
-  if (!tbody) return;
+  const data = Array.isArray(rows) ? rows : [];
+  if (!data.length){
+    grid.innerHTML = `<div style="color:var(--muted);font-size:13px;">No platform breakdown rows found.</div>`;
+    return;
+  }
 
-  tbody.innerHTML = REPORT.posts.map(p => {
-    const iconHtml = p.platforms.map(pl => {
-      const key = pl.toLowerCase();
-      if (key.includes("linkedin")) return PLATFORM_ICONS.linkedin;
-      if (key.includes("facebook")) return PLATFORM_ICONS.facebook;
-      if (key.includes("instagram")) return PLATFORM_ICONS.instagram;
-      return "";
-    }).join(" ");
+  // Guess keys
+  const sample = data[0] || {};
+  const kPlatform = pickKey(sample, ["Platform","platform","Network","Channel"]);
+  const kFollowers = pickKey(sample, ["Followers","Follower"]);
+  const kEngRate = pickKey(sample, ["Post Engagement Rate","Engagement Rate"]);
+  const kReach = pickKey(sample, ["Page Reach","Reach"]);
+  const kClicks = pickKey(sample, ["Page Clicks","Clicks"]);
+
+  // Build cards
+  grid.innerHTML = data.map(row => {
+    const name = String(row[kPlatform] ?? "Platform").trim();
+
+    const followers = row[kFollowers];
+    const engRate = row[kEngRate];
+    const reach = row[kReach];
+    const clicks = row[kClicks];
+
+    // Delta columns if present (anything containing Delta/Δ near the main columns)
+    const kFollowersD = pickKey(row, ["Followers Δ","Followers Delta","Followers delta","Followers change"]);
+    const kEngRateD = pickKey(row, ["Post Engagement Rate Δ","Engagement Rate Δ","Engagement Rate Delta","Engagement Rate delta"]);
+    const kReachD = pickKey(row, ["Page Reach Δ","Reach Δ","Reach Delta","Reach delta"]);
+    const kClicksD = pickKey(row, ["Page Clicks Δ","Clicks Δ","Clicks Delta","Clicks delta"]);
+
+    const deltaChip = (val) => {
+      if (!val) return `<span class="delta">—</span>`;
+      const cls = deltaClass(val);
+      return `<span class="delta ${cls}">${escHtml(deltaText(val))}</span>`;
+    };
+
+    // Badge letter
+    const badge = name.slice(0,1).toUpperCase();
 
     return `
-      <tr>
-        <td>
-          <div style="font-weight:600; color:#1a1a1a;">${p.title}</div>
-          <div style="font-size:11px; color:#666;">${p.date}</div>
-        </td>
-        <td style="text-align:center;">${iconHtml}</td>
-        <td style="text-align:right;">${(p.impressions || 0).toLocaleString()}</td>
-        <td style="text-align:right;">${(p.engagements || 0).toLocaleString()}</td>
-        <td style="text-align:right; font-weight:700;">${p.engagementRate ? p.engagementRate.toFixed(2) + '%' : '—'}</td>
-        <td style="text-align:center;">
-          <span class="health-pill ${getHealthClass(p.health)}">${p.health}</span>
-        </td>
-        <td style="text-align:center;">
-          <a href="${p.url}" target="_blank" class="btn-link">View</a>
-        </td>
-      </tr>
+      <div class="platform">
+        <div class="platform-head">
+          <div class="platform-name">
+            <div class="platform-badge" aria-hidden="true">${escHtml(badge)}</div>
+            <span>${escHtml(name)}</span>
+          </div>
+        </div>
+
+        <div class="pstats">
+          <div class="pstat">
+            <span class="pstat-label">Followers</span>
+            <div class="pstat-row">
+              <strong>${escHtml(fmtInt(followers))}</strong>
+              ${deltaChip(row[kFollowersD])}
+            </div>
+          </div>
+
+          <div class="pstat">
+            <span class="pstat-label">Post Engagement Rate</span>
+            <div class="pstat-row">
+              <strong>${escHtml(fmtPct(engRate))}</strong>
+              ${deltaChip(row[kEngRateD])}
+            </div>
+          </div>
+
+          <div class="pstat">
+            <span class="pstat-label">Page Reach</span>
+            <div class="pstat-row">
+              <strong>${escHtml(fmtInt(reach))}</strong>
+              ${deltaChip(row[kReachD])}
+            </div>
+          </div>
+
+          <div class="pstat">
+            <span class="pstat-label">Page Clicks</span>
+            <div class="pstat-row">
+              <strong>${escHtml(fmtInt(clicks))}</strong>
+              ${deltaChip(row[kClicksD])}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  // Charts (Reach + Engagement Rate)
+  const labels = data.map(r => String(r[kPlatform] ?? "Platform"));
+  const reachVals = data.map(r => toNumber(r[kReach]) ?? 0);
+  const engVals = data.map(r => toNumber(r[kEngRate]) ?? 0);
+
+  buildOrUpdateChart("reach", "reachChart", labels, reachVals);
+  buildOrUpdateChart("eng", "engRateChart", labels, engVals);
+}
+
+function buildOrUpdateChart(which, canvasId, labels, values){
+  const ctx = $(canvasId);
+  if (!ctx) return;
+
+  const isReach = which === "reach";
+  const current = isReach ? reachChart : engChart;
+
+  const type = current?.config?.type || "bar";
+
+  const config = {
+    type,
+    data: {
+      labels,
+      datasets: [{
+        label: isReach ? "Page Reach" : "Engagement Rate",
+        data: values
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: type === "pie" }
+      },
+      scales: (type === "pie") ? {} : {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  };
+
+  if (current){
+    current.destroy();
+  }
+  const chart = new Chart(ctx, config);
+  if (isReach) reachChart = chart;
+  else engChart = chart;
+}
+
+// Chart type toggles (Bar/Pie)
+function wireChartToggles(){
+  document.querySelectorAll(".ct-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const chartKey = btn.getAttribute("data-chart");
+      const type = btn.getAttribute("data-type");
+
+      // toggle UI
+      const group = btn.closest(".chart-toggle");
+      if (group){
+        group.querySelectorAll(".ct-btn").forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+      }
+
+      if (chartKey === "reach" && reachChart){
+        const labels = reachChart.data.labels;
+        const values = reachChart.data.datasets[0].data;
+        reachChart.destroy();
+        reachChart = null;
+        buildOrUpdateChart("reach", "reachChart", labels, values);
+        reachChart.config.type = type;
+        reachChart.update();
+      }
+
+      if (chartKey === "eng" && engChart){
+        const labels = engChart.data.labels;
+        const values = engChart.data.datasets[0].data;
+        engChart.destroy();
+        engChart = null;
+        buildOrUpdateChart("eng", "engRateChart", labels, values);
+        engChart.config.type = type;
+        engChart.update();
+      }
+    });
+  });
+}
+
+// ---------- render: top posts ----------
+function renderTopPosts(rows){
+  const host = $("topCompact");
+  if (!host) return;
+
+  const data = Array.isArray(rows) ? rows : [];
+  if (!data.length){
+    host.innerHTML = `<div style="color:var(--muted);font-size:13px;">No top posts found.</div>`;
+    return;
+  }
+
+  // Guess keys
+  const sample = data[0] || {};
+  const kPlatform = pickKey(sample, ["Platform","platform","Network"]);
+  const kTitle = pickKey(sample, ["Post Name","Title","Post"]);
+  const kImpressions = pickKey(sample, ["Impressions"]);
+  const kEngagements = pickKey(sample, ["Engagements","Engagement"]);
+  const kER = pickKey(sample, ["Engagement Rate","Post Engagement Rate"]);
+  const kURL = pickKey(sample, ["URL","Link"]);
+  const kNotes = pickKey(sample, ["Notes","Note"]);
+
+  // group by platform
+  const groups = {};
+  for (const r of data){
+    const p = String(r[kPlatform] ?? "Platform").trim();
+    (groups[p] ||= []).push(r);
+  }
+
+  host.innerHTML = Object.entries(groups).map(([platform, list]) => {
+    const safePlatform = escHtml(platform);
+    const count = list.length;
+
+    const inner = list.map((r, idx) => {
+      const title = String(r[kTitle] ?? "Untitled").trim();
+      const imp = fmtInt(r[kImpressions]);
+      const eng = fmtInt(r[kEngagements]);
+      const er = (toNumber(r[kER]) === null) ? "—" : `${toNumber(r[kER]).toFixed(2)}%`;
+      const url = String(r[kURL] ?? "").trim();
+      const notes = String(r[kNotes] ?? "").trim();
+
+      const mathLine = `Impressions: ${imp} • Engagements: ${eng} • Engagement Rate: ${er}`;
+
+      return `
+        <details class="post-mini">
+          <summary>
+            <span class="rank">#${idx + 1}</span>
+            <span class="ptitle">${escHtml(title)}</span>
+            <span class="quick">
+              <span><strong>${escHtml(imp)}</strong> imp</span>
+              <span><strong>${escHtml(er)}</strong> ER</span>
+            </span>
+          </summary>
+          <div class="post-details">
+            <div class="mini-stat"><span>Impressions</span><strong>${escHtml(imp)}</strong></div>
+            <div class="mini-stat"><span>Engagements</span><strong>${escHtml(eng)}</strong></div>
+            <div class="mini-stat"><span>Engagement Rate</span><strong>${escHtml(er)}</strong></div>
+            <div class="mini-stat"><span>Link</span><strong>${url ? `<a href="${escHtml(url)}" target="_blank" rel="noopener">View</a>` : "—"}</strong></div>
+            <div class="math">${escHtml(mathLine)}${notes ? " • Notes: " + escHtml(notes) : ""}</div>
+          </div>
+        </details>
+      `;
+    }).join("");
+
+    return `
+      <details class="platform-acc">
+        <summary>
+          <span class="sum-left">
+            <span class="platform-pill">${safePlatform}</span>
+            <span class="platform-meta">${count} top posts</span>
+          </span>
+          <span class="chev" aria-hidden="true">▾</span>
+        </summary>
+        <div class="platform-body">${inner}</div>
+      </details>
     `;
   }).join("");
 }
 
-/* =========================
-   4. INIT
-========================= */
-async function init() {
-  try {
-    const raw = await loadReport();
-    REPORT = normalizeReport(raw);
-    
-    // Update Header
-    const qLabel = document.getElementById("quarter-label");
-    if(qLabel) qLabel.textContent = REPORT.quarterLabel;
+// ---------- render: all posts table + filtering ----------
+function normalizeAllPostsRows(rows){
+  const data = Array.isArray(rows) ? rows : [];
+  if (!data.length) return [];
 
-    renderTable();
-  } catch (err) {
+  const sample = data[0] || {};
+  const kTitle = pickKey(sample, ["Post Name","Title","Post"]);
+  const kDate = pickKey(sample, ["Date","Published","Post Date"]);
+  const kPlatforms = pickKey(sample, ["Platforms","Platform"]);
+  const kImpressions = pickKey(sample, ["Impressions"]);
+  const kEngagements = pickKey(sample, ["Engagements","Engagement"]);
+  const kER = pickKey(sample, ["Engagement Rate","Post Engagement Rate"]);
+  const kHealth = pickKey(sample, ["Engagement Health","Health"]);
+  const kURL = pickKey(sample, ["URL","Link"]);
+  const kNotes = pickKey(sample, ["Notes","Note"]);
+
+  return data.map(r => {
+    const platformsRaw = String(r[kPlatforms] ?? "").trim();
+    const platforms = platformsRaw
+      ? platformsRaw.split(",").map(s => s.trim()).filter(Boolean)
+      : [];
+
+    const imp = toNumber(r[kImpressions]);
+    const eng = toNumber(r[kEngagements]);
+    let er = toNumber(r[kER]);
+    // If ER missing, compute from eng/imp
+    if (er === null && isNum(imp) && imp > 0 && isNum(eng)) er = (eng / imp) * 100;
+
+    const healthText = String(r[kHealth] ?? "").trim();
+
+    return {
+      title: String(r[kTitle] ?? "Untitled Post").trim(),
+      date: String(r[kDate] ?? "").trim(),
+      platforms,
+      impressions: imp,
+      engagements: eng,
+      engagementRate: er,
+      healthText,
+      url: String(r[kURL] ?? "").trim(),
+      notes: String(r[kNotes] ?? "").trim()
+    };
+  });
+}
+
+function renderAllPostsTable(){
+  const table = $("postsTable");
+  const countEl = $("postsCount");
+  const emptyEl = $("postsEmpty");
+  if (!table) return;
+
+  const rows = FILTERED_POSTS;
+
+  if (countEl) countEl.textContent = String(rows.length);
+
+  if (!rows.length){
+    table.innerHTML = "";
+    if (emptyEl) emptyEl.style.display = "block";
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = "none";
+
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>Post</th>
+        <th>Platform</th>
+        <th style="text-align:right;">Impressions</th>
+        <th style="text-align:right;">Engagements</th>
+        <th style="text-align:right;">Engagement Rate</th>
+        <th>Health</th>
+        <th>Link</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows.map(p => {
+        const platforms = p.platforms.length ? p.platforms.join(", ") : "—";
+        const healthClass = healthClassFromText(p.healthText);
+        const healthSafe = escHtml(p.healthText || "—");
+
+        return `
+          <tr>
+            <td>
+              <div style="font-weight:800;color:var(--text);line-height:1.3;">${escHtml(p.title)}</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px;">${escHtml(p.date || "")}${p.notes ? " • " + escHtml(p.notes) : ""}</div>
+            </td>
+            <td>${escHtml(platforms)}</td>
+            <td style="text-align:right;">${escHtml(fmtInt(p.impressions))}</td>
+            <td style="text-align:right;">${escHtml(fmtInt(p.engagements))}</td>
+            <td style="text-align:right;font-weight:800;">${p.engagementRate === null ? "—" : escHtml(p.engagementRate.toFixed(2) + "%")}</td>
+            <td>
+              <span class="health-pill ${healthClass}">
+                <span class="health-dot" aria-hidden="true"></span>
+                ${healthSafe}
+              </span>
+            </td>
+            <td>${p.url ? `<a href="${escHtml(p.url)}" target="_blank" rel="noopener">View</a>` : "—"}</td>
+          </tr>
+        `;
+      }).join("")}
+    </tbody>
+  `;
+}
+
+function applyPostFilters(){
+  const q = String($("postsSearch")?.value ?? "").trim().toLowerCase();
+  const platform = String($("postsPlatform")?.value ?? "all").toLowerCase();
+
+  FILTERED_POSTS = ALL_POSTS.filter(p => {
+    const platMatch = (platform === "all")
+      ? true
+      : p.platforms.some(pl => normalizePlatformValue(pl) === platform);
+
+    if (!platMatch) return false;
+
+    if (!q) return true;
+
+    const hay = [
+      p.title,
+      p.date,
+      p.platforms.join(", "),
+      p.notes,
+      p.healthText
+    ].join(" ").toLowerCase();
+
+    return hay.includes(q);
+  });
+
+  renderAllPostsTable();
+}
+
+function wirePostsTableFilters(){
+  const search = $("postsSearch");
+  const select = $("postsPlatform");
+  if (search) search.addEventListener("input", applyPostFilters);
+  if (select) select.addEventListener("change", applyPostFilters);
+}
+
+// ---------- render: insights ----------
+function renderInsights(rows){
+  const data = Array.isArray(rows) ? rows : [];
+
+  const bySection = {};
+  for (const r of data){
+    const section = String(r.Section ?? r.section ?? "").trim();
+    const text = String(r.Text ?? r.text ?? "").trim();
+    if (!section) continue;
+    bySection[section.toLowerCase()] = text;
+  }
+
+  const set = (id, sectionNeedles) => {
+    const el = $(id);
+    if (!el) return;
+
+    let val = "";
+    for (const n of sectionNeedles){
+      const key = String(n).toLowerCase();
+      if (bySection[key]) { val = bySection[key]; break; }
+      // fuzzy
+      const hit = Object.keys(bySection).find(k => k.includes(key));
+      if (hit) { val = bySection[hit]; break; }
+    }
+
+    el.innerHTML = val ? escHtml(val).replace(/\n/g, "<br>") : "";
+  };
+
+  set("insWorking", ["what's working", "whats working", "working"]);
+  set("insNotWorking", ["what's not working", "whats not working", "not working"]);
+  set("insActions", ["actions from this data", "actions"]);
+  set("insNext", ["next quarter focus", "next quarter", "focus"]);
+}
+
+// ---------- small UI: quarter + brand menus (optional but prevents stuck states) ----------
+function wireMenus(){
+  // Quarter menu
+  const wrap = document.querySelector(".pill-wrap");
+  const btn = $("quarterBtn");
+  if (wrap && btn){
+    btn.addEventListener("click", () => {
+      wrap.classList.toggle("open");
+      btn.setAttribute("aria-expanded", wrap.classList.contains("open") ? "true" : "false");
+    });
+  }
+
+  // Brand menu
+  const brandWrap = document.querySelector(".brand-menu-wrap");
+  const brandBtn = $("brandToggle");
+  if (brandWrap && brandBtn){
+    brandBtn.addEventListener("click", () => {
+      brandWrap.classList.toggle("open");
+      brandBtn.setAttribute("aria-expanded", brandWrap.classList.contains("open") ? "true" : "false");
+    });
+    document.querySelectorAll(".brand-option").forEach(opt => {
+      opt.addEventListener("click", () => {
+        const href = opt.getAttribute("data-href");
+        if (href) window.location.href = href;
+      });
+    });
+  }
+
+  // Close on outside click
+  document.addEventListener("click", (e) => {
+    const t = e.target;
+    if (wrap && !wrap.contains(t)) {
+      wrap.classList.remove("open");
+      btn && btn.setAttribute("aria-expanded", "false");
+    }
+    if (brandWrap && !brandWrap.contains(t)) {
+      brandWrap.classList.remove("open");
+      brandBtn && brandBtn.setAttribute("aria-expanded", "false");
+    }
+  });
+}
+
+// ---------- init ----------
+async function init(){
+  try{
+    RAW = await loadReport();
+
+    renderHeader(RAW);
+    renderSummary(RAW.summaryBullets);
+    renderQuarterTotals(RAW.quarterTotals);
+    renderPlatformBreakdown(RAW.platformBreakdown);
+    renderTopPosts(RAW.topPosts);
+
+    ALL_POSTS = normalizeAllPostsRows(RAW.allPosts);
+    FILTERED_POSTS = ALL_POSTS.slice();
+
+    wirePostsTableFilters();
+    renderAllPostsTable();
+
+    renderInsights(RAW.insights);
+
+    wireChartToggles();
+    wireMenus();
+
+  }catch(err){
     console.error("Dashboard error:", err);
+    // Optional: show something visible
+    const heroGen = $("generatedLabel");
+    if (heroGen) heroGen.textContent = "Error loading data";
   }
 }
 
 window.addEventListener("DOMContentLoaded", init);
 </script>
-
-<style>
-  #posts-table { width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 13px; }
-  #posts-table th { background: #f8f9fa; padding: 12px 8px; text-align: left; border-bottom: 2px solid #dee2e6; color: #444; }
-  #posts-table td { padding: 12px 8px; border-bottom: 1px solid #eee; vertical-align: middle; }
-  
-  .health-pill {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    display: inline-block;
-  }
-  .h-very-strong { background: #e3f2fd; color: #0d47a1; } /* Blue */
-  .h-strong { background: #e8f5e9; color: #1b5e20; }      /* Green */
-  .h-moderate { background: #fffde7; color: #f57f17; }    /* Yellow */
-  .h-low { background: #ffebee; color: #b71c1c; }         /* Red */
-
-  .btn-link {
-    text-decoration: none;
-    background: #0077b5;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-  }
-</style>
 </body>
 </html>
