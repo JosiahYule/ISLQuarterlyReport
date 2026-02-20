@@ -1,4 +1,3 @@
-<!-- DEPLOY TEST 2026-02-19 14:05 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1813,43 +1812,86 @@ const PLATFORM_ICONS = {
    NORMALIZE JSON KEYS (handles older sheets)
 ========================= */
 function normalizeReport(raw){
-  // If this is already the “old” local structure, keep your existing behavior
+  // If already normalized (old local JSON), keep it
   if(raw && raw.overall && raw.platforms) return raw;
 
-  // Otherwise assume it’s the Apps Script payload
   const qTotals = Array.isArray(raw?.quarterTotals) ? raw.quarterTotals : [];
   const pBreak  = Array.isArray(raw?.platformBreakdown) ? raw.platformBreakdown : [];
   const tPosts  = Array.isArray(raw?.topPosts) ? raw.topPosts : [];
   const bullets = Array.isArray(raw?.summaryBullets) ? raw.summaryBullets : [];
   const insArr  = Array.isArray(raw?.insights) ? raw.insights : [];
 
-  // Helper to find quarter totals by field name
-  const qt = (name) => qTotals.find(x => String(x.field).toLowerCase() === name.toLowerCase());
+  /* -------------------------
+     Flexible field matcher
+  ------------------------- */
+  const qt = (...names) => {
+    return qTotals.find(x => {
+      const f = String(x?.field ?? "").toLowerCase().trim();
+      return names.some(n => f === String(n).toLowerCase().trim());
+    });
+  };
 
-  // Map quarter totals into overall + deltas
+  /* -------------------------
+     Normalize percent values
+     - 0.0412  → 4.12
+     - 4.12    → 4.12
+  ------------------------- */
+  const pct = (v) => {
+    const n = toNumber(v);
+    if (n === null) return null;
+    return (n > 0 && n <= 1) ? n * 100 : n;
+  };
+
+  /* -------------------------
+     Map quarter totals
+  ------------------------- */
   const overall = {
     posts: toNumber(qt("posts")?.value),
     impressions: toNumber(qt("impressions")?.value),
     shares: toNumber(qt("shares")?.value),
-    reactions: toNumber(qt("reactions")?.value),
-    followers: toNumber(qt("followers")?.value),
-    linkClicks: toNumber(qt("linkClicks")?.value),
-    comments: toNumber(qt("comments")?.value),
-    avgEngagementRate: toNumber(qt("avgEngagement")?.value),
+    reactions: toNumber(qt("reactions","reactions & likes","likes")?.value),
+    followers: toNumber(qt("followers","followers (total)")?.value),
+    linkClicks: toNumber(qt("linkclicks","link clicks","post link clicks")?.value),
+    comments: toNumber(qt("comments","comments & replies")?.value),
+
+    avgEngagementRate: pct(
+      qt(
+        "avgengagement",
+        "avg engagement",
+        "avg engagement rate",
+        "average engagement rate",
+        "engagement rate",
+        "post engagement rate",
+        "avg er",
+        "er"
+      )?.value
+    )
   };
 
   const deltas = {
     posts: qt("posts")?.delta?.raw || "",
     impressions: qt("impressions")?.delta?.raw || "",
     shares: qt("shares")?.delta?.raw || "",
-    reactions: qt("reactions")?.delta?.raw || "",
-    followers: qt("followers")?.delta?.raw || "",
-    linkClicks: qt("linkClicks")?.delta?.raw || "",
-    comments: qt("comments")?.delta?.raw || "",
-    avgEngagementRate: qt("avgEngagement")?.delta?.raw || "",
+    reactions: qt("reactions","reactions & likes","likes")?.delta?.raw || "",
+    followers: qt("followers","followers (total)")?.delta?.raw || "",
+    linkClicks: qt("linkclicks","link clicks","post link clicks")?.delta?.raw || "",
+    comments: qt("comments","comments & replies")?.delta?.raw || "",
+    avgEngagementRate:
+      qt(
+        "avgengagement",
+        "avg engagement",
+        "avg engagement rate",
+        "average engagement rate",
+        "engagement rate",
+        "post engagement rate",
+        "avg er",
+        "er"
+      )?.delta?.raw || ""
   };
 
-  // Map platform breakdown rows -> platforms array your UI expects
+  /* -------------------------
+     Platform breakdown
+  ------------------------- */
   const platforms = pBreak.map(row => {
     const plat = String(row["Platform"] || "").toLowerCase();
     const key =
@@ -1860,11 +1902,11 @@ function normalizeReport(raw){
     return {
       key,
       name: row["Platform"] || "",
-      badge: "",    // you don’t use this anymore
-      tag: "",      // optional
+      badge: "",
+      tag: "",
       followers: toNumber(row["Followers"]),
       followersDelta: row["Followers Δ"]?.raw || row["Followers Δ"] || "",
-      engagementRate: toNumber(row["Engagement Rate"]),
+      engagementRate: pct(row["Engagement Rate"]),
       engagementRateDelta: row["ER Δ"]?.raw || row["ER Δ"] || "",
       pageReach: toNumber(row["Reach"]),
       pageReachDelta: row["Reach Δ"]?.raw || row["Reach Δ"] || "",
@@ -1873,11 +1915,15 @@ function normalizeReport(raw){
     };
   });
 
-  // Map top posts into your old topPostsByPlatform buckets
+  /* -------------------------
+     Top posts
+  ------------------------- */
   const topPostsByPlatform = { linkedin: [], facebook: [], instagram: [] };
+
   tPosts.forEach(p => {
     const key = normPlatformToken(p["Platform"]);
     if(!key) return;
+
     topPostsByPlatform[key].push({
       title: p["Title"] || "",
       impressions: toNumber(p["Impressions"]),
@@ -1886,11 +1932,15 @@ function normalizeReport(raw){
     });
   });
 
-  // Convert insights array (Section/Text) into the keys your UI wants
+  /* -------------------------
+     Insights
+  ------------------------- */
   const insights = { working:"", notWorking:"", actions:"", next:"" };
+
   insArr.forEach(x => {
     const k = String(x.Section || "").toLowerCase().trim();
     const v = String(x.Text || "").trim();
+
     if(k === "working") insights.working = v;
     if(k === "notworking") insights.notWorking = v;
     if(k === "actions") insights.actions = v;
@@ -1898,7 +1948,7 @@ function normalizeReport(raw){
   });
 
   return {
-    quarterLabel: "Q1",           // optional: you can add these to your sheet later
+    quarterLabel: "Q1",
     rangeLabel: "",
     generatedLabel: raw?.generatedAt ? raw.generatedAt.slice(0,10) : "",
     execSummary: bullets,
