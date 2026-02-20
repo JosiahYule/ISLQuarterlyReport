@@ -1601,959 +1601,175 @@
   </div>
 
 <script>
-/* =========================================================
-   UNIFIED REPORT LOADING (one endpoint for everything)
-   - KPIs + Platform breakdown + Top posts + Summary + Insights
-   - All Posts table data included in same payload (REPORT.allPosts)
-========================================================= */
+/* =========================
+   1. CONFIGURATION & LOADING
+========================= */
 let REPORT = null;
+let POSTS_RAW = [];
 
-const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbxo-P51lbRNF6w0YvkzHua3XUCH5Trp62KMafbcfQtyVYse0s4Lfn75FJy-iNi4uK12/exec";
-const DEFAULT_REPORT = "islq2"; // current quarter (fallback)
-
-function getReportKey(){
-  const params = new URLSearchParams(window.location.search);
-  return String(params.get("report") || DEFAULT_REPORT).toLowerCase();
-}
+const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbwBjPHqzQnbGgummslYHAInko7zS5-DQc90sHt4fnRqGfiTqMG1tK4vgHK6WZycLFNK/exec";
+const DEFAULT_REPORT = "islq2"; 
 
 async function loadReport(){
-  const url = `${REPORT_ENDPOINT}?report=${encodeURIComponent(getReportKey())}&nocache=1`;
+  const params = new URLSearchParams(window.location.search);
+  const reportKey = String(params.get("report") || DEFAULT_REPORT).toLowerCase();
+  const url = `${REPORT_ENDPOINT}?report=${encodeURIComponent(reportKey)}&nocache=1`;
+  
   const res = await fetch(url, { cache: "no-store" });
-  if(!res.ok) throw new Error(`Could not load report JSON: ${res.status} ${res.statusText}`);
+  if(!res.ok) throw new Error(`Fetch failed: ${res.status}`);
   return await res.json();
 }
 
-/* =========================================================
-   HELPERS
-========================================================= */
-const byId = (id) => document.getElementById(id);
-
-const toNumber = (v) => {
-  if (typeof v === "number") return Number.isFinite(v) ? v : null;
-
+/* =========================
+   2. DATA NORMALIZATION
+========================= */
+function toNumber(v) {
+  if (typeof v === "number") return v;
   if (typeof v === "string") {
-    const t = v.trim();
-    if (!t) return null;
-    const cleaned = t.replace(/[%\s]/g, "").replace(/,/g, "");
-    const n = Number(cleaned);
-    return Number.isFinite(n) ? n : null;
+    const cleaned = v.replace(/[%\s,]/g, "");
+    return cleaned === "" ? null : Number(cleaned);
   }
   return null;
-};
-
-function fmtDate(dateStr){
-  if(!dateStr) return "—";
-  const d = new Date(dateStr);
-  if(isNaN(d.getTime())) return String(dateStr);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2,"0");
-  const day = String(d.getDate()).padStart(2,"0");
-  return `${y}-${m}-${day}`;
 }
 
-function escapeHtml(str){
-  return String(str ?? "").replace(/[&<>"']/g, m => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-  }[m]));
-}
+function normalizeReport(raw) {
+  // Identify the specific sheet name from your screenshot
+  const sheetKey = "Social Media Posts 2e116c47273a804987e0e289971eee44";
+  const rawPosts = Array.isArray(raw?.[sheetKey]) ? raw[sheetKey] : [];
 
-function normPlatformToken(s){
-  const t = String(s || "").toLowerCase();
-  if(t.includes("linked")) return "linkedin";
-  if(t.includes("face")) return "facebook";
-  if(t.includes("insta")) return "instagram";
-  return "";
-}
+  // Map the Spreadsheet headers to our UI object
+  const posts = rawPosts.map(p => {
+    const imp = toNumber(p["Impressions"]);
+    const eng = toNumber(p["Engagements"]);
+    
+    // Engagement Rate Handling (LinkedIn style: Eng/Imp)
+    let er = toNumber(p["Engagement Rate"]);
+    if (er === null && imp > 0) er = (eng / imp) * 100;
 
-function healthClass(health){
-  const h = String(health || "").toLowerCase().trim();
-  if(h === "very strong") return "health-very-strong";
-  if(h === "strong") return "health-strong";
-  if(h === "moderate") return "health-moderate";
-  if(h === "low") return "health-low";
-  return "";
-}
-
-const fmtInt = (n) => (typeof n === "number" && Number.isFinite(n) ? n.toLocaleString() : "—");
-
-const fmtCompact = (n) => {
-  if (typeof n !== "number" || !Number.isFinite(n)) return "—";
-  if (Math.abs(n) >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
-  if (Math.abs(n) >= 1_000) return n.toLocaleString();
-  return String(n);
-};
-
-const fmtPct = (n) =>
-  typeof n === "number" && Number.isFinite(n)
-    ? (n.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "%")
-    : "—";
-
-function setText(id, value){
-  const el = byId(id);
-  if (el) el.textContent = value;
-}
-
-function setHTML(id, value){
-  const el = byId(id);
-  if (!el) return;
-  el.innerHTML = (value && String(value).trim()) ? String(value) : "";
-}
-
-function setDelta(el, text){
-  if(!el) return;
-  el.textContent = text || "—";
-  el.classList.remove("positive","negative");
-  if(!text || text === "—") return;
-
-  const t = String(text).trim();
-  if(t.startsWith("▲") || t.startsWith("↑")) el.classList.add("positive");
-  if(t.startsWith("▼") || t.startsWith("↓")) el.classList.add("negative");
-}
-
-/* =========================================================
-   ICONS
-========================================================= */
-const PLATFORM_ICONS = {
-  linkedin: `
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5ZM0.2 8.2H4.8V24H0.2V8.2ZM8.2 8.2H12.6V10.3H12.7C13.3 9.2 14.8 8 17 8C21.7 8 22.6 11.1 22.6 15.1V24H18V16.2C18 14.3 18 11.9 15.4 11.9C12.8 11.9 12.4 14 12.4 16.1V24H7.8V8.2H8.2Z"/>
-    </svg>
-  `,
-  facebook: `
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M13.5 24V13.1H17l.5-4.2h-4V6.2c0-1.2.3-2 2.1-2H17.7V.3C17.3.2 16 .1 14.4.1c-3.3 0-5.6 2-5.6 5.8v3H5v4.2h3.8V24h4.7Z"/>
-    </svg>
-  `,
-  instagram: `
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M7.2 0h9.6C20.8 0 24 3.2 24 7.2v9.6c0 4-3.2 7.2-7.2 7.2H7.2C3.2 24 0 20.8 0 16.8V7.2C0 3.2 3.2 0 7.2 0Zm9.6 2.2H7.2C4.4 2.2 2.2 4.4 2.2 7.2v9.6c0 2.8 2.2 5 5 5h9.6c2.8 0 5-2.2 5-5V7.2c0-2.8-2.2-5-5-5ZM12 6.1a5.9 5.9 0 1 1 0 11.8 5.9 5.9 0 0 1 0-11.8Zm0 2.2a3.7 3.7 0 1 0 0 7.4 3.7 3.7 0 0 0 0-7.4Zm6.6-2.8a1.4 1.4 0 1 1 0 2.8 1.4 1.4 0 0 1 0-2.8Z"/>
-    </svg>
-  `
-};
-
-/* =========================================================
-   NORMALIZE (Apps Script payload -> UI shape)
-   IMPORTANT:
-   - This expects your web app JSON includes one of these keys for posts:
-     raw.allPosts OR raw.posts OR raw.postsTable OR raw.socialPosts
-   - Adjust the fallback list if your payload uses a different key.
-========================================================= */
-function normalizeReport(raw){
-  // If already in the exact UI shape, keep it.
-  if(raw && raw.overall && raw.platforms) return raw;
-
-  const qTotals = Array.isArray(raw?.quarterTotals) ? raw.quarterTotals : [];
-  const pBreak  = Array.isArray(raw?.platformBreakdown) ? raw.platformBreakdown : [];
-  const tPosts  = Array.isArray(raw?.topPosts) ? raw.topPosts : [];
-  const bullets = Array.isArray(raw?.summaryBullets) ? raw.summaryBullets : [];
-  const insArr  = Array.isArray(raw?.insights) ? raw.insights : [];
-
-  // ✅ unified "all posts" (try multiple keys safely)
-  const allPosts =
-    (Array.isArray(raw?.allPosts) ? raw.allPosts : null) ||
-    (Array.isArray(raw?.posts) ? raw.posts : null) ||
-    (Array.isArray(raw?.postsTable) ? raw.postsTable : null) ||
-    (Array.isArray(raw?.socialPosts) ? raw.socialPosts : null) ||
-    [];
-
-  const getFieldName = (x) => String(x?.field ?? x?.Field ?? x?.["Field"] ?? "").trim().toLowerCase();
-  const getValue = (x) => x?.value ?? x?.Value ?? x?.["Value"];
-  const getDeltaRaw = (x) => (x?.delta?.raw ?? x?.Delta?.raw ?? x?.delta ?? x?.Delta ?? "");
-
-  const qt = (name) => {
-    const target = String(name).trim().toLowerCase();
-    return qTotals.find(x => getFieldName(x) === target);
-  };
-
-  const overall = {
-    posts: toNumber(getValue(qt("posts"))),
-    impressions: toNumber(getValue(qt("impressions"))),
-    shares: toNumber(getValue(qt("shares"))),
-    reactions: toNumber(getValue(qt("reactions"))),
-    followers: toNumber(getValue(qt("followers"))),
-    linkClicks: toNumber(getValue(qt("linkClicks"))),
-    comments: toNumber(getValue(qt("comments"))),
-    avgEngagementRate: toNumber(getValue(qt("avgEngagementRate"))),
-  };
-
-  const deltas = {
-    posts: getDeltaRaw(qt("posts")),
-    impressions: getDeltaRaw(qt("impressions")),
-    shares: getDeltaRaw(qt("shares")),
-    reactions: getDeltaRaw(qt("reactions")),
-    followers: getDeltaRaw(qt("followers")),
-    linkClicks: getDeltaRaw(qt("linkClicks")),
-    comments: getDeltaRaw(qt("comments")),
-    avgEngagementRate: getDeltaRaw(qt("avgEngagementRate")),
-  };
-
-  const platforms = pBreak.map(row => {
-    const plat = String(row["Platform"] || row["platform"] || "").toLowerCase();
-    const key =
-      plat.includes("linked") ? "linkedin" :
-      plat.includes("face") ? "facebook" :
-      plat.includes("insta") ? "instagram" : "";
+    // Clean "Engagement Health" (removes emojis like 🔵 or 🟢 for CSS matching)
+    const healthRaw = String(p["Engagement Health"] || "").replace(/[^a-zA-Z\s]/g, "").trim();
 
     return {
-      key,
-      name: row["Platform"] || row["platform"] || "",
-      followers: toNumber(row["Followers"] ?? row["followers"]),
-      followersDelta: row["Followers Δ"]?.raw || row["Followers Δ"] || row["followersDelta"] || "",
-      engagementRate: toNumber(row["Engagement Rate"] ?? row["engagementRate"]),
-      engagementRateDelta: row["ER Δ"]?.raw || row["ER Δ"] || row["engagementRateDelta"] || "",
-      pageReach: toNumber(row["Reach"] ?? row["reach"]),
-      pageReachDelta: row["Reach Δ"]?.raw || row["Reach Δ"] || row["reachDelta"] || "",
-      pageClicks: toNumber(row["Clicks"] ?? row["clicks"]),
-      pageClicksDelta: row["Clicks Δ"]?.raw || row["Clicks Δ"] || row["clicksDelta"] || "",
+      title: p["Post Name"] || "Untitled Post",
+      date: p["Date"] || "",
+      url: p["URL"] || "#",
+      platforms: String(p["Platforms"] || "").split(",").map(s => s.trim()),
+      impressions: imp,
+      engagements: eng,
+      engagementRate: er,
+      health: healthRaw,
+      notes: p["Notes"] || ""
     };
-  });
-
-  const topPostsByPlatform = { linkedin: [], facebook: [], instagram: [] };
-  tPosts.forEach(p => {
-    const key = normPlatformToken(p["Platform"] ?? p["platform"]);
-    if(!key) return;
-    topPostsByPlatform[key].push({
-      title: p["Title"] ?? p["title"] ?? "",
-      impressions: toNumber(p["Impressions"] ?? p["impressions"]),
-      likes: toNumber(p["Likes"] ?? p["likes"]),
-      shares: toNumber(p["Shares"] ?? p["shares"]),
-    });
-  });
-
-  const insights = { working:"", notWorking:"", actions:"", next:"" };
-  insArr.forEach(x => {
-    const k = String(x.Section ?? x.section ?? "").toLowerCase().trim();
-    const v = String(x.Text ?? x.text ?? "").trim();
-    if(k === "working") insights.working = v;
-    if(k === "notworking") insights.notWorking = v;
-    if(k === "actions") insights.actions = v;
-    if(k === "next") insights.next = v;
   });
 
   return {
-    quarterLabel: raw?.quarterLabel || "Q1",
+    quarterLabel: raw?.quarterLabel || "Quarterly Report",
     rangeLabel: raw?.rangeLabel || "",
-    generatedLabel: raw?.generatedAt ? String(raw.generatedAt).slice(0,10) : "",
-    execSummary: bullets,
-    insights,
-    overall,
-    deltas,
-    platforms,
-    topPostsByPlatform,
-    allPosts
+    posts: posts,
+    // Extracting totals from 'Quarter Totals' tab logic
+    totals: raw?.quarterTotals || []
   };
 }
 
-/* =========================================================
-   POSTS (from REPORT.allPosts)
-   - Normalizes various column/header shapes
-   - Produces: POSTS_RAW with consistent keys for table + filters
-========================================================= */
-let POSTS_RAW = [];
-let POSTS_VIEW = [];
-
-function normalizeEngRatePercent(v){
-  if (v === null || v === undefined) return null;
-
-  // number
-  if (typeof v === "number" && Number.isFinite(v)){
-    return v <= 1 ? v * 100 : v; // 0.061 -> 6.1
-  }
-
-  // string
-  if (typeof v === "string"){
-    const s = v.trim();
-    if (!s) return null;
-
-    const cleaned = s.replace("%","").replace(/,/g,"");
-    const n = Number(cleaned);
-    if (!Number.isFinite(n)) return null;
-
-    if (s.includes("%")) return n;      // "6.1%" -> 6.1
-    return n <= 1 ? n * 100 : n;        // "0.061" -> 6.1
-  }
-
-  return null;
-}
-
-function computeEngRatePercent(p){
-  const imp = toNumber(p?.Impressions ?? p?.impressions) || 0;
-  const eng = toNumber(p?.Engagements ?? p?.engagements) || 0;
-  return imp > 0 ? (eng / imp) * 100 : null;
-}
-
-function classifyEngagementHealth(rate){
-  if (rate === null || typeof rate !== "number" || !Number.isFinite(rate)) return "";
-  if (rate > 10) return "Very Strong";
-  if (rate >= 6) return "Strong";
-  if (rate >= 4) return "Moderate";
-  return "Low";
-}
-
-function normalizePostsFromReport(){
-  const arr = Array.isArray(REPORT?.allPosts) ? REPORT.allPosts : [];
-
-  return arr.map(p => {
-    // pull engagement rate from any likely field
-    const erRaw =
-      p.engagementRate ?? p["Engagement Rate"] ?? p.engagement_rate ?? p.er ?? p["ER"] ?? null;
-
-    const erNorm = normalizeEngRatePercent(erRaw);
-    const engagementRate = (erNorm !== null ? erNorm : computeEngRatePercent(p));
-    const engagementHealth = classifyEngagementHealth(engagementRate);
-
-    const platformsRaw =
-      p.platforms ?? p.platform ?? p["Platforms"] ?? p["Platform"] ?? "";
-
-    const platformsArr = Array.isArray(platformsRaw)
-      ? platformsRaw
-      : String(platformsRaw)
-          .split(",")
-          .map(s => s.trim())
-          .filter(Boolean);
-
-    return {
-      title: p.title ?? p.postName ?? p["Post Name"] ?? p.post ?? p["Post"] ?? "",
-      date: p.date ?? p["Date"] ?? "",
-      url: p.url ?? p["URL"] ?? p.link ?? p["Link"] ?? "",
-      platforms: platformsArr,
-
-      impressions: toNumber(p.impressions ?? p["Impressions"]),
-      engagements: toNumber(p.engagements ?? p["Engagements"]),
-
-      engagementRate,
-      engagementHealth,
-
-      likes: toNumber(p.likes ?? p["Likes"]),
-      comments: toNumber(p.comments ?? p["Comments"]),
-      shares: toNumber(p.shares ?? p["Shares"]),
-      notes: p.notes ?? p["Notes"] ?? ""
-    };
-  });
-}
-
-/* =========================================================
-   RENDER: HEADER + KPIs + SUMMARY + INSIGHTS
-========================================================= */
-function renderHeader(){
-  setText("reportQuarterLabel", REPORT.quarterLabel);
-  setText("reportRangeLabel", REPORT.rangeLabel);
-  setText("generatedLabel", REPORT.generatedLabel);
-}
-
-function renderKPIs(){
-  setText("kpiPosts", fmtInt(REPORT.overall.posts));
-  setText("kpiImpressions", fmtCompact(REPORT.overall.impressions));
-  setText("kpiShares", fmtInt(REPORT.overall.shares));
-  setText("kpiReactions", fmtInt(REPORT.overall.reactions));
-  setText("kpiFollowers", fmtInt(REPORT.overall.followers));
-  setText("kpiLinkClicks", fmtInt(REPORT.overall.linkClicks));
-  setText("kpiComments", fmtInt(REPORT.overall.comments));
-  setText("kpiAvgEngRate", fmtPct(REPORT.overall.avgEngagementRate));
-
-  setDelta(byId("deltaPosts"), REPORT.deltas.posts);
-  setDelta(byId("deltaImpressions"), REPORT.deltas.impressions);
-  setDelta(byId("deltaShares"), REPORT.deltas.shares);
-  setDelta(byId("deltaReactions"), REPORT.deltas.reactions);
-  setDelta(byId("deltaFollowers"), REPORT.deltas.followers);
-  setDelta(byId("deltaLinkClicks"), REPORT.deltas.linkClicks);
-  setDelta(byId("deltaComments"), REPORT.deltas.comments);
-  setDelta(byId("deltaAvgEngRate"), REPORT.deltas.avgEngagementRate);
-}
-
-function renderExecutiveSummary(){
-  const ul = byId("execSummaryList");
-  if(!ul) return;
-
-  ul.innerHTML = "";
-  (REPORT.execSummary || []).forEach(s => {
-    const li = document.createElement("li");
-    const html = String(s)
-      .replace(/(▲\s?\d+(\.\d+)?%)/g, `<span class="summary-badge positive">$1</span>`)
-      .replace(/(▼\s?\d+(\.\d+)?%)/g, `<span class="summary-badge negative">$1</span>`);
-
-    li.innerHTML = `
-      <span class="summary-dot" aria-hidden="true"></span>
-      <span class="summary-text">${html}</span>
-    `;
-    ul.appendChild(li);
-  });
-}
-
-function renderInsights(){
-  setHTML("insWorking", REPORT.insights?.working);
-  setHTML("insNotWorking", REPORT.insights?.notWorking);
-  setHTML("insActions", REPORT.insights?.actions);
-  setHTML("insNext", REPORT.insights?.next);
-}
-
-/* =========================================================
-   PLATFORM CARDS
-========================================================= */
-function renderPlatforms(){
-  const grid = byId("platformGrid");
-  if(!grid) return;
-
-  grid.innerHTML = "";
-
-  (REPORT.platforms || []).forEach(p => {
-    const card = document.createElement("div");
-    card.className = "platform";
-
-    card.innerHTML = `
-      <div class="platform-head">
-        <div class="platform-name">
-          <span class="platform-badge" aria-hidden="true">
-            ${PLATFORM_ICONS[p.key] || ""}
-          </span>
-          ${p.name || ""}
-        </div>
-      </div>
-
-      <div class="pstats">
-        <div class="pstat">
-          <span class="pstat-label">Followers</span>
-          <div class="pstat-row">
-            <strong>${fmtInt(p.followers)}</strong>
-            <span class="delta ${String(p.followersDelta||"").trim().startsWith("▲") ? "positive" : (String(p.followersDelta||"").trim().startsWith("▼") ? "negative" : "")}">
-              ${p.followersDelta || "—"}
-            </span>
-          </div>
-        </div>
-
-        <div class="pstat">
-          <span class="pstat-label">Post Engagement Rate</span>
-          <div class="pstat-row">
-            <strong>${fmtPct(p.engagementRate)}</strong>
-            <span class="delta ${String(p.engagementRateDelta||"").trim().startsWith("▲") ? "positive" : (String(p.engagementRateDelta||"").trim().startsWith("▼") ? "negative" : "")}">
-              ${p.engagementRateDelta || "—"}
-            </span>
-          </div>
-        </div>
-
-        <div class="pstat">
-          <span class="pstat-label">Page Reach</span>
-          <div class="pstat-row">
-            <strong>${fmtInt(p.pageReach)}</strong>
-            <span class="delta ${String(p.pageReachDelta||"").trim().startsWith("▲") ? "positive" : (String(p.pageReachDelta||"").trim().startsWith("▼") ? "negative" : "")}">
-              ${p.pageReachDelta || "—"}
-            </span>
-          </div>
-        </div>
-
-        <div class="pstat">
-          <span class="pstat-label">Page Clicks</span>
-          <div class="pstat-row">
-            <strong>${fmtInt(p.pageClicks)}</strong>
-            <span class="delta ${String(p.pageClicksDelta||"").trim().startsWith("▲") ? "positive" : (String(p.pageClicksDelta||"").trim().startsWith("▼") ? "negative" : "")}">
-              ${p.pageClicksDelta || "—"}
-            </span>
-          </div>
-        </div>
-      </div>
-    `;
-
-    grid.appendChild(card);
-  });
-}
-
-/* =========================================================
-   TOP POSTS (accordion)
-========================================================= */
-function postEngRate(p){
-  const imp = toNumber(p?.impressions) || 0;
-  const likes = toNumber(p?.likes) || 0;
-  const shares = toNumber(p?.shares) || 0;
-  const eng = likes + shares;
-  return imp > 0 ? (eng / imp) * 100 : 0;
-}
-
-function renderTopPosts(){
-  const wrap = byId("topCompact");
-  if(!wrap) return;
-
-  wrap.innerHTML = "";
-
-  const order = [
-    { key: "linkedin", label: "LinkedIn" },
-    { key: "facebook", label: "Facebook" },
-    { key: "instagram", label: "Instagram" }
-  ];
-
-  order.forEach(({key, label}) => {
-    const posts = (REPORT.topPostsByPlatform?.[key] || [])
-      .slice(0,3)
-      .map(p => ({...p, engagementRate: postEngRate(p)}))
-      .sort((a,b) => (b.engagementRate||0) - (a.engagementRate||0));
-
-    const totalImpressions = posts.reduce((sum,p) => sum + (toNumber(p.impressions)||0), 0);
-    const avgER = posts.length ? (posts.reduce((sum,p)=>sum+(p.engagementRate||0),0) / posts.length) : 0;
-
-    const platform = document.createElement("details");
-    platform.className = "platform-acc";
-    platform.open = false;
-
-    platform.innerHTML = `
-      <summary>
-        <div class="sum-left">
-          <span class="platform-pill">${label}</span>
-          <span class="platform-meta">Top 3 • ${fmtInt(totalImpressions)} impressions • Avg ER ${fmtPct(avgER)}</span>
-        </div>
-        <span class="chev" aria-hidden="true">⌄</span>
-      </summary>
-      <div class="platform-body"></div>
-    `;
-
-    const body = platform.querySelector(".platform-body");
-
-    posts.forEach((p, idx) => {
-      const mini = document.createElement("details");
-      mini.className = "post-mini";
-      const erText = fmtPct(p.engagementRate || 0);
-
-      mini.innerHTML = `
-        <summary>
-          <div class="rank">#${idx+1}</div>
-          <div class="ptitle">${escapeHtml(p.title || (label + " Post"))}</div>
-          <div class="quick">
-            <span><strong>${fmtInt(toNumber(p.impressions) || 0)}</strong> impr.</span>
-            <span><strong>${erText}</strong> ER</span>
-          </div>
-        </summary>
-
-        <div class="post-details">
-          <div class="mini-stat"><span>Impressions</span><strong>${fmtInt(toNumber(p.impressions) || 0)}</strong></div>
-          <div class="mini-stat"><span>Likes</span><strong>${fmtInt(toNumber(p.likes) || 0)}</strong></div>
-          <div class="mini-stat"><span>Shares</span><strong>${fmtInt(toNumber(p.shares) || 0)}</strong></div>
-          <div class="mini-stat"><span>Eng. Rate</span><strong>${erText}</strong></div>
-          <div class="math">Eng. Rate = (likes + shares) ÷ impressions = (${fmtInt(toNumber(p.likes)||0)} + ${fmtInt(toNumber(p.shares)||0)}) ÷ ${fmtInt(toNumber(p.impressions)||0)}</div>
-        </div>
-      `;
-      body.appendChild(mini);
-    });
-
-    wrap.appendChild(platform);
-  });
-}
-
-/* =========================================================
-   POSTS TABLE (search/filter)
-   REQUIRED HTML IDs:
-   - postsSearch, postsPlatform, postsCount
-   - postsTable (table element), postsEmpty (empty state)
-========================================================= */
-function renderPostsTable(){
-  const table = byId("postsTable");
-  const empty = byId("postsEmpty");
-  const count = byId("postsCount");
-  if(!table || !empty || !count) return;
-
-  count.textContent = String(POSTS_VIEW.length);
-
-  if(!POSTS_VIEW.length){
-    table.innerHTML = "";
-    empty.style.display = "block";
-    return;
-  }
-  empty.style.display = "none";
-
-  table.innerHTML = `
-    <thead>
-      <tr>
-        <th>Post</th>
-        <th>Date</th>
-        <th>Platforms</th>
-        <th>Impr.</th>
-        <th>Eng.</th>
-        <th>ER</th>
-        <th>Health</th>
-        <th>Likes</th>
-        <th>Comments</th>
-        <th>Shares</th>
-        <th>Link</th>
-        <th>Notes</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${POSTS_VIEW.map(p => {
-        const plats = (p.platforms || []).join(", ");
-        const hClass = healthClass(p.engagementHealth);
-        const hLabel = escapeHtml(p.engagementHealth || "—");
-
-        return `
-          <tr>
-            <td><strong>${escapeHtml(p.title)}</strong></td>
-            <td>${fmtDate(p.date)}</td>
-            <td>${escapeHtml(plats || "—")}</td>
-            <td>${fmtInt(p.impressions)}</td>
-            <td>${fmtInt(p.engagements)}</td>
-            <td>${fmtPct(p.engagementRate)}</td>
-            <td>
-              <span class="health-pill ${hClass}">
-                <span class="health-dot" aria-hidden="true"></span>
-                ${hLabel}
-              </span>
-            </td>
-            <td>${fmtInt(p.likes)}</td>
-            <td>${fmtInt(p.comments)}</td>
-            <td>${fmtInt(p.shares)}</td>
-            <td>${p.url ? `<a href="${p.url}" target="_blank" rel="noopener">Open</a>` : "—"}</td>
-            <td>${escapeHtml(p.notes)}</td>
-          </tr>
-        `;
-      }).join("")}
-    </tbody>
-  `;
-}
-
-function applyPostsFilters(){
-  const q = String(byId("postsSearch")?.value || "").toLowerCase().trim();
-  const plat = String(byId("postsPlatform")?.value || "all").toLowerCase();
-
-  POSTS_VIEW = POSTS_RAW.filter(p => {
-    const pTokens = (p.platforms || []).map(normPlatformToken).filter(Boolean);
-    const matchesPlatform = (plat === "all") ? true : pTokens.includes(plat);
-
-    if(!q) return matchesPlatform;
-
-    const hay = [
-      p.title, p.date, (p.platforms || []).join(", "),
-      String(p.impressions ?? ""), String(p.engagements ?? ""),
-      String(p.engagementRate ?? ""), String(p.engagementHealth ?? ""),
-      String(p.likes ?? ""), String(p.comments ?? ""), String(p.shares ?? ""),
-      p.notes
-    ].join(" ").toLowerCase();
-
-    return matchesPlatform && hay.includes(q);
-  });
-
-  renderPostsTable();
-  buildPostsHealthChart(); // keep chart synced with filters (safe no-op if canvas missing)
-}
-
-function wirePostsFilters(){
-  const search = byId("postsSearch");
-  const select = byId("postsPlatform");
-  if(search) search.addEventListener("input", applyPostsFilters);
-  if(select) select.addEventListener("change", applyPostsFilters);
-}
-
-/* =========================================================
-   CHARTS (platform reach + platform ER)
-========================================================= */
-function seriesColors(count){
-  return [
-    "rgba(0,112,202,0.9)",
-    "rgba(0,84,154,0.85)",
-    "rgba(77,163,232,0.8)"
-  ].slice(0, count);
-}
-
-// If Chart isn't loaded, fail gracefully
-if (window.Chart) {
-  Chart.defaults.font.family = 'Gotham, Gotham SSm, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
-  Chart.defaults.color = "#64748B";
-}
-
-const commonTooltip = {
-  backgroundColor: "rgba(0,61,114,0.95)",
-  padding: 14,
-  titleFont: { size: 13, weight: "700" },
-  bodyFont: { size: 12, weight: "500" },
-  cornerRadius: 10,
-  displayColors: false
+/* =========================
+   3. UI HELPERS & RENDERING
+========================= */
+const PLATFORM_ICONS = {
+  linkedin: `<svg style="width:16px; height:16px; fill:#0077b5;" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>`,
+  facebook: `<svg style="width:16px; height:16px; fill:#1877f2;" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>`,
+  instagram: `<svg style="width:16px; height:16px; fill:#e4405f;" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>`
 };
 
-let reachChart, engChart;
-
-function getChartSeries(){
-  const labels = (REPORT.platforms || []).map(p => p.name);
-  const reach = (REPORT.platforms || []).map(p => toNumber(p.pageReach) || 0);
-  const er = (REPORT.platforms || []).map(p => toNumber(p.engagementRate) || 0);
-  return { labels, reach, er };
+function getHealthClass(h) {
+  const s = h.toLowerCase();
+  if (s.includes("very strong")) return "h-very-strong";
+  if (s.includes("strong")) return "h-strong";
+  if (s.includes("moderate")) return "h-moderate";
+  if (s.includes("low")) return "h-low";
+  return "";
 }
 
-function buildReach(type){
-  const canvas = byId("reachChart");
-  if(!canvas || !window.Chart) return;
+function renderTable() {
+  const tbody = document.getElementById("posts-body");
+  if (!tbody) return;
 
-  const ctx = canvas.getContext("2d");
-  if(reachChart) reachChart.destroy();
+  tbody.innerHTML = REPORT.posts.map(p => {
+    const iconHtml = p.platforms.map(pl => {
+      const key = pl.toLowerCase();
+      if (key.includes("linkedin")) return PLATFORM_ICONS.linkedin;
+      if (key.includes("facebook")) return PLATFORM_ICONS.facebook;
+      if (key.includes("instagram")) return PLATFORM_ICONS.instagram;
+      return "";
+    }).join(" ");
 
-  const { labels, reach } = getChartSeries();
-  const colors = seriesColors(labels.length);
-
-  reachChart = new Chart(ctx, {
-    type,
-    data: { labels,
-      datasets: [{
-        label: "Page Reach",
-        data: reach,
-        backgroundColor: colors,
-        borderColor: type === "pie" ? "#fff" : ["#0070CA", "#00549A", "#4DA3E8"],
-        borderWidth: type === "pie" ? 2 : 0,
-        borderRadius: type === "bar" ? 8 : 0
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: type === "pie", labels: { boxWidth: 10, boxHeight: 10 } },
-        tooltip: commonTooltip
-      },
-      scales: type === "bar" ? {
-        y: {
-          beginAtZero: true,
-          grid: { color: "rgba(0,0,0,0.04)", drawBorder: false },
-          ticks: { font: { size: 11, weight: "500" }, color: "#64748B" },
-          border: { display: false }
-        },
-        x: {
-          grid: { display: false, drawBorder: false },
-          ticks: { font: { size: 12, weight: "700" }, color: "#0B1220" },
-          border: { display: false }
-        }
-      } : {}
-    }
-  });
+    return `
+      <tr>
+        <td>
+          <div style="font-weight:600; color:#1a1a1a;">${p.title}</div>
+          <div style="font-size:11px; color:#666;">${p.date}</div>
+        </td>
+        <td style="text-align:center;">${iconHtml}</td>
+        <td style="text-align:right;">${(p.impressions || 0).toLocaleString()}</td>
+        <td style="text-align:right;">${(p.engagements || 0).toLocaleString()}</td>
+        <td style="text-align:right; font-weight:700;">${p.engagementRate ? p.engagementRate.toFixed(2) + '%' : '—'}</td>
+        <td style="text-align:center;">
+          <span class="health-pill ${getHealthClass(p.health)}">${p.health}</span>
+        </td>
+        <td style="text-align:center;">
+          <a href="${p.url}" target="_blank" class="btn-link">View</a>
+        </td>
+      </tr>
+    `;
+  }).join("");
 }
 
-function buildEng(type){
-  const canvas = byId("engRateChart");
-  if(!canvas || !window.Chart) return;
-
-  const ctx = canvas.getContext("2d");
-  if(engChart) engChart.destroy();
-
-  const { labels, er } = getChartSeries();
-  const colors = seriesColors(labels.length);
-
-  engChart = new Chart(ctx, {
-    type,
-    data: { labels,
-      datasets: [{
-        label: "Post Engagement Rate (%)",
-        data: er,
-        backgroundColor: type === "pie" ? colors : "rgba(0,112,202,0.15)",
-        borderColor: type === "pie" ? "#fff" : "#0070CA",
-        borderWidth: type === "pie" ? 2 : 2,
-        borderRadius: type === "bar" ? 8 : 0
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: type === "pie", labels: { boxWidth: 10, boxHeight: 10 } },
-        tooltip: commonTooltip
-      },
-      scales: type === "bar" ? {
-        y: {
-          beginAtZero: true,
-          grid: { color: "rgba(0,0,0,0.04)", drawBorder: false },
-          ticks: {
-            font: { size: 11, weight: "500" },
-            color: "#64748B",
-            callback: (v) => v + "%"
-          },
-          border: { display: false }
-        },
-        x: {
-          grid: { display: false, drawBorder: false },
-          ticks: { font: { size: 12, weight: "700" }, color: "#0B1220" },
-          border: { display: false }
-        }
-      } : {}
-    }
-  });
-}
-
-function wireChartToggles(){
-  document.querySelectorAll(".ct-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const chart = btn.getAttribute("data-chart");
-      const type = btn.getAttribute("data-type");
-
-      const group = btn.parentElement;
-      group.querySelectorAll(".ct-btn").forEach(b => b.classList.remove("is-active"));
-      btn.classList.add("is-active");
-
-      if(chart === "reach") buildReach(type);
-      if(chart === "eng") buildEng(type);
-    });
-  });
-}
-
-/* =========================================================
-   POSTS CHART (optional)
-   If you already have a posts chart canvas, this will populate it.
-   Supported canvas IDs (first match wins):
-   - postsChart
-   - postsHealthChart
-========================================================= */
-let postsHealthChart = null;
-
-function buildPostsHealthChart(){
-  if(!window.Chart) return;
-
-  const canvas =
-    byId("postsChart") ||
-    byId("postsHealthChart");
-
-  if(!canvas) return;
-
-  const ctx = canvas.getContext("2d");
-  if(postsHealthChart) postsHealthChart.destroy();
-
-  const buckets = { "Very Strong":0, "Strong":0, "Moderate":0, "Low":0 };
-  (POSTS_VIEW || []).forEach(p => {
-    const k = p.engagementHealth || "";
-    if (buckets[k] !== undefined) buckets[k] += 1;
-  });
-
-  const labels = Object.keys(buckets);
-  const data = labels.map(l => buckets[l]);
-
-  postsHealthChart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        label: "Posts (filtered)",
-        data
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: commonTooltip
-      },
-      scales: {
-        y: { beginAtZero: true }
-      }
-    }
-  });
-}
-
-/* =========================================================
-   EDIT LOCK + MENUS
-========================================================= */
-function lockEditing(){
-  const canEdit = new URLSearchParams(window.location.search).get("edit") === "1";
-  document.querySelectorAll('[data-editable="true"]').forEach(el => {
-    el.setAttribute("contenteditable", canEdit ? "true" : "false");
-  });
-}
-
-function quarterDropdown(){
-  const wrap = document.querySelector(".pill-wrap");
-  const btn = document.getElementById("quarterBtn");
-  if(!wrap || !btn) return;
-
-  btn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    wrap.classList.toggle("open");
-    btn.setAttribute("aria-expanded", wrap.classList.contains("open") ? "true" : "false");
-  });
-
-  document.addEventListener("click", () => {
-    wrap.classList.remove("open");
-    btn.setAttribute("aria-expanded","false");
-  });
-
-  document.addEventListener("keydown", (e) => {
-    if(e.key === "Escape"){
-      wrap.classList.remove("open");
-      btn.setAttribute("aria-expanded","false");
-    }
-  });
-}
-
-function brandDropdown(){
-  const wrap = document.querySelector(".brand-menu-wrap");
-  const toggle = document.getElementById("brandToggle");
-  const options = document.querySelectorAll(".brand-option");
-  if(!wrap || !toggle || !options.length) return;
-
-  const closeMenu = () => {
-    wrap.classList.remove("open");
-    toggle.setAttribute("aria-expanded", "false");
-  };
-
-  toggle.addEventListener("click", (e) => {
-    e.stopPropagation();
-    wrap.classList.toggle("open");
-    toggle.setAttribute("aria-expanded", wrap.classList.contains("open") ? "true" : "false");
-  });
-
-  options.forEach(option => {
-    option.addEventListener("click", () => {
-      const href = option.dataset.href;
-      if(href && href !== window.location.pathname.split("/").pop() && href !== `./${window.location.pathname.split("/").pop()}`){
-        window.location.href = href;
-        return;
-      }
-      closeMenu();
-    });
-  });
-
-  document.addEventListener("click", (e) => {
-    if(!wrap.contains(e.target)) closeMenu();
-  });
-
-  document.addEventListener("keydown", (e) => {
-    if(e.key === "Escape") closeMenu();
-  });
-}
-
-/* =========================================================
-   INIT
-========================================================= */
-(async function init(){
-  try{
+/* =========================
+   4. INIT
+========================= */
+async function init() {
+  try {
     const raw = await loadReport();
-    window.RAW_REPORT = raw;
-
     REPORT = normalizeReport(raw);
-    window.REPORT = REPORT;
+    
+    // Update Header
+    const qLabel = document.getElementById("quarter-label");
+    if(qLabel) qLabel.textContent = REPORT.quarterLabel;
 
-    // Core sections
-    renderHeader();
-    renderKPIs();
-    renderExecutiveSummary();
-    renderInsights();
-    renderPlatforms();
-    renderTopPosts();
-
-    // Posts (from same payload)
-    POSTS_RAW = normalizePostsFromReport();
-    POSTS_VIEW = POSTS_RAW.slice();
-    wirePostsFilters();
-    renderPostsTable();
-    buildPostsHealthChart(); // safe no-op if no posts chart canvas exists
-
-    // Charts
-    buildReach("bar");
-    buildEng("bar");
-    wireChartToggles();
-
-    // UI
-    lockEditing();
-    quarterDropdown();
-    brandDropdown();
-
-    // Debug
-    console.log("Report key:", getReportKey());
-    console.log("Posts loaded:", POSTS_RAW.length);
-
-  } catch(err){
-    console.error(err);
-    alert("Report data failed to load from the live endpoint. Check the report key, deployment, and that the JSON includes the posts array.");
+    renderTable();
+  } catch (err) {
+    console.error("Dashboard error:", err);
   }
-})();
+}
+
+window.addEventListener("DOMContentLoaded", init);
 </script>
+
+<style>
+  #posts-table { width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 13px; }
+  #posts-table th { background: #f8f9fa; padding: 12px 8px; text-align: left; border-bottom: 2px solid #dee2e6; color: #444; }
+  #posts-table td { padding: 12px 8px; border-bottom: 1px solid #eee; vertical-align: middle; }
+  
+  .health-pill {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+  }
+  .h-very-strong { background: #e3f2fd; color: #0d47a1; } /* Blue */
+  .h-strong { background: #e8f5e9; color: #1b5e20; }      /* Green */
+  .h-moderate { background: #fffde7; color: #f57f17; }    /* Yellow */
+  .h-low { background: #ffebee; color: #b71c1c; }         /* Red */
+
+  .btn-link {
+    text-decoration: none;
+    background: #0077b5;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+  }
+</style>
 </body>
 </html>
