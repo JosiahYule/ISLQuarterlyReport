@@ -1605,9 +1605,18 @@
    LOAD JSON (report-data.json)
 ========================= */
 let REPORT = null;
-const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbzodE1whq3quWi64_JHp4OWFO52ADfWrpiMrWR_CQMUlDKkL_FUWIsu8E2tWmDjBZuveQ/exec";
+
+const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbxo-P51lbRNF6w0YvkzHua3XUCH5Trp62KMafbcfQtyVYse0s4Lfn75FJy-iNi4uK12/exec";
+const DEFAULT_REPORT = "islq2"; // 🔥 current quarter
+
+function getReportKey(){
+  const params = new URLSearchParams(window.location.search);
+  return (params.get("report") || DEFAULT_REPORT).toLowerCase();
+}
+
 async function loadReport(){
-  const res = await fetch(REPORT_ENDPOINT, { cache: "no-store" });
+  const url = `${REPORT_ENDPOINT}?report=${encodeURIComponent(getReportKey())}`;
+  const res = await fetch(url, { cache: "no-store" });
   if(!res.ok) throw new Error(`Could not load report JSON: ${res.status} ${res.statusText}`);
   return await res.json();
 }
