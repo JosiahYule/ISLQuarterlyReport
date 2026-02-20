@@ -1614,10 +1614,10 @@
    LOAD JSON (report-data.json)
 ========================= */
 let REPORT = null;
-
+const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbzodE1whq3quWi64_JHp4OWFO52ADfWrpiMrWR_CQMUlDKkL_FUWIsu8E2tWmDjBZuveQ/exec";
 async function loadReport(){
-  const res = await fetch("./report-data.json", { cache: "no-store" });
-  if(!res.ok) throw new Error("Could not load report-data.json");
+  const res = await fetch(REPORT_ENDPOINT, { cache: "no-store" });
+  if(!res.ok) throw new Error(`Could not load report JSON: ${res.status} ${res.statusText}`);
   return await res.json();
 }
 
@@ -1821,68 +1821,95 @@ const PLATFORM_ICONS = {
    NORMALIZE JSON KEYS (handles older sheets)
 ========================= */
 function normalizeReport(raw){
-  const r = raw && typeof raw === "object" ? raw : {};
+  // If this is already the “old” local structure, keep your existing behavior
+  if(raw && raw.overall && raw.platforms) return raw;
 
-  // overall: accept both camelCase and lowercase variants
-  const overallIn = r.overall && typeof r.overall === "object" ? r.overall : {};
-  const deltasIn  = r.deltas  && typeof r.deltas  === "object" ? r.deltas  : {};
+  // Otherwise assume it’s the Apps Script payload
+  const qTotals = Array.isArray(raw?.quarterTotals) ? raw.quarterTotals : [];
+  const pBreak  = Array.isArray(raw?.platformBreakdown) ? raw.platformBreakdown : [];
+  const tPosts  = Array.isArray(raw?.topPosts) ? raw.topPosts : [];
+  const bullets = Array.isArray(raw?.summaryBullets) ? raw.summaryBullets : [];
+  const insArr  = Array.isArray(raw?.insights) ? raw.insights : [];
 
+  // Helper to find quarter totals by field name
+  const qt = (name) => qTotals.find(x => String(x.field).toLowerCase() === name.toLowerCase());
+
+  // Map quarter totals into overall + deltas
   const overall = {
-    posts: toNumber(overallIn.posts),
-    impressions: toNumber(overallIn.impressions),
-    shares: toNumber(overallIn.shares),
-    reactions: toNumber(overallIn.reactions),
-    followers: toNumber(overallIn.followers),
-    linkClicks: toNumber(overallIn.linkClicks ?? overallIn.linkclicks),
-    comments: toNumber(overallIn.comments),
-    avgEngagementRate: toNumber(overallIn.avgEngagementRate ?? overallIn.avgengagementrate)
+    posts: toNumber(qt("posts")?.value),
+    impressions: toNumber(qt("impressions")?.value),
+    shares: toNumber(qt("shares")?.value),
+    reactions: toNumber(qt("reactions")?.value),
+    followers: toNumber(qt("followers")?.value),
+    linkClicks: toNumber(qt("linkClicks")?.value),
+    comments: toNumber(qt("comments")?.value),
+    avgEngagementRate: toNumber(qt("avgEngagement")?.value),
   };
 
   const deltas = {
-    posts: deltasIn.posts ?? "",
-    impressions: deltasIn.impressions ?? "",
-    shares: deltasIn.shares ?? "",
-    reactions: deltasIn.reactions ?? "",
-    followers: deltasIn.followers ?? "",
-    linkClicks: deltasIn.linkClicks ?? deltasIn.linkclicks ?? "",
-    comments: deltasIn.comments ?? "",
-    avgEngagementRate: deltasIn.avgEngagementRate ?? deltasIn.avgengagementrate ?? ""
+    posts: qt("posts")?.delta?.raw || "",
+    impressions: qt("impressions")?.delta?.raw || "",
+    shares: qt("shares")?.delta?.raw || "",
+    reactions: qt("reactions")?.delta?.raw || "",
+    followers: qt("followers")?.delta?.raw || "",
+    linkClicks: qt("linkClicks")?.delta?.raw || "",
+    comments: qt("comments")?.delta?.raw || "",
+    avgEngagementRate: qt("avgEngagement")?.delta?.raw || "",
   };
 
-  // insights: accept either {working,notWorking,actions,next} OR {"What's Working": "..."}
-  const insightsIn = r.insights && typeof r.insights === "object" ? r.insights : {};
-  const insights = {
-    working: insightsIn.working ?? insightsIn["What's Working"] ?? "",
-    notWorking: insightsIn.notWorking ?? insightsIn["What's Not Working"] ?? "",
-    actions: insightsIn.actions ?? insightsIn["Actions From This Data"] ?? "",
-    next: insightsIn.next ?? insightsIn["Next Quarter Focus"] ?? ""
-  };
+  // Map platform breakdown rows -> platforms array your UI expects
+  const platforms = pBreak.map(row => {
+    const plat = String(row["Platform"] || "").toLowerCase();
+    const key =
+      plat.includes("linked") ? "linkedin" :
+      plat.includes("face") ? "facebook" :
+      plat.includes("insta") ? "instagram" : "";
 
-  // platforms: ensure numbers are numbers
-  const platforms = Array.isArray(r.platforms) ? r.platforms.map(p => ({
-    key: p.key,
-    name: p.name,
-    badge: p.badge,
-    tag: p.tag,
-    followers: toNumber(p.followers),
-    followersDelta: p.followersDelta ?? "",
-    engagementRate: toNumber(p.engagementRate),
-    engagementRateDelta: p.engagementRateDelta ?? "",
-    pageReach: toNumber(p.pageReach),
-    pageReachDelta: p.pageReachDelta ?? "",
-    pageClicks: toNumber(p.pageClicks),
-    pageClicksDelta: p.pageClicksDelta ?? ""
-  })) : [];
+    return {
+      key,
+      name: row["Platform"] || "",
+      badge: "",    // you don’t use this anymore
+      tag: "",      // optional
+      followers: toNumber(row["Followers"]),
+      followersDelta: row["Followers Δ"]?.raw || row["Followers Δ"] || "",
+      engagementRate: toNumber(row["Engagement Rate"]),
+      engagementRateDelta: row["ER Δ"]?.raw || row["ER Δ"] || "",
+      pageReach: toNumber(row["Reach"]),
+      pageReachDelta: row["Reach Δ"]?.raw || row["Reach Δ"] || "",
+      pageClicks: toNumber(row["Clicks"]),
+      pageClicksDelta: row["Clicks Δ"]?.raw || row["Clicks Δ"] || "",
+    };
+  });
 
-  const topPostsByPlatform = r.topPostsByPlatform && typeof r.topPostsByPlatform === "object" ? r.topPostsByPlatform : {
-    linkedin: [], facebook: [], instagram: []
-  };
+  // Map top posts into your old topPostsByPlatform buckets
+  const topPostsByPlatform = { linkedin: [], facebook: [], instagram: [] };
+  tPosts.forEach(p => {
+    const key = normPlatformToken(p["Platform"]);
+    if(!key) return;
+    topPostsByPlatform[key].push({
+      title: p["Title"] || "",
+      impressions: toNumber(p["Impressions"]),
+      likes: toNumber(p["Likes"]),
+      shares: toNumber(p["Shares"]),
+    });
+  });
+
+  // Convert insights array (Section/Text) into the keys your UI wants
+  const insights = { working:"", notWorking:"", actions:"", next:"" };
+  insArr.forEach(x => {
+    const k = String(x.Section || "").toLowerCase().trim();
+    const v = String(x.Text || "").trim();
+    if(k === "working") insights.working = v;
+    if(k === "notworking") insights.notWorking = v;
+    if(k === "actions") insights.actions = v;
+    if(k === "next") insights.next = v;
+  });
 
   return {
-    quarterLabel: r.quarterLabel ?? "Q1",
-    rangeLabel: r.rangeLabel ?? "",
-    generatedLabel: r.generatedLabel ?? "",
-    execSummary: Array.isArray(r.execSummary) ? r.execSummary : [],
+    quarterLabel: "Q1",           // optional: you can add these to your sheet later
+    rangeLabel: "",
+    generatedLabel: raw?.generatedAt ? raw.generatedAt.slice(0,10) : "",
+    execSummary: bullets,
     insights,
     overall,
     deltas,
