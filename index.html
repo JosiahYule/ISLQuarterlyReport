@@ -1600,70 +1600,25 @@
 
   </div>
 
- <script>
+<script>
 /* =========================
-   LOAD JSON (report-data.json)
+   REPORT LOADING (Unified)
 ========================= */
 let REPORT = null;
 
 const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbxo-P51lbRNF6w0YvkzHua3XUCH5Trp62KMafbcfQtyVYse0s4Lfn75FJy-iNi4uK12/exec";
-const DEFAULT_REPORT = "islq2"; // 🔥 current quarter
+const DEFAULT_REPORT = "islq2"; // current quarter
 
 function getReportKey(){
   const params = new URLSearchParams(window.location.search);
-  return (params.get("report") || DEFAULT_REPORT).toLowerCase();
+  return String(params.get("report") || DEFAULT_REPORT).toLowerCase();
 }
 
 async function loadReport(){
-  const url = `${REPORT_ENDPOINT}?report=${encodeURIComponent(getReportKey())}`;
+  const url = `${REPORT_ENDPOINT}?report=${encodeURIComponent(getReportKey())}&nocache=1`;
   const res = await fetch(url, { cache: "no-store" });
   if(!res.ok) throw new Error(`Could not load report JSON: ${res.status} ${res.statusText}`);
   return await res.json();
-}
-
-/* =========================
-   LOAD POSTS JSON (Apps Script Web App)
-========================= */
-/* =========================
-   LOAD POSTS JSON (Apps Script Web App)
-========================= */
-
-const POSTS_ENDPOINT = "https://script.google.com/macros/s/AKfycbyALQglX-zAHYwcYrD2bd6XBChlxXq5UrXPq41xGsY_PTolJ_Vaapd05RuiF5qRwqb1/exec";
-
-async function loadPosts() {
-  try {
-    if (!POSTS_ENDPOINT) {
-      console.warn("POSTS_ENDPOINT not defined.");
-      return { posts: [] };
-    }
-
-    const res = await fetch(POSTS_ENDPOINT, {
-      method: "GET",
-      cache: "no-store",
-      headers: {
-        "Accept": "application/json"
-      }
-    });
-
-    if (!res.ok) {
-      throw new Error(`Posts request failed: ${res.status} ${res.statusText}`);
-    }
-
-    const data = await res.json();
-
-    // Validate structure
-    if (!data || !Array.isArray(data.posts)) {
-      console.warn("Posts JSON format unexpected:", data);
-      return { posts: [] };
-    }
-
-    console.log(`Loaded ${data.posts.length} posts from Apps Script.`);
-    return data;
-
-  } catch (err) {
-    console.error("Error loading posts:", err);
-    return { posts: [] };
-  }
 }
 
 /* =========================
@@ -1678,7 +1633,6 @@ const toNumber = (v) => {
     const t = v.trim();
     if (!t) return null;
 
-    // Handle "4.12%", " 4.12 % ", "1,234", etc.
     const cleaned = t.replace(/[%\s]/g, "").replace(/,/g, "");
     const n = Number(cleaned);
     return Number.isFinite(n) ? n : null;
@@ -1687,20 +1641,17 @@ const toNumber = (v) => {
   return null;
 };
 
- function fmtDate(dateStr){
+function fmtDate(dateStr){
   if(!dateStr) return "—";
-
   const d = new Date(dateStr);
-  if(isNaN(d.getTime())) return dateStr; // fallback if invalid
-
+  if(isNaN(d.getTime())) return String(dateStr);
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2,"0");
   const day = String(d.getDate()).padStart(2,"0");
-
   return `${y}-${m}-${day}`;
-}       
+}
 
- function escapeHtml(str){
+function escapeHtml(str){
   return String(str ?? "").replace(/[&<>"']/g, m => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
   }[m]));
@@ -1721,7 +1672,7 @@ function healthClass(health){
   if(h === "moderate") return "health-moderate";
   if(h === "low") return "health-low";
   return "";
-}  
+}
 
 const fmtInt = (n) => (typeof n === "number" && Number.isFinite(n) ? n.toLocaleString() : "—");
 
@@ -1742,31 +1693,6 @@ function setText(id, value){
   if (el) el.textContent = value;
 }
 
-function computeEngRatePercent(p){
-  const impr = toNumber(p?.impressions);
-  if(!impr || impr <= 0) return null;
-
-  // Prefer "engagements" if it exists (your payload has it)
-  const eng = toNumber(p?.engagements);
-  if(eng !== null) return (eng / impr) * 100;
-
-  // Fallback: likes + comments + shares
-  const likes = toNumber(p?.likes) || 0;
-  const comments = toNumber(p?.comments) || 0;
-  const shares = toNumber(p?.shares) || 0;
-
-  return ((likes + comments + shares) / impr) * 100;
-}   
-
-function classifyEngagementHealth(rate){
-  if (rate === null || typeof rate !== "number") return "";
-
-  if (rate > 10) return "Very Strong";
-  if (rate >= 6) return "Strong";
-  if (rate >= 4) return "Moderate";
-  return "Low";
-}                       
-   
 function setHTML(id, value){
   const el = byId(id);
   if (!el) return;
@@ -1783,22 +1709,9 @@ function setDelta(el, text){
   if(t.startsWith("▼") || t.startsWith("↓")) el.classList.add("negative");
 }
 
-function postEngRate(p){
-  const imp = toNumber(p?.impressions) || 0;
-  const likes = toNumber(p?.likes) || 0;
-  const shares = toNumber(p?.shares) || 0;
-  const eng = likes + shares;
-  return imp > 0 ? (eng / imp) * 100 : 0;
-}
-
-function seriesColors(count){
-  return [
-    "rgba(0,112,202,0.9)",
-    "rgba(0,84,154,0.85)",
-    "rgba(77,163,232,0.8)"
-  ].slice(0, count);
-}
-
+/* =========================
+   ICONS
+========================= */
 const PLATFORM_ICONS = {
   linkedin: `
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -1818,31 +1731,34 @@ const PLATFORM_ICONS = {
 };
 
 /* =========================
-   NORMALIZE JSON KEYS (handles older sheets)
+   NORMALIZE (Apps Script -> UI)
+   NOTE: keeps your existing UI shape, plus adds allPosts
 ========================= */
 function normalizeReport(raw){
-  // If this is already the “old” local structure, keep your existing behavior
   if(raw && raw.overall && raw.platforms) return raw;
 
-  // Otherwise assume it’s the Apps Script payload
   const qTotals = Array.isArray(raw?.quarterTotals) ? raw.quarterTotals : [];
   const pBreak  = Array.isArray(raw?.platformBreakdown) ? raw.platformBreakdown : [];
   const tPosts  = Array.isArray(raw?.topPosts) ? raw.topPosts : [];
   const bullets = Array.isArray(raw?.summaryBullets) ? raw.summaryBullets : [];
   const insArr  = Array.isArray(raw?.insights) ? raw.insights : [];
 
-  // ---- helpers to read both camelCase + TitleCase payloads ----
+  // ✅ NEW: all posts tab (whatever your Apps Script field is)
+  // If your Apps Script uses "posts", this catches it.
+  // If it uses "socialPosts" or something else, add it here.
+  const allPosts = Array.isArray(raw?.allPosts)
+    ? raw.allPosts
+    : (Array.isArray(raw?.posts) ? raw.posts : []);
+
   const getFieldName = (x) => String(x?.field ?? x?.Field ?? x?.["Field"] ?? "").trim().toLowerCase();
   const getValue = (x) => x?.value ?? x?.Value ?? x?.["Value"];
   const getDeltaRaw = (x) => (x?.delta?.raw ?? x?.Delta?.raw ?? x?.delta ?? x?.Delta ?? "");
 
-  // Helper to find quarter totals by field name
   const qt = (name) => {
     const target = String(name).trim().toLowerCase();
     return qTotals.find(x => getFieldName(x) === target);
   };
 
-  // Map quarter totals into overall + deltas
   const overall = {
     posts: toNumber(getValue(qt("posts"))),
     impressions: toNumber(getValue(qt("impressions"))),
@@ -1851,8 +1767,6 @@ function normalizeReport(raw){
     followers: toNumber(getValue(qt("followers"))),
     linkClicks: toNumber(getValue(qt("linkClicks"))),
     comments: toNumber(getValue(qt("comments"))),
-
-    // ✅ this is your missing one (now works for Field/Value)
     avgEngagementRate: toNumber(getValue(qt("avgEngagementRate"))),
   };
 
@@ -1864,12 +1778,9 @@ function normalizeReport(raw){
     followers: getDeltaRaw(qt("followers")),
     linkClicks: getDeltaRaw(qt("linkClicks")),
     comments: getDeltaRaw(qt("comments")),
-
-    // ✅ now also works for Delta/Delta.raw
     avgEngagementRate: getDeltaRaw(qt("avgEngagementRate")),
   };
 
-  // Map platform breakdown rows -> platforms array your UI expects
   const platforms = pBreak.map(row => {
     const plat = String(row["Platform"] || "").toLowerCase();
     const key =
@@ -1893,7 +1804,6 @@ function normalizeReport(raw){
     };
   });
 
-  // Map top posts into your old topPostsByPlatform buckets
   const topPostsByPlatform = { linkedin: [], facebook: [], instagram: [] };
   tPosts.forEach(p => {
     const key = normPlatformToken(p["Platform"]);
@@ -1906,7 +1816,6 @@ function normalizeReport(raw){
     });
   });
 
-  // Convert insights array (Section/Text) into the keys your UI wants
   const insights = { working:"", notWorking:"", actions:"", next:"" };
   insArr.forEach(x => {
     const k = String(x.Section || "").toLowerCase().trim();
@@ -1926,8 +1835,87 @@ function normalizeReport(raw){
     overall,
     deltas,
     platforms,
-    topPostsByPlatform
+    topPostsByPlatform,
+    allPosts
   };
+}
+
+/* =========================
+   POSTS (use REPORT.allPosts, no second endpoint)
+========================= */
+let POSTS_RAW = [];
+let POSTS_VIEW = [];
+
+function normalizeEngRatePercent(v){
+  if (v === null || v === undefined) return null;
+
+  if (typeof v === "number" && Number.isFinite(v)){
+    return v <= 1 ? v * 100 : v;
+  }
+
+  if (typeof v === "string"){
+    const s = v.trim();
+    if (!s) return null;
+
+    const cleaned = s.replace("%","").replace(/,/g,"");
+    const n = Number(cleaned);
+    if (!Number.isFinite(n)) return null;
+
+    if (s.includes("%")) return n;
+    return n <= 1 ? n * 100 : n;
+  }
+
+  return null;
+}
+
+function computeEngRatePercent(p){
+  const imp = toNumber(p?.Impressions ?? p?.impressions) || 0;
+  const eng = toNumber(p?.Engagements ?? p?.engagements) || 0;
+  return imp > 0 ? (eng / imp) * 100 : null;
+}
+
+function classifyEngagementHealth(rate){
+  if (rate === null || typeof rate !== "number" || !Number.isFinite(rate)) return "";
+  if (rate > 10) return "Very Strong";
+  if (rate >= 6) return "Strong";
+  if (rate >= 4) return "Moderate";
+  return "Low";
+}
+
+function normalizePostsPayloadFromReport(){
+  const arr = Array.isArray(REPORT?.allPosts) ? REPORT.allPosts : [];
+
+  return arr.map(p => {
+    const er =
+      normalizeEngRatePercent(p.engagementRate ?? p["Engagement Rate"] ?? p.engagement_rate ?? p.er) ??
+      null;
+
+    const engagementRate = (er !== null ? er : computeEngRatePercent(p));
+    const engagementHealth = classifyEngagementHealth(engagementRate);
+
+    return {
+      title: p.title ?? p.postName ?? p["Post Name"] ?? p.post ?? "",
+      date: p.date ?? p["Date"] ?? "",
+      url: p.url ?? p["URL"] ?? "",
+      platforms: Array.isArray(p.platforms)
+        ? p.platforms
+        : String(p.platforms ?? p.platform ?? p["Platforms"] ?? "")
+            .split(",")
+            .map(s => s.trim())
+            .filter(Boolean),
+
+      impressions: toNumber(p.impressions ?? p["Impressions"]),
+      engagements: toNumber(p.engagements ?? p["Engagements"]),
+
+      engagementRate,
+      engagementHealth,
+
+      likes: toNumber(p.likes ?? p["Likes"]),
+      comments: toNumber(p.comments ?? p["Comments"]),
+      shares: toNumber(p.shares ?? p["Shares"]),
+      notes: p.notes ?? p["Notes"] ?? ""
+    };
+  });
 }
 
 /* =========================
@@ -1978,13 +1966,6 @@ function renderExecutiveSummary(){
   });
 }
 
-/* IMPORTANT:
-   These IDs must exist in your HTML (update them once, then this works):
-   - insWorking
-   - insNotWorking
-   - insActions
-   - insNext
-*/
 function renderInsights(){
   setHTML("insWorking", REPORT.insights?.working);
   setHTML("insNotWorking", REPORT.insights?.notWorking);
@@ -2065,6 +2046,14 @@ function renderPlatforms(){
 /* =========================
    TOP POSTS (START CLOSED)
 ========================= */
+function postEngRate(p){
+  const imp = toNumber(p?.impressions) || 0;
+  const likes = toNumber(p?.likes) || 0;
+  const shares = toNumber(p?.shares) || 0;
+  const eng = likes + shares;
+  return imp > 0 ? (eng / imp) * 100 : 0;
+}
+
 function renderTopPosts(){
   const wrap = byId("topCompact");
   if(!wrap) return;
@@ -2134,8 +2123,114 @@ function renderTopPosts(){
 }
 
 /* =========================
-   CHARTS (BAR <-> PIE)
+   POSTS TABLE (search/filter)
 ========================= */
+function renderPostsTable(){
+  const table = byId("postsTable");
+  const empty = byId("postsEmpty");
+  const count = byId("postsCount");
+  if(!table || !empty || !count) return;
+
+  count.textContent = String(POSTS_VIEW.length);
+
+  if(!POSTS_VIEW.length){
+    table.innerHTML = "";
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>Post</th>
+        <th>Date</th>
+        <th>Platforms</th>
+        <th>Impr.</th>
+        <th>Eng.</th>
+        <th>ER</th>
+        <th>Health</th>
+        <th>Likes</th>
+        <th>Comments</th>
+        <th>Shares</th>
+        <th>Link</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${POSTS_VIEW.map(p => {
+        const plats = (p.platforms || []).join(", ");
+        const hClass = healthClass(p.engagementHealth);
+        const hLabel = escapeHtml(p.engagementHealth || "—");
+
+        return `
+          <tr>
+            <td><strong>${escapeHtml(p.title)}</strong></td>
+            <td>${fmtDate(p.date)}</td>
+            <td>${escapeHtml(plats || "—")}</td>
+            <td>${fmtInt(p.impressions)}</td>
+            <td>${fmtInt(p.engagements)}</td>
+            <td>${fmtPct(p.engagementRate)}</td>
+            <td>
+              <span class="health-pill ${hClass}">
+                <span class="health-dot" aria-hidden="true"></span>
+                ${hLabel}
+              </span>
+            </td>
+            <td>${fmtInt(p.likes)}</td>
+            <td>${fmtInt(p.comments)}</td>
+            <td>${fmtInt(p.shares)}</td>
+            <td>${p.url ? `<a href="${p.url}" target="_blank" rel="noopener">Open</a>` : "—"}</td>
+            <td>${escapeHtml(p.notes)}</td>
+          </tr>
+        `;
+      }).join("")}
+    </tbody>
+  `;
+}
+
+function applyPostsFilters(){
+  const q = String(byId("postsSearch")?.value || "").toLowerCase().trim();
+  const plat = String(byId("postsPlatform")?.value || "all").toLowerCase();
+
+  POSTS_VIEW = POSTS_RAW.filter(p => {
+    const pTokens = (p.platforms || []).map(normPlatformToken).filter(Boolean);
+    const matchesPlatform = (plat === "all") ? true : pTokens.includes(plat);
+
+    if(!q) return matchesPlatform;
+
+    const hay = [
+      p.title, p.date, (p.platforms || []).join(", "),
+      String(p.impressions ?? ""), String(p.engagements ?? ""),
+      String(p.engagementRate ?? ""), String(p.engagementHealth ?? ""),
+      String(p.likes ?? ""), String(p.comments ?? ""), String(p.shares ?? ""),
+      p.notes
+    ].join(" ").toLowerCase();
+
+    return matchesPlatform && hay.includes(q);
+  });
+
+  renderPostsTable();
+}
+
+function wirePostsFilters(){
+  const search = byId("postsSearch");
+  const select = byId("postsPlatform");
+  if(search) search.addEventListener("input", applyPostsFilters);
+  if(select) select.addEventListener("change", applyPostsFilters);
+}
+
+/* =========================
+   CHARTS (unchanged)
+========================= */
+function seriesColors(count){
+  return [
+    "rgba(0,112,202,0.9)",
+    "rgba(0,84,154,0.85)",
+    "rgba(77,163,232,0.8)"
+  ].slice(0, count);
+}
+
 Chart.defaults.font.family = 'Gotham, Gotham SSm, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 Chart.defaults.color = "#64748B";
 
@@ -2256,8 +2351,8 @@ function buildEng(type){
 function wireChartToggles(){
   document.querySelectorAll(".ct-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-      const chart = btn.getAttribute("data-chart"); // reach | eng
-      const type = btn.getAttribute("data-type");   // bar | pie
+      const chart = btn.getAttribute("data-chart");
+      const type = btn.getAttribute("data-type");
 
       const group = btn.parentElement;
       group.querySelectorAll(".ct-btn").forEach(b => b.classList.remove("is-active"));
@@ -2270,7 +2365,7 @@ function wireChartToggles(){
 }
 
 /* =========================
-   EDIT LOCK (?edit=1)
+   EDIT LOCK + MENUS (unchanged)
 ========================= */
 function lockEditing(){
   const canEdit = new URLSearchParams(window.location.search).get("edit") === "1";
@@ -2279,9 +2374,6 @@ function lockEditing(){
   });
 }
 
-/* =========================
-   QUARTER DROPDOWN
-========================= */
 function quarterDropdown(){
   const wrap = document.querySelector(".pill-wrap");
   const btn = document.getElementById("quarterBtn");
@@ -2326,23 +2418,11 @@ function brandDropdown(){
 
   options.forEach(option => {
     option.addEventListener("click", () => {
-      const label = option.dataset.label || "ISL";
-      const name = option.dataset.name || "Integrated Staffing";
-      const brand = option.dataset.brand || "isl";
       const href = option.dataset.href;
-
       if(href && href !== window.location.pathname.split("/").pop() && href !== `./${window.location.pathname.split("/").pop()}`){
         window.location.href = href;
         return;
       }
-
-      toggle.textContent = label;
-      brandName.textContent = name;
-
-      toggle.classList.remove("brand-as", "brand-ads");
-      if(brand === "as") toggle.classList.add("brand-as");
-      if(brand === "ads") toggle.classList.add("brand-ads");
-
       closeMenu();
     });
   });
@@ -2356,218 +2436,26 @@ function brandDropdown(){
   });
 }
 
- let POSTS_RAW = [];   // full list
-let POSTS_VIEW = [];  // filtered list
-
-function normalizeEngRatePercent(v){
-  const n = toNumber(v);
-  if (n === null) return null;
-
-  // If the sheet gives 0.0412 (fraction), convert to 4.12 (percent)
-  if (n > 0 && n <= 1) return n * 100;
-
-  // If the sheet gives 4.12 already, keep it
-  return n;
-}
-   
-function classifyEngagementHealth(rate){
-  if (rate === null || typeof rate !== "number" || !Number.isFinite(rate)) return "";
-  if (rate > 10) return "Very Strong";
-  if (rate >= 6) return "Strong";
-  if (rate >= 4) return "Moderate";
-  return "Low";
-}
-
-/* If your sheet ever stores ER as "6.1%" or 0.061, this normalizes to percent */
-function normalizeEngRatePercent(v){
-  if (v === null || v === undefined) return null;
-
-  // numbers
-  if (typeof v === "number" && Number.isFinite(v)){
-    // If it's <= 1, assume it's a fraction (0.061) and convert to percent (6.1)
-    return v <= 1 ? v * 100 : v;
-  }
-
-  // strings like "6.1%" or "0.061"
-  if (typeof v === "string"){
-    const s = v.trim();
-    if (!s) return null;
-
-    const cleaned = s.replace("%","").replace(/,/g,"");
-    const n = Number(cleaned);
-    if (!Number.isFinite(n)) return null;
-
-    // If original had %, it’s already percent
-    if (s.includes("%")) return n;
-
-    // Otherwise if <=1 treat as fraction
-    return n <= 1 ? n * 100 : n;
-  }
-
-  return null;
-}
-
-/* Compute ER from engagements/impressions if missing */
-function computeEngRatePercent(p){
-  const imp = toNumber(p?.impressions) || 0;
-  const eng = toNumber(p?.engagements) || 0;
-  return imp > 0 ? (eng / imp) * 100 : null;
-}
-
-function normalizePostsPayload(payload){
-  // Expecting either { posts:[...] } OR just an array
-  const arr = Array.isArray(payload) ? payload : (payload?.posts || []);
-
-  return arr.map(p => {
-    const er =
-      normalizeEngRatePercent(p.engagementRate) ??
-      normalizeEngRatePercent(p["Engagement Rate"]) ??
-      normalizeEngRatePercent(p.engagement_rate) ??
-      normalizeEngRatePercent(p.er) ??
-      null;
-
-    const engagementRate = (er !== null ? er : computeEngRatePercent(p));
-    const engagementHealth = classifyEngagementHealth(engagementRate);
-
-    return {
-      title: p.title ?? p.postName ?? p.post ?? "",
-      date: p.date ?? "",
-      url: p.url ?? "",
-      platforms: Array.isArray(p.platforms)
-        ? p.platforms
-        : String(p.platforms || p.platform || "")
-            .split(",")
-            .map(s => s.trim())
-            .filter(Boolean),
-
-      impressions: toNumber(p.impressions),
-      engagements: toNumber(p.engagements),
-
-      engagementRate,          // now always a usable percent (or null)
-      engagementHealth,        // auto-generated label
-
-      likes: toNumber(p.likes),
-      comments: toNumber(p.comments),
-      shares: toNumber(p.shares),
-      notes: p.notes ?? ""
-    };
-  });
-}
-
-
-function renderPostsTable(){
-  const table = byId("postsTable");
-  const empty = byId("postsEmpty");
-  const count = byId("postsCount");
-  if(!table || !empty || !count) return;
-
-  count.textContent = String(POSTS_VIEW.length);
-
-  if(!POSTS_VIEW.length){
-    table.innerHTML = "";
-    empty.style.display = "block";
-    return;
-  }
-  empty.style.display = "none";
-
-  table.innerHTML = `
-    <thead>
-      <tr>
-        <th>Post</th>
-        <th>Date</th>
-        <th>Platforms</th>
-        <th>Impr.</th>
-        <th>Eng.</th>
-        <th>ER</th>
-        <th>Health</th>
-        <th>Likes</th>
-        <th>Comments</th>
-        <th>Shares</th>
-        <th>Link</th>
-        <th>Notes</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${POSTS_VIEW.map(p => {
-        const plats = (p.platforms || []).join(", ");
-        const hClass = healthClass(p.engagementHealth);
-        const hLabel = escapeHtml(p.engagementHealth || "—");
-
-        return `
-          <tr>
-            <td><strong>${escapeHtml(p.title)}</strong></td>
-            <td>${fmtDate(p.date)}</td>
-            <td>${escapeHtml(plats || "—")}</td>
-            <td>${fmtInt(p.impressions)}</td>
-            <td>${fmtInt(p.engagements)}</td>
-            <td>${fmtPct(p.engagementRate)}</td>
-            <td>
-              <span class="health-pill ${hClass}">
-                <span class="health-dot" aria-hidden="true"></span>
-                ${hLabel}
-              </span>
-            </td>
-            <td>${fmtInt(p.likes)}</td>
-            <td>${fmtInt(p.comments)}</td>
-            <td>${fmtInt(p.shares)}</td>
-            <td>${p.url ? `<a href="${p.url}" target="_blank" rel="noopener">Open</a>` : "—"}</td>
-            <td>${escapeHtml(p.notes)}</td>
-          </tr>
-        `;
-      }).join("")}
-    </tbody>
-  `;
-}
-
-function applyPostsFilters(){
-  const q = String(byId("postsSearch")?.value || "").toLowerCase().trim();
-  const plat = String(byId("postsPlatform")?.value || "all").toLowerCase();
-
-  POSTS_VIEW = POSTS_RAW.filter(p => {
-    const pTokens = (p.platforms || []).map(normPlatformToken).filter(Boolean);
-    const matchesPlatform = (plat === "all") ? true : pTokens.includes(plat);
-
-    if(!q) return matchesPlatform;
-
-    const hay = [
-      p.title, p.date, (p.platforms || []).join(", "),
-      String(p.impressions ?? ""), String(p.engagements ?? ""),
-      String(p.engagementRate ?? ""), String(p.engagementHealth ?? ""),
-      String(p.likes ?? ""), String(p.comments ?? ""), String(p.shares ?? ""),
-      p.notes
-    ].join(" ").toLowerCase();
-
-    return matchesPlatform && hay.includes(q);
-  });
-
-  renderPostsTable();
-}
-
-function wirePostsFilters(){
-  const search = byId("postsSearch");
-  const select = byId("postsPlatform");
-  if(search) search.addEventListener("input", applyPostsFilters);
-  if(select) select.addEventListener("change", applyPostsFilters);
-}  
-
 /* =========================
    INIT
 ========================= */
 (async function init(){
   try{
     const raw = await loadReport();
-window.RAW_REPORT = raw;   // ✅ expose for console debugging
-REPORT = normalizeReport(raw);
-window.REPORT = REPORT;    // ✅ also expose normalized version
+    window.RAW_REPORT = raw;
+
+    REPORT = normalizeReport(raw);
+    window.REPORT = REPORT;
 
     renderHeader();
     renderKPIs();
     renderExecutiveSummary();
-    renderInsights();          // ✅ pulls from REPORT.insights.*
+    renderInsights();
     renderPlatforms();
     renderTopPosts();
-     const postsPayload = await loadPosts();
-    POSTS_RAW = normalizePostsPayload(postsPayload);
+
+    // ✅ posts now come from REPORT.allPosts (no second fetch)
+    POSTS_RAW = normalizePostsPayloadFromReport();
     POSTS_VIEW = POSTS_RAW.slice();
     wirePostsFilters();
     renderPostsTable();
@@ -2582,7 +2470,7 @@ window.REPORT = REPORT;    // ✅ also expose normalized version
 
   } catch(err){
     console.error(err);
-    alert("Report data failed to load. Check that report-data.json is in the same folder as this page.");
+    alert("Report data failed to load from the live endpoint. Check the report key and Apps Script deployment.");
   }
 })();
 </script>
