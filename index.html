@@ -2553,7 +2553,9 @@ function wirePostsFilters(){
 (async function init(){
   try{
     const raw = await loadReport();
-    REPORT = normalizeReport(raw);
+window.RAW_REPORT = raw;   // ✅ expose for console debugging
+REPORT = normalizeReport(raw);
+window.REPORT = REPORT;    // ✅ also expose normalized version
 
     renderHeader();
     renderKPIs();
