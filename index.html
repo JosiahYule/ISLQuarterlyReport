@@ -1602,25 +1602,34 @@
 
 <script>
 /* =========================
-   REPORT DASHBOARD (FIXED)
+   REPORT DASHBOARD (FULL + FIXED)
    - Uses your Apps Script JSON shape
    - One endpoint for all sections
+   - Fixes:
+     1) Summary ▲/▼ becomes green/red pill
+     2) Avg engagement rate shows in Quarter Totals (robust matching)
+     3) Platform deltas show (robust delta column detection)
+     4) Charts have platform color differentiation (bar + pie)
+     5) All Posts date shows YYYY-MM-DD
+     6) Health pill only has ONE dot (your table markup already does this)
 ========================= */
 
 let RAW = null;
 let ALL_POSTS = [];
 let FILTERED_POSTS = [];
 
+let reachChart = null;
+let engChart = null;
+
 const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbwBjPHqzQnbGgummslYHAInko7zS5-DQc90sHt4fnRqGfiTqMG1tK4vgHK6WZycLFNK/exec";
 const DEFAULT_REPORT = "islq2";
 
-// Front-end labels (optional but helpful)
 const REPORT_LABELS = {
   islq1: { quarter: "Q1", range: "Sep–Nov 2025" },
   islq2: { quarter: "Q2", range: "Dec–Feb 2026" },
 };
 
-// ---------- small helpers ----------
+// ---------- helpers ----------
 const $ = (id) => document.getElementById(id);
 
 function escHtml(s){
@@ -1635,13 +1644,11 @@ function escHtml(s){
 function fmtDateYMD(input){
   if (!input) return "";
   const s = String(input).trim();
-  // If it already starts like 2025-12-02..., just slice
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
-
   const d = new Date(s);
   if (Number.isNaN(d.getTime())) return s;
   return d.toISOString().slice(0, 10);
-}  
+}
 
 function isNum(n){ return typeof n === "number" && Number.isFinite(n); }
 
@@ -1650,7 +1657,6 @@ function toNumber(v){
   if (typeof v === "number") return Number.isFinite(v) ? v : null;
   const s = String(v).trim();
   if (!s) return null;
-  // remove commas/spaces/% and parse
   const cleaned = s.replace(/,/g,"").replace(/\s+/g,"").replace(/%/g,"");
   if (!/^[-]?\d+(\.\d+)?$/.test(cleaned)) return null;
   const n = Number(cleaned);
@@ -1685,7 +1691,6 @@ function healthClassFromText(h){
 }
 
 function deltaClass(deltaObj){
-  // deltaObj from Apps Script looks like: { raw, percent, direction }
   const dir = deltaObj && typeof deltaObj === "object" ? deltaObj.direction : null;
   if (dir === "up") return "positive";
   if (dir === "down") return "negative";
@@ -1700,7 +1705,6 @@ function deltaText(deltaObj){
 }
 
 function pickKey(obj, candidates){
-  // returns first matching key in obj (case-insensitive)
   if (!obj || typeof obj !== "object") return null;
   const keys = Object.keys(obj);
   const lowerMap = new Map(keys.map(k => [k.toLowerCase(), k]));
@@ -1708,7 +1712,6 @@ function pickKey(obj, candidates){
     const found = lowerMap.get(String(c).toLowerCase());
     if (found) return found;
   }
-  // fuzzy contains
   for (const c of candidates){
     const cl = String(c).toLowerCase();
     const match = keys.find(k => k.toLowerCase().includes(cl));
@@ -1721,7 +1724,6 @@ function formatGeneratedLabel(iso){
   try{
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return "";
-    // e.g., Feb 10, 2026
     return d.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" });
   }catch{
     return "";
@@ -1741,7 +1743,7 @@ async function loadReport(){
   return json;
 }
 
-// ---------- render: header labels ----------
+// ---------- header labels ----------
 function renderHeader(meta){
   const key = meta.__reportKey || DEFAULT_REPORT;
   const labels = REPORT_LABELS[key] || { quarter: "Quarter", range: "" };
@@ -1759,7 +1761,7 @@ function renderHeader(meta){
   }
 }
 
-// ---------- render: summary ----------
+// ---------- summary (▲/▼ -> pill) ----------
 function renderSummary(bullets){
   const ul = $("execSummaryList");
   if (!ul) return;
@@ -1771,7 +1773,6 @@ function renderSummary(bullets){
     return;
   }
 
-  // Wrap ▲ 50.6% / ▼ 12.3% inside a colored pill
   const rx = /([▲▼])\s*([-]?\d+(?:\.\d+)?)\s*%/g;
 
   ul.innerHTML = list.map(b => {
@@ -1790,11 +1791,10 @@ function renderSummary(bullets){
   }).join("");
 }
 
-// ---------- render: quarter totals KPIs ----------
+// ---------- quarter totals ----------
 function renderQuarterTotals(rows){
   const data = Array.isArray(rows) ? rows : [];
 
-  // Map by normalized field name
   const map = {};
   for (const r of data){
     const field = String(r.field ?? "").trim().toLowerCase();
@@ -1802,70 +1802,57 @@ function renderQuarterTotals(rows){
     map[field] = r;
   }
 
-  // Helpers to set KPI
+  const findRow = (needles) => {
+    for (const n of needles){
+      const key = String(n).toLowerCase();
+      if (map[key]) return map[key];
+    }
+    const keys = Object.keys(map);
+    for (const n of needles){
+      const nl = String(n).toLowerCase();
+      const found = keys.find(k => k.includes(nl));
+      if (found) return map[found];
+    }
+    return null;
+  };
+
+  const findAvgEngRateRow = () => {
+    const keys = Object.keys(map);
+    const hit = keys.find(k =>
+      k.includes("engagement rate") && (k.includes("avg") || k.includes("average"))
+    );
+    return hit ? map[hit] : findRow(["avg engagement rate","average engagement rate","average post engagement rate"]);
+  };
+
   const setKpi = (valueId, deltaId, row) => {
     const vEl = $(valueId);
     const dEl = $(deltaId);
     if (vEl) vEl.textContent = (row ? fmtInt(row.value) : "—");
 
     if (dEl){
-      const txt = row ? deltaText(row.delta) : "—";
-      dEl.textContent = txt;
-
+      dEl.textContent = row ? deltaText(row.delta) : "—";
       dEl.classList.remove("positive","negative");
       const cls = row ? deltaClass(row.delta) : "";
       if (cls) dEl.classList.add(cls);
     }
   };
 
-  // Engagement rate is usually percent; use fmtPct if your sheet stores actual percent numbers
   const setKpiPct = (valueId, deltaId, row) => {
     const vEl = $(valueId);
     const dEl = $(deltaId);
 
     if (vEl){
-      // If value already comes as percent number (e.g. 6.3), show 6.30%
       const n = toNumber(row?.value);
       vEl.textContent = (n === null) ? "—" : `${n.toFixed(2)}%`;
     }
 
     if (dEl){
-      const txt = row ? deltaText(row.delta) : "—";
-      dEl.textContent = txt;
-
+      dEl.textContent = row ? deltaText(row.delta) : "—";
       dEl.classList.remove("positive","negative");
       const cls = row ? deltaClass(row.delta) : "";
       if (cls) dEl.classList.add(cls);
     }
   };
-
-  // Match your sheet field names as best as possible
-  // Adjust these strings to match your Quarter Totals "Field" column exactly if needed.
-const findRow = (needles) => {
-  // exact first
-  for (const n of needles){
-    const key = String(n).toLowerCase();
-    if (map[key]) return map[key];
-  }
-  // fuzzy contains
-  const keys = Object.keys(map);
-  for (const n of needles){
-    const nl = String(n).toLowerCase();
-    const found = keys.find(k => k.includes(nl));
-    if (found) return map[found];
-  }
-  return null;
-};
-
-// Special: "avg engagement rate" tends to vary wildly in naming
-const findAvgEngRateRow = () => {
-  const keys = Object.keys(map);
-  // require "engagement rate" AND ("avg" OR "average")
-  const hit = keys.find(k =>
-    k.includes("engagement rate") && (k.includes("avg") || k.includes("average"))
-  );
-  return hit ? map[hit] : findRow(["avg engagement rate","average engagement rate","average post engagement rate"]);
-};
 
   setKpi("kpiPosts","deltaPosts", findRow(["posts"]));
   setKpi("kpiImpressions","deltaImpressions", findRow(["post impressions","impressions"]));
@@ -1877,117 +1864,7 @@ const findAvgEngRateRow = () => {
   setKpiPct("kpiAvgEngRate","deltaAvgEngRate", findAvgEngRateRow());
 }
 
-// ---------- render: platform breakdown ----------
-let reachChart = null;
-let engChart = null;
-
-function renderPlatformBreakdown(rows){
-  const grid = $("platformGrid");
-  if (!grid) return;
-
-  const data = Array.isArray(rows) ? rows : [];
-  if (!data.length){
-    grid.innerHTML = `<div style="color:var(--muted);font-size:13px;">No platform breakdown rows found.</div>`;
-    return;
-  }
-
-  function findDeltaCol(row, baseKey){
-  if (!row || !baseKey) return null;
-  const keys = Object.keys(row);
-  const base = String(baseKey).toLowerCase();
-  return keys.find(k =>
-    k.toLowerCase().includes(base) &&
-    (k.includes("Δ") || k.toLowerCase().includes("delta"))
-  ) || null;
-}
-
-  // Guess keys
-  const sample = data[0] || {};
-  const kPlatform = pickKey(sample, ["Platform","platform","Network","Channel"]);
-const kFollowersD = findDeltaCol(row, kFollowers) || pickKey(row, ["Followers Δ","Followers Delta","Followers delta"]);
-const kEngRateD   = findDeltaCol(row, kEngRate)  || pickKey(row, ["Post Engagement Rate Δ","Engagement Rate Δ","Engagement Rate Delta","Engagement Rate delta"]);
-const kReachD     = findDeltaCol(row, kReach)    || pickKey(row, ["Page Reach Δ","Reach Δ","Reach Delta","Reach delta"]);
-const kClicksD    = findDeltaCol(row, kClicks)   || pickKey(row, ["Page Clicks Δ","Clicks Δ","Clicks Delta","Clicks delta"]);
-
-  // Build cards
-  grid.innerHTML = data.map(row => {
-    const name = String(row[kPlatform] ?? "Platform").trim();
-
-    const followers = row[kFollowers];
-    const engRate = row[kEngRate];
-    const reach = row[kReach];
-    const clicks = row[kClicks];
-
-    // Delta columns if present (anything containing Delta/Δ near the main columns)
-    const kFollowersD = pickKey(row, ["Followers Δ","Followers Delta","Followers delta","Followers change"]);
-    const kEngRateD = pickKey(row, ["Post Engagement Rate Δ","Engagement Rate Δ","Engagement Rate Delta","Engagement Rate delta"]);
-    const kReachD = pickKey(row, ["Page Reach Δ","Reach Δ","Reach Delta","Reach delta"]);
-    const kClicksD = pickKey(row, ["Page Clicks Δ","Clicks Δ","Clicks Delta","Clicks delta"]);
-
-    const deltaChip = (val) => {
-      if (!val) return `<span class="delta">—</span>`;
-      const cls = deltaClass(val);
-      return `<span class="delta ${cls}">${escHtml(deltaText(val))}</span>`;
-    };
-
-    // Badge letter
-    const badge = name.slice(0,1).toUpperCase();
-
-    return `
-      <div class="platform">
-        <div class="platform-head">
-          <div class="platform-name">
-            <div class="platform-badge" aria-hidden="true">${escHtml(badge)}</div>
-            <span>${escHtml(name)}</span>
-          </div>
-        </div>
-
-        <div class="pstats">
-          <div class="pstat">
-            <span class="pstat-label">Followers</span>
-            <div class="pstat-row">
-              <strong>${escHtml(fmtInt(followers))}</strong>
-              ${deltaChip(row[kFollowersD])}
-            </div>
-          </div>
-
-          <div class="pstat">
-            <span class="pstat-label">Post Engagement Rate</span>
-            <div class="pstat-row">
-              <strong>${escHtml(fmtPct(engRate))}</strong>
-              ${deltaChip(row[kEngRateD])}
-            </div>
-          </div>
-
-          <div class="pstat">
-            <span class="pstat-label">Page Reach</span>
-            <div class="pstat-row">
-              <strong>${escHtml(fmtInt(reach))}</strong>
-              ${deltaChip(row[kReachD])}
-            </div>
-          </div>
-
-          <div class="pstat">
-            <span class="pstat-label">Page Clicks</span>
-            <div class="pstat-row">
-              <strong>${escHtml(fmtInt(clicks))}</strong>
-              ${deltaChip(row[kClicksD])}
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  }).join("");
-
-  // Charts (Reach + Engagement Rate)
-  const labels = data.map(r => String(r[kPlatform] ?? "Platform"));
-  const reachVals = data.map(r => toNumber(r[kReach]) ?? 0);
-  const engVals = data.map(r => toNumber(r[kEngRate]) ?? 0);
-
-  buildOrUpdateChart("reach", "reachChart", labels, reachVals);
-  buildOrUpdateChart("eng", "engRateChart", labels, engVals);
-}
-
+// ---------- charts ----------
 function platformColor(label){
   const s = String(label || "").toLowerCase();
   if (s.includes("linkedin")) return "rgba(0,119,181,.55)";
@@ -1995,16 +1872,24 @@ function platformColor(label){
   if (s.includes("instagram")) return "rgba(228,64,95,.45)";
   return "rgba(0,112,202,.45)";
 }
+function platformBorder(label){
+  const s = String(label || "").toLowerCase();
+  if (s.includes("linkedin")) return "rgba(0,119,181,1)";
+  if (s.includes("facebook")) return "rgba(24,119,242,1)";
+  if (s.includes("instagram")) return "rgba(228,64,95,1)";
+  return "rgba(0,112,202,1)";
+}
 
-function buildOrUpdateChart(which, canvasId, labels, values){
-  const ctx = $(canvasId);
-  if (!ctx) return;
+function buildOrUpdateChart(which, canvasId, labels, values, typeOverride=null){
+  const canvas = $(canvasId);
+  if (!canvas) return;
 
   const isReach = which === "reach";
   const current = isReach ? reachChart : engChart;
 
-  const type = current?.config?.type || "bar";
-  const colors = labels.map(platformColor);
+  const type = typeOverride || (current?.config?.type || "bar");
+  const fills = labels.map(platformColor);
+  const borders = labels.map(platformBorder);
 
   const config = {
     type,
@@ -2013,8 +1898,8 @@ function buildOrUpdateChart(which, canvasId, labels, values){
       datasets: [{
         label: isReach ? "Page Reach" : "Engagement Rate",
         data: values,
-        backgroundColor: (type === "pie") ? colors : colors,
-        borderColor: (type === "pie") ? colors.map(c => c.replace(/,\s*0\.\d+\)/, ", 1)")) : colors.map(c => c.replace(/,\s*0\.\d+\)/, ", 1)")),
+        backgroundColor: fills,
+        borderColor: borders,
         borderWidth: 1
       }]
     },
@@ -2031,28 +1916,116 @@ function buildOrUpdateChart(which, canvasId, labels, values){
   };
 
   if (current) current.destroy();
-
-  const chart = new Chart(ctx, config);
+  const chart = new Chart(canvas, config);
   if (isReach) reachChart = chart;
   else engChart = chart;
 }
 
-  if (current){
-    current.destroy();
+// ---------- platform breakdown ----------
+function renderPlatformBreakdown(rows){
+  const grid = $("platformGrid");
+  if (!grid) return;
+
+  const data = Array.isArray(rows) ? rows : [];
+  if (!data.length){
+    grid.innerHTML = `<div style="color:var(--muted);font-size:13px;">No platform breakdown rows found.</div>`;
+    return;
   }
-  const chart = new Chart(ctx, config);
-  if (isReach) reachChart = chart;
-  else engChart = chart;
+
+  const sample = data[0] || {};
+  const kPlatform  = pickKey(sample, ["Platform","platform","Network","Channel"]);
+  const kFollowers = pickKey(sample, ["Followers"]);
+  const kEngRate   = pickKey(sample, ["Post Engagement Rate","Engagement Rate"]);
+  const kReach     = pickKey(sample, ["Page Reach","Reach"]);
+  const kClicks    = pickKey(sample, ["Page Clicks","Clicks"]);
+
+  function findDeltaCol(row, baseKey){
+    if (!row || !baseKey) return null;
+    const keys = Object.keys(row);
+    const base = String(baseKey).toLowerCase();
+    return keys.find(k =>
+      k.toLowerCase().includes(base) &&
+      (k.includes("Δ") || k.toLowerCase().includes("delta") || k.toLowerCase().includes("change"))
+    ) || null;
+  }
+
+  const deltaChip = (val) => {
+    if (!val) return `<span class="delta">—</span>`;
+    const cls = deltaClass(val);
+    return `<span class="delta ${cls}">${escHtml(deltaText(val))}</span>`;
+  };
+
+  grid.innerHTML = data.map(row => {
+    const name = String(row[kPlatform] ?? "Platform").trim();
+    const badge = name.slice(0,1).toUpperCase();
+
+    const kFollowersD = findDeltaCol(row, kFollowers) || pickKey(row, ["Followers Δ","Followers Delta","Followers change"]);
+    const kEngRateD   = findDeltaCol(row, kEngRate)   || pickKey(row, ["Engagement Rate Δ","Post Engagement Rate Δ","Engagement Rate change"]);
+    const kReachD     = findDeltaCol(row, kReach)     || pickKey(row, ["Page Reach Δ","Reach Δ","Reach change"]);
+    const kClicksD    = findDeltaCol(row, kClicks)    || pickKey(row, ["Page Clicks Δ","Clicks Δ","Clicks change"]);
+
+    return `
+      <div class="platform">
+        <div class="platform-head">
+          <div class="platform-name">
+            <div class="platform-badge" aria-hidden="true">${escHtml(badge)}</div>
+            <span>${escHtml(name)}</span>
+          </div>
+        </div>
+
+        <div class="pstats">
+          <div class="pstat">
+            <span class="pstat-label">Followers</span>
+            <div class="pstat-row">
+              <strong>${escHtml(fmtInt(row[kFollowers]))}</strong>
+              ${deltaChip(row[kFollowersD])}
+            </div>
+          </div>
+
+          <div class="pstat">
+            <span class="pstat-label">Post Engagement Rate</span>
+            <div class="pstat-row">
+              <strong>${escHtml(fmtPct(row[kEngRate]))}</strong>
+              ${deltaChip(row[kEngRateD])}
+            </div>
+          </div>
+
+          <div class="pstat">
+            <span class="pstat-label">Page Reach</span>
+            <div class="pstat-row">
+              <strong>${escHtml(fmtInt(row[kReach]))}</strong>
+              ${deltaChip(row[kReachD])}
+            </div>
+          </div>
+
+          <div class="pstat">
+            <span class="pstat-label">Page Clicks</span>
+            <div class="pstat-row">
+              <strong>${escHtml(fmtInt(row[kClicks]))}</strong>
+              ${deltaChip(row[kClicksD])}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const labels = data.map(r => String(r[kPlatform] ?? "Platform"));
+  const reachVals = data.map(r => toNumber(r[kReach]) ?? 0);
+  const engVals = data.map(r => toNumber(r[kEngRate]) ?? 0);
+
+  // Build initial charts as BAR
+  buildOrUpdateChart("reach", "reachChart", labels, reachVals, "bar");
+  buildOrUpdateChart("eng", "engRateChart", labels, engVals, "bar");
 }
 
-// Chart type toggles (Bar/Pie)
+// ---------- chart type toggles ----------
 function wireChartToggles(){
   document.querySelectorAll(".ct-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const chartKey = btn.getAttribute("data-chart");
       const type = btn.getAttribute("data-type");
 
-      // toggle UI
       const group = btn.closest(".chart-toggle");
       if (group){
         group.querySelectorAll(".ct-btn").forEach(b => b.classList.remove("is-active"));
@@ -2060,29 +2033,21 @@ function wireChartToggles(){
       }
 
       if (chartKey === "reach" && reachChart){
-        const labels = reachChart.data.labels;
-        const values = reachChart.data.datasets[0].data;
-        reachChart.destroy();
-        reachChart = null;
-        buildOrUpdateChart("reach", "reachChart", labels, values);
-        reachChart.config.type = type;
-        reachChart.update();
+        const labels = reachChart.data.labels.slice();
+        const values = reachChart.data.datasets[0].data.slice();
+        buildOrUpdateChart("reach", "reachChart", labels, values, type);
       }
 
       if (chartKey === "eng" && engChart){
-        const labels = engChart.data.labels;
-        const values = engChart.data.datasets[0].data;
-        engChart.destroy();
-        engChart = null;
-        buildOrUpdateChart("eng", "engRateChart", labels, values);
-        engChart.config.type = type;
-        engChart.update();
+        const labels = engChart.data.labels.slice();
+        const values = engChart.data.datasets[0].data.slice();
+        buildOrUpdateChart("eng", "engRateChart", labels, values, type);
       }
     });
   });
 }
 
-// ---------- render: top posts ----------
+// ---------- top posts ----------
 function renderTopPosts(rows){
   const host = $("topCompact");
   if (!host) return;
@@ -2093,7 +2058,6 @@ function renderTopPosts(rows){
     return;
   }
 
-  // Guess keys
   const sample = data[0] || {};
   const kPlatform = pickKey(sample, ["Platform","platform","Network"]);
   const kTitle = pickKey(sample, ["Post Name","Title","Post"]);
@@ -2103,7 +2067,6 @@ function renderTopPosts(rows){
   const kURL = pickKey(sample, ["URL","Link"]);
   const kNotes = pickKey(sample, ["Notes","Note"]);
 
-  // group by platform
   const groups = {};
   for (const r of data){
     const p = String(r[kPlatform] ?? "Platform").trim();
@@ -2118,7 +2081,8 @@ function renderTopPosts(rows){
       const title = String(r[kTitle] ?? "Untitled").trim();
       const imp = fmtInt(r[kImpressions]);
       const eng = fmtInt(r[kEngagements]);
-      const er = (toNumber(r[kER]) === null) ? "—" : `${toNumber(r[kER]).toFixed(2)}%`;
+      const erN = toNumber(r[kER]);
+      const er = (erN === null) ? "—" : `${erN.toFixed(2)}%`;
       const url = String(r[kURL] ?? "").trim();
       const notes = String(r[kNotes] ?? "").trim();
 
@@ -2160,7 +2124,7 @@ function renderTopPosts(rows){
   }).join("");
 }
 
-// ---------- render: all posts table + filtering ----------
+// ---------- all posts normalize ----------
 function normalizeAllPostsRows(rows){
   const data = Array.isArray(rows) ? rows : [];
   if (!data.length) return [];
@@ -2185,7 +2149,6 @@ function normalizeAllPostsRows(rows){
     const imp = toNumber(r[kImpressions]);
     const eng = toNumber(r[kEngagements]);
     let er = toNumber(r[kER]);
-    // If ER missing, compute from eng/imp
     if (er === null && isNum(imp) && imp > 0 && isNum(eng)) er = (eng / imp) * 100;
 
     const healthText = String(r[kHealth] ?? "").trim();
@@ -2204,6 +2167,7 @@ function normalizeAllPostsRows(rows){
   });
 }
 
+// ---------- all posts render + filtering ----------
 function renderAllPostsTable(){
   const table = $("postsTable");
   const countEl = $("postsCount");
@@ -2273,7 +2237,6 @@ function applyPostFilters(){
       : p.platforms.some(pl => normalizePlatformValue(pl) === platform);
 
     if (!platMatch) return false;
-
     if (!q) return true;
 
     const hay = [
@@ -2297,7 +2260,7 @@ function wirePostsTableFilters(){
   if (select) select.addEventListener("change", applyPostFilters);
 }
 
-// ---------- render: insights ----------
+// ---------- insights ----------
 function renderInsights(rows){
   const data = Array.isArray(rows) ? rows : [];
 
@@ -2317,7 +2280,6 @@ function renderInsights(rows){
     for (const n of sectionNeedles){
       const key = String(n).toLowerCase();
       if (bySection[key]) { val = bySection[key]; break; }
-      // fuzzy
       const hit = Object.keys(bySection).find(k => k.includes(key));
       if (hit) { val = bySection[hit]; break; }
     }
@@ -2331,11 +2293,11 @@ function renderInsights(rows){
   set("insNext", ["next quarter focus", "next quarter", "focus"]);
 }
 
-// ---------- small UI: quarter + brand menus (optional but prevents stuck states) ----------
+// ---------- menus ----------
 function wireMenus(){
-  // Quarter menu
   const wrap = document.querySelector(".pill-wrap");
   const btn = $("quarterBtn");
+
   if (wrap && btn){
     btn.addEventListener("click", () => {
       wrap.classList.toggle("open");
@@ -2343,14 +2305,15 @@ function wireMenus(){
     });
   }
 
-  // Brand menu
   const brandWrap = document.querySelector(".brand-menu-wrap");
   const brandBtn = $("brandToggle");
+
   if (brandWrap && brandBtn){
     brandBtn.addEventListener("click", () => {
       brandWrap.classList.toggle("open");
       brandBtn.setAttribute("aria-expanded", brandWrap.classList.contains("open") ? "true" : "false");
     });
+
     document.querySelectorAll(".brand-option").forEach(opt => {
       opt.addEventListener("click", () => {
         const href = opt.getAttribute("data-href");
@@ -2359,13 +2322,14 @@ function wireMenus(){
     });
   }
 
-  // Close on outside click
   document.addEventListener("click", (e) => {
     const t = e.target;
+
     if (wrap && !wrap.contains(t)) {
       wrap.classList.remove("open");
       btn && btn.setAttribute("aria-expanded", "false");
     }
+
     if (brandWrap && !brandWrap.contains(t)) {
       brandWrap.classList.remove("open");
       brandBtn && brandBtn.setAttribute("aria-expanded", "false");
@@ -2397,7 +2361,6 @@ async function init(){
 
   }catch(err){
     console.error("Dashboard error:", err);
-    // Optional: show something visible
     const heroGen = $("generatedLabel");
     if (heroGen) heroGen.textContent = "Error loading data";
   }
