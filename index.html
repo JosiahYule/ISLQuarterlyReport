@@ -1844,7 +1844,7 @@ function normalizeReport(raw){
     comments: toNumber(getValue(qt("comments"))),
 
     // ✅ this is your missing one (now works for Field/Value)
-    avgEngagementRate: toNumber(getValue(qt("avgEngagement"))),
+    avgEngagementRate: toNumber(getValue(qt("avgEngagementRate"))),
   };
 
   const deltas = {
@@ -1857,7 +1857,7 @@ function normalizeReport(raw){
     comments: getDeltaRaw(qt("comments")),
 
     // ✅ now also works for Delta/Delta.raw
-    avgEngagementRate: getDeltaRaw(qt("avgEngagement")),
+    avgEngagementRate: getDeltaRaw(qt("avgEngagementRate")),
   };
 
   // Map platform breakdown rows -> platforms array your UI expects
