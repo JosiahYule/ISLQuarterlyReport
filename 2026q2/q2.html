@@ -62,50 +62,126 @@
       position:relative;
     }
     .brand{display:flex;align-items:center;gap:14px;min-width:0}
+    .brand-menu-wrap{position:relative;display:inline-flex}
 .brand-mark{
-  width:48px;
-  height:48px;
-  border-radius:12px;
+  width:54px;
+  height:40px;
+  border-radius:9px;
   background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
-  box-shadow:0 4px 12px rgba(0,84,154,.2), inset 0 1px 0 rgba(255,255,255,.2);
   position:relative;
-  overflow:hidden;
 
   display:grid;
   place-items:center;
 
   font-size:20px;
-  font-weight:900;
+  font-weight:800;
   color:#fff;
   line-height:1;
 
   text-decoration:none;
   cursor:pointer;
   transition:var(--transition);
+  font-family:var(--font);
+  border:none;
+  outline:none;
+  appearance:none;
+  -webkit-appearance:none;
 }
 
-/* ✅ IMPORTANT: make sure the overlay can't block clicks */
-.brand-mark::after{
-  content:"";
-  position:absolute;
-  inset:-40%;
-  background:radial-gradient(circle, rgba(255,255,255,.3), transparent 60%);
-  transform:rotate(25deg);
-  pointer-events:none;   /* <-- this is the missing piece */
+.brand-mark.brand-as{
+  background:linear-gradient(135deg,#D68910,#F5B041);
+}
+
+.brand-mark.brand-ads{
+  background:linear-gradient(135deg,#0F5B78,#1C8DB5);
 }
 
 .brand-mark:hover{
   transform:translateY(-1px);
-  box-shadow:0 6px 16px rgba(0,84,154,.25);
+  filter:brightness(1.03);
 }
 
 .brand-mark:active{
   transform:translateY(0);
 }
 
-.brand-mark:focus{
+.brand-mark:focus,
+.brand-mark:focus-visible{
   outline:none;
-  box-shadow:0 0 0 4px rgba(0,112,202,.25), 0 6px 16px rgba(0,0,0,.12);
+  box-shadow:none;
+}
+
+.brand-menu{
+  position:absolute;
+  top:calc(100% + 4px);
+  left:0;
+  min-width:260px;
+  background:#fff;
+  border:1px solid rgba(15,23,42,.08);
+  border-radius:14px;
+  padding:8px;
+  box-shadow:0 12px 28px rgba(2,8,23,.14);
+  display:none;
+  z-index:120;
+}
+
+.brand-menu-wrap::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:100%;
+  height:8px;
+}
+
+.brand-menu-wrap:hover .brand-menu,
+.brand-menu-wrap:focus-within .brand-menu,
+.brand-menu-wrap.open .brand-menu{
+  display:block;
+}
+
+.brand-option{
+  width:100%;
+  border:none;
+  background:transparent;
+  border-radius:10px;
+  padding:8px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  text-align:left;
+  cursor:pointer;
+  font-family:var(--font);
+  transition:var(--transition);
+}
+
+.brand-option:hover,
+.brand-option:focus-visible{
+  background:rgba(0,84,154,.08);
+  outline:none;
+}
+
+.brand-option-mark{
+  width:54px;
+  height:40px;
+  border-radius:9px;
+  color:#fff;
+  display:grid;
+  place-items:center;
+  font-family:var(--font);
+  font-size:20px;
+  font-weight:800;
+  flex:0 0 auto;
+}
+
+.brand-option-mark.isl{background:linear-gradient(135deg,#00549A,#0070CA);}
+.brand-option-mark.as{background:linear-gradient(135deg,#D68910,#F5B041);}
+.brand-option-mark.ads{background:linear-gradient(135deg,#0F5B78,#1C8DB5);}
+
+.brand-option-label{
+  font-size:15px;
+  font-weight:600;
+  color:var(--text);
 }
     .brand-text{display:flex;flex-direction:column;line-height:1.3;min-width:0}
     .brand-text strong{
@@ -594,7 +670,7 @@
       -webkit-appearance:none;
       border:0;
       background:transparent;
-      font:inherit;
+      font-family:var(--font);
       cursor:pointer;
       padding:6px 10px;
       border-radius:999px;
@@ -1115,6 +1191,137 @@
   display:block;
   fill: currentColor;
 }    
+
+/* ============= ALL POSTS (SCROLLABLE TABLE) ============= */
+.table-shell{
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  background:#fff;
+  overflow:hidden;
+}
+
+.table-toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 16px;
+  border-bottom:1px solid rgba(0,0,0,.06);
+  background:rgba(245,248,250,.55);
+}
+
+.table-tools{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.table-input{
+  width:320px;
+  max-width:100%;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid rgba(0,0,0,.10);
+  background:#fff;
+  font-family:var(--font);
+  font-size:13px;
+  color:var(--text);
+  outline:none;
+}
+
+.table-input:focus{
+  border-color:rgba(0,112,202,.35);
+  box-shadow:0 0 0 4px rgba(0,112,202,.10);
+}
+
+.table-select{
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid rgba(0,0,0,.10);
+  background:#fff;
+  font-family:var(--font);
+  font-size:13px;
+  color:var(--text);
+  outline:none;
+}
+
+.table-wrap{
+  max-height:560px;
+  overflow:auto;
+}
+
+.post-table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  font-size:13px;
+}
+
+.post-table thead th{
+  position:sticky;
+  top:0;
+  z-index:3;
+  text-align:left;
+  padding:12px 14px;
+  background:#fff;
+  border-bottom:1px solid rgba(0,0,0,.08);
+  font-size:11px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+  font-weight:800;
+  white-space:nowrap;
+}
+
+.post-table tbody td{
+  padding:12px 14px;
+  border-bottom:1px solid rgba(0,0,0,.06);
+  vertical-align:top;
+}
+
+.post-table tbody tr:hover{
+  background:rgba(0,112,202,.04);
+}
+
+.post-table a{
+  color:var(--isl-primary);
+  font-weight:800;
+  text-decoration:none;
+}
+
+.post-table a:hover{ text-decoration:underline; }
+
+.health-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:5px 10px;
+  border-radius:999px;
+  border:1px solid rgba(0,0,0,.06);
+  background:#fff;
+  font-size:12px;
+  font-weight:700;
+  white-space:nowrap;
+}
+    
+.health-dot{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+}
+
+.health-very-strong .health-dot{ background:#2563EB; box-shadow:0 0 0 3px rgba(37,99,235,.15); }
+.health-strong .health-dot{ background:#10B981; box-shadow:0 0 0 3px rgba(16,185,129,.15); }
+.health-moderate .health-dot{ background:#F59E0B; box-shadow:0 0 0 3px rgba(245,158,11,.18); }
+.health-low .health-dot{ background:#EF4444; box-shadow:0 0 0 3px rgba(239,68,68,.15); }
+
+.table-empty{
+  padding:18px 16px;
+  color:var(--muted);
+  font-size:13px;
+}    
   </style>
 </head>
 
@@ -1123,9 +1330,25 @@
 
     <div class="topbar">
       <div class="brand">
-        <a class="brand-mark" href="https://performancereport.integratedstaffing.com/" aria-label="Back to Performance Report Home">IS</a>
+        <div class="brand-menu-wrap">
+          <button class="brand-mark" id="brandToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Choose brand">ISL</button>
+          <div class="brand-menu" role="menu" aria-label="Brand selector">
+            <button class="brand-option" type="button" role="menuitem" data-brand="isl" data-label="ISL" data-name="Integrated Staffing" data-href="./index.html">
+              <span class="brand-option-mark isl" aria-hidden="true">ISL</span>
+              <span class="brand-option-label">Integrated Staffing</span>
+            </button>
+            <button class="brand-option" type="button" role="menuitem" data-brand="as" data-label="AS" data-name="Accountant Staffing" data-href="./as.html">
+              <span class="brand-option-mark as" aria-hidden="true">AS</span>
+              <span class="brand-option-label">Accountant Staffing</span>
+            </button>
+            <button class="brand-option" type="button" role="menuitem" data-brand="ads" data-label="ADS" data-name="Administrative Staffing" data-href="./ads.html">
+              <span class="brand-option-mark ads" aria-hidden="true">ADS</span>
+              <span class="brand-option-label">Administrative Staffing</span>
+            </button>
+          </div>
+        </div>
         <div class="brand-text">
-          <strong>Integrated Staffing</strong>
+          <strong id="brandNameLabel">Integrated Staffing</strong>
           <span>Quarterly Digital Media Performance Report</span>
         </div>
       </div>
@@ -1301,11 +1524,41 @@
       <div class="top-compact" id="topCompact"></div>
     </section>
 
+    <section class="section" aria-label="All posts">
+  <div class="section-header">
+    <div class="section-title">
+      <h2>All Posts This Quarter</h2>
+      <p>Every post made on one of our accounts this quarter. Impressions, engagement, and reaction data is based on LinkedIn.</p>
+    </div>
+    <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Full list</span></div>
+  </div>
+
+  <div class="table-shell">
+    <div class="table-toolbar">
+      <div class="table-tools">
+        <input id="postsSearch" class="table-input" type="search" placeholder="Search post name, platform, notes..." aria-label="Search posts">
+        <select id="postsPlatform" class="table-select" aria-label="Filter by platform">
+          <option value="all">All platforms</option>
+          <option value="linkedin">LinkedIn</option>
+          <option value="facebook">Facebook</option>
+          <option value="instagram">Instagram</option>
+        </select>
+      </div>
+      <div class="pill" aria-label="Post count"><span class="pill-dot" aria-hidden="true"></span><span><strong id="postsCount">0</strong> posts</span></div>
+    </div>
+
+    <div class="table-wrap" role="region" aria-label="Posts table scroll area">
+      <table class="post-table" id="postsTable"></table>
+      <div class="table-empty" id="postsEmpty" style="display:none;">No posts match your filters.</div>
+    </div>
+  </div>
+</section>
+
     <section class="section" aria-label="Insights and analysis">
       <div class="section-header">
         <div class="section-title">
           <h2>Insights, Analysis, and Actions</h2>
-          <p>What we're doing right, what we need to work on, and the plan moving forward.</p>
+          <p></p>
         </div>
         <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Notes</span></div>
       </div>
@@ -1314,32 +1567,24 @@
         <div class="insight-card">
           <h3>What's Working</h3>
           <div class="body" id="insWorking" data-editable="true">
-            • Engagement is climbing quickly: reactions & likes increased 86.9% quarter-over-quarter.<br>
-            • Link clicks rose 122%, showing stronger CTA performance and more traffic-driving content.
           </div>
         </div>
 
         <div class="insight-card">
           <h3>What's Not Working</h3>
           <div class="body" id="insNotWorking" data-editable="true">
-            • Add 3–6 gaps or underperforming areas.<br>
-            • Example: "Follower growth is positive but slower than engagement gains — we need more follow-driving formats."
           </div>
         </div>
 
         <div class="insight-card">
           <h3>Actions From This Data</h3>
           <div class="body" id="insActions" data-editable="true">
-            • Add 3–8 actions (clear, measurable).<br>
-            • Example: "Standardize post CTAs and track clicks per 1,000 impressions weekly."
           </div>
         </div>
 
         <div class="insight-card">
           <h3>Next Quarter Focus</h3>
           <div class="body" id="insNext" data-editable="true">
-            • Add what you'll prioritize and how you'll measure it.<br>
-            • Example: "Increase engagement rate while growing followers by improving distribution and repurposing top themes."
           </div>
         </div>
       </div>
@@ -1360,11 +1605,56 @@
    LOAD JSON (report-data.json)
 ========================= */
 let REPORT = null;
-
+const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbzodE1whq3quWi64_JHp4OWFO52ADfWrpiMrWR_CQMUlDKkL_FUWIsu8E2tWmDjBZuveQ/exec";
 async function loadReport(){
-  const res = await fetch("./report-data.json", { cache: "no-store" });
-  if(!res.ok) throw new Error("Could not load report-data.json");
+  const res = await fetch(REPORT_ENDPOINT, { cache: "no-store" });
+  if(!res.ok) throw new Error(`Could not load report JSON: ${res.status} ${res.statusText}`);
   return await res.json();
+}
+
+/* =========================
+   LOAD POSTS JSON (Apps Script Web App)
+========================= */
+/* =========================
+   LOAD POSTS JSON (Apps Script Web App)
+========================= */
+
+const POSTS_ENDPOINT = "https://script.google.com/macros/s/AKfycbyALQglX-zAHYwcYrD2bd6XBChlxXq5UrXPq41xGsY_PTolJ_Vaapd05RuiF5qRwqb1/exec";
+
+async function loadPosts() {
+  try {
+    if (!POSTS_ENDPOINT) {
+      console.warn("POSTS_ENDPOINT not defined.");
+      return { posts: [] };
+    }
+
+    const res = await fetch(POSTS_ENDPOINT, {
+      method: "GET",
+      cache: "no-store",
+      headers: {
+        "Accept": "application/json"
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error(`Posts request failed: ${res.status} ${res.statusText}`);
+    }
+
+    const data = await res.json();
+
+    // Validate structure
+    if (!data || !Array.isArray(data.posts)) {
+      console.warn("Posts JSON format unexpected:", data);
+      return { posts: [] };
+    }
+
+    console.log(`Loaded ${data.posts.length} posts from Apps Script.`);
+    return data;
+
+  } catch (err) {
+    console.error("Error loading posts:", err);
+    return { posts: [] };
+  }
 }
 
 /* =========================
@@ -1374,14 +1664,55 @@ const byId = (id) => document.getElementById(id);
 
 const toNumber = (v) => {
   if (typeof v === "number") return Number.isFinite(v) ? v : null;
-  if (typeof v === "string"){
+
+  if (typeof v === "string") {
     const t = v.trim();
     if (!t) return null;
-    const n = Number(t.replace(/,/g,""));
+
+    // Handle "4.12%", " 4.12 % ", "1,234", etc.
+    const cleaned = t.replace(/[%\s]/g, "").replace(/,/g, "");
+    const n = Number(cleaned);
     return Number.isFinite(n) ? n : null;
   }
+
   return null;
 };
+
+ function fmtDate(dateStr){
+  if(!dateStr) return "—";
+
+  const d = new Date(dateStr);
+  if(isNaN(d.getTime())) return dateStr; // fallback if invalid
+
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+
+  return `${y}-${m}-${day}`;
+}       
+
+ function escapeHtml(str){
+  return String(str ?? "").replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[m]));
+}
+
+function normPlatformToken(s){
+  const t = String(s || "").toLowerCase();
+  if(t.includes("linked")) return "linkedin";
+  if(t.includes("face")) return "facebook";
+  if(t.includes("insta")) return "instagram";
+  return "";
+}
+
+function healthClass(health){
+  const h = String(health || "").toLowerCase().trim();
+  if(h === "very strong") return "health-very-strong";
+  if(h === "strong") return "health-strong";
+  if(h === "moderate") return "health-moderate";
+  if(h === "low") return "health-low";
+  return "";
+}  
 
 const fmtInt = (n) => (typeof n === "number" && Number.isFinite(n) ? n.toLocaleString() : "—");
 
@@ -1402,6 +1733,31 @@ function setText(id, value){
   if (el) el.textContent = value;
 }
 
+function computeEngRatePercent(p){
+  const impr = toNumber(p?.impressions);
+  if(!impr || impr <= 0) return null;
+
+  // Prefer "engagements" if it exists (your payload has it)
+  const eng = toNumber(p?.engagements);
+  if(eng !== null) return (eng / impr) * 100;
+
+  // Fallback: likes + comments + shares
+  const likes = toNumber(p?.likes) || 0;
+  const comments = toNumber(p?.comments) || 0;
+  const shares = toNumber(p?.shares) || 0;
+
+  return ((likes + comments + shares) / impr) * 100;
+}   
+
+function classifyEngagementHealth(rate){
+  if (rate === null || typeof rate !== "number") return "";
+
+  if (rate > 10) return "Very Strong";
+  if (rate >= 6) return "Strong";
+  if (rate >= 4) return "Moderate";
+  return "Low";
+}                       
+   
 function setHTML(id, value){
   const el = byId(id);
   if (!el) return;
@@ -1456,68 +1812,107 @@ const PLATFORM_ICONS = {
    NORMALIZE JSON KEYS (handles older sheets)
 ========================= */
 function normalizeReport(raw){
-  const r = raw && typeof raw === "object" ? raw : {};
+  // If this is already the “old” local structure, keep your existing behavior
+  if(raw && raw.overall && raw.platforms) return raw;
 
-  // overall: accept both camelCase and lowercase variants
-  const overallIn = r.overall && typeof r.overall === "object" ? r.overall : {};
-  const deltasIn  = r.deltas  && typeof r.deltas  === "object" ? r.deltas  : {};
+  // Otherwise assume it’s the Apps Script payload
+  const qTotals = Array.isArray(raw?.quarterTotals) ? raw.quarterTotals : [];
+  const pBreak  = Array.isArray(raw?.platformBreakdown) ? raw.platformBreakdown : [];
+  const tPosts  = Array.isArray(raw?.topPosts) ? raw.topPosts : [];
+  const bullets = Array.isArray(raw?.summaryBullets) ? raw.summaryBullets : [];
+  const insArr  = Array.isArray(raw?.insights) ? raw.insights : [];
 
+  // ---- helpers to read both camelCase + TitleCase payloads ----
+  const getFieldName = (x) => String(x?.field ?? x?.Field ?? x?.["Field"] ?? "").trim().toLowerCase();
+  const getValue = (x) => x?.value ?? x?.Value ?? x?.["Value"];
+  const getDeltaRaw = (x) => (x?.delta?.raw ?? x?.Delta?.raw ?? x?.delta ?? x?.Delta ?? "");
+
+  // Helper to find quarter totals by field name
+  const qt = (name) => {
+    const target = String(name).trim().toLowerCase();
+    return qTotals.find(x => getFieldName(x) === target);
+  };
+
+  // Map quarter totals into overall + deltas
   const overall = {
-    posts: toNumber(overallIn.posts),
-    impressions: toNumber(overallIn.impressions),
-    shares: toNumber(overallIn.shares),
-    reactions: toNumber(overallIn.reactions),
-    followers: toNumber(overallIn.followers),
-    linkClicks: toNumber(overallIn.linkClicks ?? overallIn.linkclicks),
-    comments: toNumber(overallIn.comments),
-    avgEngagementRate: toNumber(overallIn.avgEngagementRate ?? overallIn.avgengagementrate)
+    posts: toNumber(getValue(qt("posts"))),
+    impressions: toNumber(getValue(qt("impressions"))),
+    shares: toNumber(getValue(qt("shares"))),
+    reactions: toNumber(getValue(qt("reactions"))),
+    followers: toNumber(getValue(qt("followers"))),
+    linkClicks: toNumber(getValue(qt("linkClicks"))),
+    comments: toNumber(getValue(qt("comments"))),
+
+    // ✅ this is your missing one (now works for Field/Value)
+    avgEngagementRate: toNumber(getValue(qt("avgEngagementRate"))),
   };
 
   const deltas = {
-    posts: deltasIn.posts ?? "",
-    impressions: deltasIn.impressions ?? "",
-    shares: deltasIn.shares ?? "",
-    reactions: deltasIn.reactions ?? "",
-    followers: deltasIn.followers ?? "",
-    linkClicks: deltasIn.linkClicks ?? deltasIn.linkclicks ?? "",
-    comments: deltasIn.comments ?? "",
-    avgEngagementRate: deltasIn.avgEngagementRate ?? deltasIn.avgengagementrate ?? ""
+    posts: getDeltaRaw(qt("posts")),
+    impressions: getDeltaRaw(qt("impressions")),
+    shares: getDeltaRaw(qt("shares")),
+    reactions: getDeltaRaw(qt("reactions")),
+    followers: getDeltaRaw(qt("followers")),
+    linkClicks: getDeltaRaw(qt("linkClicks")),
+    comments: getDeltaRaw(qt("comments")),
+
+    // ✅ now also works for Delta/Delta.raw
+    avgEngagementRate: getDeltaRaw(qt("avgEngagementRate")),
   };
 
-  // insights: accept either {working,notWorking,actions,next} OR {"What's Working": "..."}
-  const insightsIn = r.insights && typeof r.insights === "object" ? r.insights : {};
-  const insights = {
-    working: insightsIn.working ?? insightsIn["What's Working"] ?? "",
-    notWorking: insightsIn.notWorking ?? insightsIn["What's Not Working"] ?? "",
-    actions: insightsIn.actions ?? insightsIn["Actions From This Data"] ?? "",
-    next: insightsIn.next ?? insightsIn["Next Quarter Focus"] ?? ""
-  };
+  // Map platform breakdown rows -> platforms array your UI expects
+  const platforms = pBreak.map(row => {
+    const plat = String(row["Platform"] || "").toLowerCase();
+    const key =
+      plat.includes("linked") ? "linkedin" :
+      plat.includes("face") ? "facebook" :
+      plat.includes("insta") ? "instagram" : "";
 
-  // platforms: ensure numbers are numbers
-  const platforms = Array.isArray(r.platforms) ? r.platforms.map(p => ({
-    key: p.key,
-    name: p.name,
-    badge: p.badge,
-    tag: p.tag,
-    followers: toNumber(p.followers),
-    followersDelta: p.followersDelta ?? "",
-    engagementRate: toNumber(p.engagementRate),
-    engagementRateDelta: p.engagementRateDelta ?? "",
-    pageReach: toNumber(p.pageReach),
-    pageReachDelta: p.pageReachDelta ?? "",
-    pageClicks: toNumber(p.pageClicks),
-    pageClicksDelta: p.pageClicksDelta ?? ""
-  })) : [];
+    return {
+      key,
+      name: row["Platform"] || "",
+      badge: "",
+      tag: "",
+      followers: toNumber(row["Followers"]),
+      followersDelta: row["Followers Δ"]?.raw || row["Followers Δ"] || "",
+      engagementRate: toNumber(row["Engagement Rate"]),
+      engagementRateDelta: row["ER Δ"]?.raw || row["ER Δ"] || "",
+      pageReach: toNumber(row["Reach"]),
+      pageReachDelta: row["Reach Δ"]?.raw || row["Reach Δ"] || "",
+      pageClicks: toNumber(row["Clicks"]),
+      pageClicksDelta: row["Clicks Δ"]?.raw || row["Clicks Δ"] || "",
+    };
+  });
 
-  const topPostsByPlatform = r.topPostsByPlatform && typeof r.topPostsByPlatform === "object" ? r.topPostsByPlatform : {
-    linkedin: [], facebook: [], instagram: []
-  };
+  // Map top posts into your old topPostsByPlatform buckets
+  const topPostsByPlatform = { linkedin: [], facebook: [], instagram: [] };
+  tPosts.forEach(p => {
+    const key = normPlatformToken(p["Platform"]);
+    if(!key) return;
+    topPostsByPlatform[key].push({
+      title: p["Title"] || "",
+      impressions: toNumber(p["Impressions"]),
+      likes: toNumber(p["Likes"]),
+      shares: toNumber(p["Shares"]),
+    });
+  });
+
+  // Convert insights array (Section/Text) into the keys your UI wants
+  const insights = { working:"", notWorking:"", actions:"", next:"" };
+  insArr.forEach(x => {
+    const k = String(x.Section || "").toLowerCase().trim();
+    const v = String(x.Text || "").trim();
+    if(k === "working") insights.working = v;
+    if(k === "notworking") insights.notWorking = v;
+    if(k === "actions") insights.actions = v;
+    if(k === "next") insights.next = v;
+  });
 
   return {
-    quarterLabel: r.quarterLabel ?? "Q1",
-    rangeLabel: r.rangeLabel ?? "",
-    generatedLabel: r.generatedLabel ?? "",
-    execSummary: Array.isArray(r.execSummary) ? r.execSummary : [],
+    quarterLabel: raw?.quarterLabel || "Q1",
+    rangeLabel: raw?.rangeLabel || "",
+    generatedLabel: raw?.generatedAt ? String(raw.generatedAt).slice(0,10) : "",
+    execSummary: bullets,
     insights,
     overall,
     deltas,
@@ -1902,13 +2297,259 @@ function quarterDropdown(){
   });
 }
 
+function brandDropdown(){
+  const wrap = document.querySelector(".brand-menu-wrap");
+  const toggle = document.getElementById("brandToggle");
+  const brandName = document.getElementById("brandNameLabel");
+  const options = document.querySelectorAll(".brand-option");
+  if(!wrap || !toggle || !brandName || !options.length) return;
+
+  const closeMenu = () => {
+    wrap.classList.remove("open");
+    toggle.setAttribute("aria-expanded", "false");
+  };
+
+  toggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    wrap.classList.toggle("open");
+    toggle.setAttribute("aria-expanded", wrap.classList.contains("open") ? "true" : "false");
+  });
+
+  options.forEach(option => {
+    option.addEventListener("click", () => {
+      const label = option.dataset.label || "ISL";
+      const name = option.dataset.name || "Integrated Staffing";
+      const brand = option.dataset.brand || "isl";
+      const href = option.dataset.href;
+
+      if(href && href !== window.location.pathname.split("/").pop() && href !== `./${window.location.pathname.split("/").pop()}`){
+        window.location.href = href;
+        return;
+      }
+
+      toggle.textContent = label;
+      brandName.textContent = name;
+
+      toggle.classList.remove("brand-as", "brand-ads");
+      if(brand === "as") toggle.classList.add("brand-as");
+      if(brand === "ads") toggle.classList.add("brand-ads");
+
+      closeMenu();
+    });
+  });
+
+  document.addEventListener("click", (e) => {
+    if(!wrap.contains(e.target)) closeMenu();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if(e.key === "Escape") closeMenu();
+  });
+}
+
+ let POSTS_RAW = [];   // full list
+let POSTS_VIEW = [];  // filtered list
+
+function normalizeEngRatePercent(v){
+  const n = toNumber(v);
+  if (n === null) return null;
+
+  // If the sheet gives 0.0412 (fraction), convert to 4.12 (percent)
+  if (n > 0 && n <= 1) return n * 100;
+
+  // If the sheet gives 4.12 already, keep it
+  return n;
+}
+   
+function classifyEngagementHealth(rate){
+  if (rate === null || typeof rate !== "number" || !Number.isFinite(rate)) return "";
+  if (rate > 10) return "Very Strong";
+  if (rate >= 6) return "Strong";
+  if (rate >= 4) return "Moderate";
+  return "Low";
+}
+
+/* If your sheet ever stores ER as "6.1%" or 0.061, this normalizes to percent */
+function normalizeEngRatePercent(v){
+  if (v === null || v === undefined) return null;
+
+  // numbers
+  if (typeof v === "number" && Number.isFinite(v)){
+    // If it's <= 1, assume it's a fraction (0.061) and convert to percent (6.1)
+    return v <= 1 ? v * 100 : v;
+  }
+
+  // strings like "6.1%" or "0.061"
+  if (typeof v === "string"){
+    const s = v.trim();
+    if (!s) return null;
+
+    const cleaned = s.replace("%","").replace(/,/g,"");
+    const n = Number(cleaned);
+    if (!Number.isFinite(n)) return null;
+
+    // If original had %, it’s already percent
+    if (s.includes("%")) return n;
+
+    // Otherwise if <=1 treat as fraction
+    return n <= 1 ? n * 100 : n;
+  }
+
+  return null;
+}
+
+/* Compute ER from engagements/impressions if missing */
+function computeEngRatePercent(p){
+  const imp = toNumber(p?.impressions) || 0;
+  const eng = toNumber(p?.engagements) || 0;
+  return imp > 0 ? (eng / imp) * 100 : null;
+}
+
+function normalizePostsPayload(payload){
+  // Expecting either { posts:[...] } OR just an array
+  const arr = Array.isArray(payload) ? payload : (payload?.posts || []);
+
+  return arr.map(p => {
+    const er =
+      normalizeEngRatePercent(p.engagementRate) ??
+      normalizeEngRatePercent(p["Engagement Rate"]) ??
+      normalizeEngRatePercent(p.engagement_rate) ??
+      normalizeEngRatePercent(p.er) ??
+      null;
+
+    const engagementRate = (er !== null ? er : computeEngRatePercent(p));
+    const engagementHealth = classifyEngagementHealth(engagementRate);
+
+    return {
+      title: p.title ?? p.postName ?? p.post ?? "",
+      date: p.date ?? "",
+      url: p.url ?? "",
+      platforms: Array.isArray(p.platforms)
+        ? p.platforms
+        : String(p.platforms || p.platform || "")
+            .split(",")
+            .map(s => s.trim())
+            .filter(Boolean),
+
+      impressions: toNumber(p.impressions),
+      engagements: toNumber(p.engagements),
+
+      engagementRate,          // now always a usable percent (or null)
+      engagementHealth,        // auto-generated label
+
+      likes: toNumber(p.likes),
+      comments: toNumber(p.comments),
+      shares: toNumber(p.shares),
+      notes: p.notes ?? ""
+    };
+  });
+}
+
+
+function renderPostsTable(){
+  const table = byId("postsTable");
+  const empty = byId("postsEmpty");
+  const count = byId("postsCount");
+  if(!table || !empty || !count) return;
+
+  count.textContent = String(POSTS_VIEW.length);
+
+  if(!POSTS_VIEW.length){
+    table.innerHTML = "";
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>Post</th>
+        <th>Date</th>
+        <th>Platforms</th>
+        <th>Impr.</th>
+        <th>Eng.</th>
+        <th>ER</th>
+        <th>Health</th>
+        <th>Likes</th>
+        <th>Comments</th>
+        <th>Shares</th>
+        <th>Link</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${POSTS_VIEW.map(p => {
+        const plats = (p.platforms || []).join(", ");
+        const hClass = healthClass(p.engagementHealth);
+        const hLabel = escapeHtml(p.engagementHealth || "—");
+
+        return `
+          <tr>
+            <td><strong>${escapeHtml(p.title)}</strong></td>
+            <td>${fmtDate(p.date)}</td>
+            <td>${escapeHtml(plats || "—")}</td>
+            <td>${fmtInt(p.impressions)}</td>
+            <td>${fmtInt(p.engagements)}</td>
+            <td>${fmtPct(p.engagementRate)}</td>
+            <td>
+              <span class="health-pill ${hClass}">
+                <span class="health-dot" aria-hidden="true"></span>
+                ${hLabel}
+              </span>
+            </td>
+            <td>${fmtInt(p.likes)}</td>
+            <td>${fmtInt(p.comments)}</td>
+            <td>${fmtInt(p.shares)}</td>
+            <td>${p.url ? `<a href="${p.url}" target="_blank" rel="noopener">Open</a>` : "—"}</td>
+            <td>${escapeHtml(p.notes)}</td>
+          </tr>
+        `;
+      }).join("")}
+    </tbody>
+  `;
+}
+
+function applyPostsFilters(){
+  const q = String(byId("postsSearch")?.value || "").toLowerCase().trim();
+  const plat = String(byId("postsPlatform")?.value || "all").toLowerCase();
+
+  POSTS_VIEW = POSTS_RAW.filter(p => {
+    const pTokens = (p.platforms || []).map(normPlatformToken).filter(Boolean);
+    const matchesPlatform = (plat === "all") ? true : pTokens.includes(plat);
+
+    if(!q) return matchesPlatform;
+
+    const hay = [
+      p.title, p.date, (p.platforms || []).join(", "),
+      String(p.impressions ?? ""), String(p.engagements ?? ""),
+      String(p.engagementRate ?? ""), String(p.engagementHealth ?? ""),
+      String(p.likes ?? ""), String(p.comments ?? ""), String(p.shares ?? ""),
+      p.notes
+    ].join(" ").toLowerCase();
+
+    return matchesPlatform && hay.includes(q);
+  });
+
+  renderPostsTable();
+}
+
+function wirePostsFilters(){
+  const search = byId("postsSearch");
+  const select = byId("postsPlatform");
+  if(search) search.addEventListener("input", applyPostsFilters);
+  if(select) select.addEventListener("change", applyPostsFilters);
+}  
+
 /* =========================
    INIT
 ========================= */
 (async function init(){
   try{
     const raw = await loadReport();
-    REPORT = normalizeReport(raw);
+window.RAW_REPORT = raw;   // ✅ expose for console debugging
+REPORT = normalizeReport(raw);
+window.REPORT = REPORT;    // ✅ also expose normalized version
 
     renderHeader();
     renderKPIs();
@@ -1916,6 +2557,11 @@ function quarterDropdown(){
     renderInsights();          // ✅ pulls from REPORT.insights.*
     renderPlatforms();
     renderTopPosts();
+     const postsPayload = await loadPosts();
+    POSTS_RAW = normalizePostsPayload(postsPayload);
+    POSTS_VIEW = POSTS_RAW.slice();
+    wirePostsFilters();
+    renderPostsTable();
 
     buildReach("bar");
     buildEng("bar");
@@ -1923,6 +2569,7 @@ function quarterDropdown(){
 
     lockEditing();
     quarterDropdown();
+    brandDropdown();
 
   } catch(err){
     console.error(err);
