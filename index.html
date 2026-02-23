@@ -1605,13 +1605,11 @@
    REPORT DASHBOARD (FULL + FIXED)
    - Uses your Apps Script JSON shape
    - One endpoint for all sections
-   - Fixes:
-     1) Summary ▲/▼ becomes green/red pill
-     2) Avg engagement rate shows in Quarter Totals (robust matching)
-     3) Platform deltas show (robust delta column detection)
-     4) Charts have platform color differentiation (bar + pie)
-     5) All Posts date shows YYYY-MM-DD
-     6) Health pill only has ONE dot (your table markup already does this)
+   Fixes included (based on your console output):
+   1) Quarter totals: avgEngagementRate (camelCase) now matches and renders
+   2) Platform breakdown: ER Δ now detected and displayed
+   3) All posts: Engagement Rate column is ALWAYS calculated (engagements/impressions*100) when possible
+   4) Health column: removes the emoji dot (🟢/🟡/🔴/🔵 etc) so only ONE dot shows (your CSS dot)
 ========================= */
 
 let RAW = null;
@@ -1656,8 +1654,16 @@ function toNumber(v){
   if (v === null || v === undefined) return null;
   if (typeof v === "number") return Number.isFinite(v) ? v : null;
   const s = String(v).trim();
-  if (!s) return null;
-  const cleaned = s.replace(/,/g,"").replace(/\s+/g,"").replace(/%/g,"");
+  if (!s || s === "—" || s === "-") return null;
+
+  // handle "▲ 12.3%" / "▼ 2%" / "+3.1%" etc
+  const cleaned = s
+    .replace(/,/g,"")
+    .replace(/\s+/g,"")
+    .replace(/%/g,"")
+    .replace(/[▲▼]/g,"")
+    .replace(/^\+/,"");
+
   if (!/^[-]?\d+(\.\d+)?$/.test(cleaned)) return null;
   const n = Number(cleaned);
   return Number.isFinite(n) ? n : null;
@@ -1681,6 +1687,14 @@ function normalizePlatformValue(s){
   return "";
 }
 
+/* ✅ FIX: remove emoji/bullets at the start so only ONE dot shows (your CSS dot) */
+function cleanHealthText(h){
+  // removes leading emojis/bullets like 🟢 🟡 🔴 🔵 • ● etc
+  return String(h ?? "")
+    .replace(/^[^A-Za-z0-9]+/g, "")
+    .trim();
+}
+
 function healthClassFromText(h){
   const s = String(h ?? "").toLowerCase();
   if (s.includes("very strong")) return "health-very-strong";
@@ -1690,17 +1704,42 @@ function healthClassFromText(h){
   return "";
 }
 
-function deltaClass(deltaObj){
-  const dir = deltaObj && typeof deltaObj === "object" ? deltaObj.direction : null;
-  if (dir === "up") return "positive";
-  if (dir === "down") return "negative";
+/* ✅ FIX: handle camelCase keys like avgEngagementRate */
+function normalizeFieldKey(s){
+  const spaced = String(s ?? "").replace(/([a-z0-9])([A-Z])/g, "$1 $2");
+  return spaced
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function parseDeltaToClass(deltaVal){
+  // supports objects OR strings like "▲ 12.2%" / "▼ 3%" / "+2%" / "-1%"
+  if (!deltaVal) return "";
+
+  if (typeof deltaVal === "object"){
+    const dir = deltaVal.direction;
+    if (dir === "up") return "positive";
+    if (dir === "down") return "negative";
+    return "";
+  }
+
+  const s = String(deltaVal).trim();
+  if (!s || s === "—" || s === "-") return "";
+
+  if (s.includes("▲")) return "positive";
+  if (s.includes("▼")) return "negative";
+  if (/^\+/.test(s)) return "positive";
+  if (/^-/.test(s)) return "negative";
+
   return "";
 }
 
-function deltaText(deltaObj){
-  if (!deltaObj) return "—";
-  if (typeof deltaObj === "string") return deltaObj;
-  if (typeof deltaObj === "object" && deltaObj.raw) return deltaObj.raw;
+function deltaText(deltaVal){
+  if (!deltaVal) return "—";
+  if (typeof deltaVal === "string") return deltaVal;
+  if (typeof deltaVal === "object" && deltaVal.raw) return deltaVal.raw;
   return "—";
 }
 
@@ -1708,15 +1747,20 @@ function pickKey(obj, candidates){
   if (!obj || typeof obj !== "object") return null;
   const keys = Object.keys(obj);
   const lowerMap = new Map(keys.map(k => [k.toLowerCase(), k]));
+
+  // exact (case-insensitive)
   for (const c of candidates){
     const found = lowerMap.get(String(c).toLowerCase());
     if (found) return found;
   }
+
+  // contains
   for (const c of candidates){
     const cl = String(c).toLowerCase();
     const match = keys.find(k => k.toLowerCase().includes(cl));
     if (match) return match;
   }
+
   return null;
 }
 
@@ -1761,7 +1805,7 @@ function renderHeader(meta){
   }
 }
 
-// ---------- summary (▲/▼ -> pill) ----------
+// ---------- summary ----------
 function renderSummary(bullets){
   const ul = $("execSummaryList");
   if (!ul) return;
@@ -1795,73 +1839,71 @@ function renderSummary(bullets){
 function renderQuarterTotals(rows){
   const data = Array.isArray(rows) ? rows : [];
 
+  // normalized lookup for field names
   const map = {};
   for (const r of data){
-    const field = String(r.field ?? "").trim().toLowerCase();
-    if (!field) continue;
-    map[field] = r;
+    const rawField = r.field ?? r.Field ?? r.name ?? r.Name ?? "";
+    const nk = normalizeFieldKey(rawField);
+    if (!nk) continue;
+    map[nk] = r;
   }
 
   const findRow = (needles) => {
     for (const n of needles){
-      const key = String(n).toLowerCase();
+      const key = normalizeFieldKey(n);
       if (map[key]) return map[key];
     }
     const keys = Object.keys(map);
     for (const n of needles){
-      const nl = String(n).toLowerCase();
-      const found = keys.find(k => k.includes(nl));
-      if (found) return map[found];
+      const nl = normalizeFieldKey(n);
+      const hit = keys.find(k => k.includes(nl));
+      if (hit) return map[hit];
     }
     return null;
   };
 
+  // ✅ FIX: this now matches avgEngagementRate
   const findAvgEngRateRow = () => {
     const keys = Object.keys(map);
     const hit = keys.find(k =>
-      k.includes("engagement rate") && (k.includes("avg") || k.includes("average"))
+      k.includes("engagement rate") && (k.includes("avg") || k.includes("average") || k.includes("mean"))
     );
-    return hit ? map[hit] : findRow(["avg engagement rate","average engagement rate","average post engagement rate"]);
+    if (hit) return map[hit];
+    return findRow([
+      "avg engagement rate",
+      "average engagement rate",
+      "average post engagement rate",
+      "avg post engagement rate",
+      "avg er",
+      "average er"
+    ]);
   };
 
-  const setKpi = (valueId, deltaId, row) => {
-    const vEl = $(valueId);
-    const dEl = $(deltaId);
-    if (vEl) vEl.textContent = (row ? fmtInt(row.value) : "—");
-
-    if (dEl){
-      dEl.textContent = row ? deltaText(row.delta) : "—";
-      dEl.classList.remove("positive","negative");
-      const cls = row ? deltaClass(row.delta) : "";
-      if (cls) dEl.classList.add(cls);
-    }
-  };
-
-  const setKpiPct = (valueId, deltaId, row) => {
+  const setKpi = (valueId, deltaId, row, isPercent=false) => {
     const vEl = $(valueId);
     const dEl = $(deltaId);
 
     if (vEl){
-      const n = toNumber(row?.value);
-      vEl.textContent = (n === null) ? "—" : `${n.toFixed(2)}%`;
+      if (!row) vEl.textContent = "—";
+      else vEl.textContent = isPercent ? fmtPct(row.value) : fmtInt(row.value);
     }
 
     if (dEl){
       dEl.textContent = row ? deltaText(row.delta) : "—";
       dEl.classList.remove("positive","negative");
-      const cls = row ? deltaClass(row.delta) : "";
+      const cls = row ? parseDeltaToClass(row.delta) : "";
       if (cls) dEl.classList.add(cls);
     }
   };
 
   setKpi("kpiPosts","deltaPosts", findRow(["posts"]));
   setKpi("kpiImpressions","deltaImpressions", findRow(["post impressions","impressions"]));
-  setKpi("kpiReactions","deltaReactions", findRow(["reactions & likes","reactions","likes"]));
+  setKpi("kpiReactions","deltaReactions", findRow(["reactions and likes","reactions & likes","reactions","likes"]));
   setKpi("kpiShares","deltaShares", findRow(["post shares","shares"]));
-  setKpi("kpiFollowers","deltaFollowers", findRow(["followers (total)","followers"]));
+  setKpi("kpiFollowers","deltaFollowers", findRow(["followers total","followers (total)","followers"]));
   setKpi("kpiLinkClicks","deltaLinkClicks", findRow(["post link clicks","link clicks","clicks"]));
-  setKpi("kpiComments","deltaComments", findRow(["comments & replies","comments","replies"]));
-  setKpiPct("kpiAvgEngRate","deltaAvgEngRate", findAvgEngRateRow());
+  setKpi("kpiComments","deltaComments", findRow(["comments and replies","comments & replies","comments","replies"]));
+  setKpi("kpiAvgEngRate","deltaAvgEngRate", findAvgEngRateRow(), true);
 }
 
 // ---------- charts ----------
@@ -1935,34 +1977,67 @@ function renderPlatformBreakdown(rows){
   const sample = data[0] || {};
   const kPlatform  = pickKey(sample, ["Platform","platform","Network","Channel"]);
   const kFollowers = pickKey(sample, ["Followers"]);
-  const kEngRate   = pickKey(sample, ["Post Engagement Rate","Engagement Rate"]);
+  const kEngRate   = pickKey(sample, ["Engagement Rate","Post Engagement Rate","Post ER","ER"]);
   const kReach     = pickKey(sample, ["Page Reach","Reach"]);
-  const kClicks    = pickKey(sample, ["Page Clicks","Clicks"]);
+  const kClicks    = pickKey(sample, ["Page Clicks","Clicks","Page Click"]);
 
-  function findDeltaCol(row, baseKey){
-    if (!row || !baseKey) return null;
+  function findDeltaKeyForMetric(row, metricKey, metricNeedles){
+    if (!row) return null;
+
     const keys = Object.keys(row);
-    const base = String(baseKey).toLowerCase();
-    return keys.find(k =>
-      k.toLowerCase().includes(base) &&
-      (k.includes("Δ") || k.toLowerCase().includes("delta") || k.toLowerCase().includes("change"))
-    ) || null;
+
+    const directCandidates = [
+      `${metricKey} Δ`,
+      `${metricKey}∆`,
+      `${metricKey} delta`,
+      `${metricKey} change`,
+      `${metricKey} % change`,
+      `${metricKey} percent change`,
+      `${metricKey} vs last quarter`,
+    ].filter(Boolean);
+
+    const direct = pickKey(row, directCandidates);
+    if (direct) return direct;
+
+    const base = String(metricKey || "").toLowerCase();
+    if (base){
+      const hit = keys.find(k => {
+        const kl = k.toLowerCase();
+        return kl.includes(base) && (kl.includes("Δ") || kl.includes("∆") || kl.includes("delta") || kl.includes("change"));
+      });
+      if (hit) return hit;
+    }
+
+    for (const n of (metricNeedles || [])){
+      const nl = String(n).toLowerCase();
+      const hit = keys.find(k => {
+        const kl = k.toLowerCase();
+        return kl.includes(nl) && (kl.includes("Δ") || kl.includes("∆") || kl.includes("delta") || kl.includes("change"));
+      });
+      if (hit) return hit;
+    }
+
+    return null;
   }
 
   const deltaChip = (val) => {
-    if (!val) return `<span class="delta">—</span>`;
-    const cls = deltaClass(val);
-    return `<span class="delta ${cls}">${escHtml(deltaText(val))}</span>`;
+    const txt = deltaText(val);
+    const cls = parseDeltaToClass(val);
+    return `<span class="delta ${cls}">${escHtml(txt)}</span>`;
   };
 
   grid.innerHTML = data.map(row => {
     const name = String(row[kPlatform] ?? "Platform").trim();
     const badge = name.slice(0,1).toUpperCase();
 
-    const kFollowersD = findDeltaCol(row, kFollowers) || pickKey(row, ["Followers Δ","Followers Delta","Followers change"]);
-    const kEngRateD   = findDeltaCol(row, kEngRate)   || pickKey(row, ["Engagement Rate Δ","Post Engagement Rate Δ","Engagement Rate change"]);
-    const kReachD     = findDeltaCol(row, kReach)     || pickKey(row, ["Page Reach Δ","Reach Δ","Reach change"]);
-    const kClicksD    = findDeltaCol(row, kClicks)    || pickKey(row, ["Page Clicks Δ","Clicks Δ","Clicks change"]);
+    const kFollowersD = findDeltaKeyForMetric(row, kFollowers, ["followers"]);
+    /* ✅ FIX: your JSON uses ER Δ, so we explicitly catch it */
+    const kEngRateD   =
+      findDeltaKeyForMetric(row, kEngRate, ["engagement rate","post engagement rate","er"])
+      || pickKey(row, ["ER Δ","ER∆","ER delta","ER change"]);
+
+    const kReachD     = findDeltaKeyForMetric(row, kReach, ["reach","page reach"]);
+    const kClicksD    = findDeltaKeyForMetric(row, kClicks, ["clicks","page clicks"]);
 
     return `
       <div class="platform">
@@ -1978,7 +2053,7 @@ function renderPlatformBreakdown(rows){
             <span class="pstat-label">Followers</span>
             <div class="pstat-row">
               <strong>${escHtml(fmtInt(row[kFollowers]))}</strong>
-              ${deltaChip(row[kFollowersD])}
+              ${deltaChip(kFollowersD ? row[kFollowersD] : null)}
             </div>
           </div>
 
@@ -1986,7 +2061,7 @@ function renderPlatformBreakdown(rows){
             <span class="pstat-label">Post Engagement Rate</span>
             <div class="pstat-row">
               <strong>${escHtml(fmtPct(row[kEngRate]))}</strong>
-              ${deltaChip(row[kEngRateD])}
+              ${deltaChip(kEngRateD ? row[kEngRateD] : null)}
             </div>
           </div>
 
@@ -1994,7 +2069,7 @@ function renderPlatformBreakdown(rows){
             <span class="pstat-label">Page Reach</span>
             <div class="pstat-row">
               <strong>${escHtml(fmtInt(row[kReach]))}</strong>
-              ${deltaChip(row[kReachD])}
+              ${deltaChip(kReachD ? row[kReachD] : null)}
             </div>
           </div>
 
@@ -2002,7 +2077,7 @@ function renderPlatformBreakdown(rows){
             <span class="pstat-label">Page Clicks</span>
             <div class="pstat-row">
               <strong>${escHtml(fmtInt(row[kClicks]))}</strong>
-              ${deltaChip(row[kClicksD])}
+              ${deltaChip(kClicksD ? row[kClicksD] : null)}
             </div>
           </div>
         </div>
@@ -2014,7 +2089,6 @@ function renderPlatformBreakdown(rows){
   const reachVals = data.map(r => toNumber(r[kReach]) ?? 0);
   const engVals = data.map(r => toNumber(r[kEngRate]) ?? 0);
 
-  // Build initial charts as BAR
   buildOrUpdateChart("reach", "reachChart", labels, reachVals, "bar");
   buildOrUpdateChart("eng", "engRateChart", labels, engVals, "bar");
 }
@@ -2061,9 +2135,9 @@ function renderTopPosts(rows){
   const sample = data[0] || {};
   const kPlatform = pickKey(sample, ["Platform","platform","Network"]);
   const kTitle = pickKey(sample, ["Post Name","Title","Post"]);
-  const kImpressions = pickKey(sample, ["Impressions"]);
+  const kImpressions = pickKey(sample, ["Impressions","Post Impressions"]);
   const kEngagements = pickKey(sample, ["Engagements","Engagement"]);
-  const kER = pickKey(sample, ["Engagement Rate","Post Engagement Rate"]);
+  const kER = pickKey(sample, ["Engagement Rate","Post Engagement Rate","ER"]);
   const kURL = pickKey(sample, ["URL","Link"]);
   const kNotes = pickKey(sample, ["Notes","Note"]);
 
@@ -2081,8 +2155,13 @@ function renderTopPosts(rows){
       const title = String(r[kTitle] ?? "Untitled").trim();
       const imp = fmtInt(r[kImpressions]);
       const eng = fmtInt(r[kEngagements]);
-      const erN = toNumber(r[kER]);
+
+      const impN = toNumber(r[kImpressions]);
+      const engN = toNumber(r[kEngagements]);
+      let erN = toNumber(r[kER]);
+      if (erN === null && isNum(impN) && impN > 0 && isNum(engN)) erN = (engN / impN) * 100;
       const er = (erN === null) ? "—" : `${erN.toFixed(2)}%`;
+
       const url = String(r[kURL] ?? "").trim();
       const notes = String(r[kNotes] ?? "").trim();
 
@@ -2133,9 +2212,31 @@ function normalizeAllPostsRows(rows){
   const kTitle = pickKey(sample, ["Post Name","Title","Post"]);
   const kDate = pickKey(sample, ["Date","Published","Post Date"]);
   const kPlatforms = pickKey(sample, ["Platforms","Platform"]);
-  const kImpressions = pickKey(sample, ["Impressions"]);
-  const kEngagements = pickKey(sample, ["Engagements","Engagement"]);
-  const kER = pickKey(sample, ["Engagement Rate","Post Engagement Rate"]);
+
+  // ✅ be broader so we catch your keys reliably
+  const kImpressions = pickKey(sample, [
+    "Impressions",
+    "Post Impressions",
+    "LinkedIn Impressions",
+    "Impressions (LinkedIn)",
+    "Post Impressions (LinkedIn)"
+  ]);
+
+  const kEngagements = pickKey(sample, [
+    "Engagements",
+    "Engagement",
+    "Post Engagements",
+    "Engagements (LinkedIn)",
+    "Post Engagements (LinkedIn)"
+  ]);
+
+  const kER = pickKey(sample, [
+    "Engagement Rate",
+    "Post Engagement Rate",
+    "Engagement Rate (LinkedIn)",
+    "ER"
+  ]);
+
   const kHealth = pickKey(sample, ["Engagement Health","Health"]);
   const kURL = pickKey(sample, ["URL","Link"]);
   const kNotes = pickKey(sample, ["Notes","Note"]);
@@ -2148,10 +2249,16 @@ function normalizeAllPostsRows(rows){
 
     const imp = toNumber(r[kImpressions]);
     const eng = toNumber(r[kEngagements]);
-    let er = toNumber(r[kER]);
-    if (er === null && isNum(imp) && imp > 0 && isNum(eng)) er = (eng / imp) * 100;
 
-    const healthText = String(r[kHealth] ?? "").trim();
+    /* ✅ FIX: ALWAYS calculate ER if we can, otherwise fallback */
+    let er = null;
+    if (isNum(imp) && imp > 0 && isNum(eng)) {
+      er = (eng / imp) * 100;
+    } else {
+      er = toNumber(r[kER]);
+    }
+
+    const healthText = cleanHealthText(r[kHealth]);
 
     return {
       title: String(r[kTitle] ?? "Untitled Post").trim(),
