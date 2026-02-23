@@ -1605,11 +1605,16 @@
    REPORT DASHBOARD (FULL + FIXED)
    - Uses your Apps Script JSON shape
    - One endpoint for all sections
-   Fixes included (based on your console output):
+   Fixes included:
    1) Quarter totals: avgEngagementRate (camelCase) now matches and renders
    2) Platform breakdown: ER Δ now detected and displayed
-   3) All posts: Engagement Rate column is ALWAYS calculated (engagements/impressions*100) when possible
-   4) Health column: removes the emoji dot (🟢/🟡/🔴/🔵 etc) so only ONE dot shows (your CSS dot)
+   3) All posts: Engagement Rate column ALWAYS calculated (engagements/impressions*100) when possible
+   4) All posts: Health is now CALCULATED from engagement rate:
+        > 10%   = Very Strong
+        6–10%   = Strong
+        4–6%    = Moderate
+        < 4%    = Low
+   5) Health column: removes emoji dot if any exist, so only ONE dot shows (your CSS dot)
 ========================= */
 
 let RAW = null;
@@ -1656,7 +1661,6 @@ function toNumber(v){
   const s = String(v).trim();
   if (!s || s === "—" || s === "-") return null;
 
-  // handle "▲ 12.3%" / "▼ 2%" / "+3.1%" etc
   const cleaned = s
     .replace(/,/g,"")
     .replace(/\s+/g,"")
@@ -1687,12 +1691,26 @@ function normalizePlatformValue(s){
   return "";
 }
 
-/* ✅ FIX: remove emoji/bullets at the start so only ONE dot shows (your CSS dot) */
+/* remove leading emoji/bullets like 🟢 🟡 🔴 🔵 • ● etc */
 function cleanHealthText(h){
-  // removes leading emojis/bullets like 🟢 🟡 🔴 🔵 • ● etc
   return String(h ?? "")
     .replace(/^[^A-Za-z0-9]+/g, "")
     .trim();
+}
+
+/* ✅ NEW: health calculated from engagement rate */
+function healthFromER(er){
+  if (!isNum(er)) return { label: "—", className: "" };
+
+  // RULES:
+  // > 10     = Very Strong
+  // 6–10     = Strong
+  // 4–6      = Moderate
+  // < 4      = Low
+  if (er > 10) return { label: "Very Strong", className: "health-very-strong" };
+  if (er >= 6) return { label: "Strong", className: "health-strong" };
+  if (er >= 4) return { label: "Moderate", className: "health-moderate" };
+  return { label: "Low", className: "health-low" };
 }
 
 function healthClassFromText(h){
@@ -1704,7 +1722,7 @@ function healthClassFromText(h){
   return "";
 }
 
-/* ✅ FIX: handle camelCase keys like avgEngagementRate */
+/* handle camelCase keys like avgEngagementRate */
 function normalizeFieldKey(s){
   const spaced = String(s ?? "").replace(/([a-z0-9])([A-Z])/g, "$1 $2");
   return spaced
@@ -1715,7 +1733,6 @@ function normalizeFieldKey(s){
 }
 
 function parseDeltaToClass(deltaVal){
-  // supports objects OR strings like "▲ 12.2%" / "▼ 3%" / "+2%" / "-1%"
   if (!deltaVal) return "";
 
   if (typeof deltaVal === "object"){
@@ -1748,13 +1765,11 @@ function pickKey(obj, candidates){
   const keys = Object.keys(obj);
   const lowerMap = new Map(keys.map(k => [k.toLowerCase(), k]));
 
-  // exact (case-insensitive)
   for (const c of candidates){
     const found = lowerMap.get(String(c).toLowerCase());
     if (found) return found;
   }
 
-  // contains
   for (const c of candidates){
     const cl = String(c).toLowerCase();
     const match = keys.find(k => k.toLowerCase().includes(cl));
@@ -1839,7 +1854,6 @@ function renderSummary(bullets){
 function renderQuarterTotals(rows){
   const data = Array.isArray(rows) ? rows : [];
 
-  // normalized lookup for field names
   const map = {};
   for (const r of data){
     const rawField = r.field ?? r.Field ?? r.name ?? r.Name ?? "";
@@ -1862,7 +1876,6 @@ function renderQuarterTotals(rows){
     return null;
   };
 
-  // ✅ FIX: this now matches avgEngagementRate
   const findAvgEngRateRow = () => {
     const keys = Object.keys(map);
     const hit = keys.find(k =>
@@ -2031,7 +2044,6 @@ function renderPlatformBreakdown(rows){
     const badge = name.slice(0,1).toUpperCase();
 
     const kFollowersD = findDeltaKeyForMetric(row, kFollowers, ["followers"]);
-    /* ✅ FIX: your JSON uses ER Δ, so we explicitly catch it */
     const kEngRateD   =
       findDeltaKeyForMetric(row, kEngRate, ["engagement rate","post engagement rate","er"])
       || pickKey(row, ["ER Δ","ER∆","ER delta","ER change"]);
@@ -2213,7 +2225,6 @@ function normalizeAllPostsRows(rows){
   const kDate = pickKey(sample, ["Date","Published","Post Date"]);
   const kPlatforms = pickKey(sample, ["Platforms","Platform"]);
 
-  // ✅ be broader so we catch your keys reliably
   const kImpressions = pickKey(sample, [
     "Impressions",
     "Post Impressions",
@@ -2230,6 +2241,7 @@ function normalizeAllPostsRows(rows){
     "Post Engagements (LinkedIn)"
   ]);
 
+  // we still accept ER from JSON as fallback only
   const kER = pickKey(sample, [
     "Engagement Rate",
     "Post Engagement Rate",
@@ -2237,7 +2249,7 @@ function normalizeAllPostsRows(rows){
     "ER"
   ]);
 
-  const kHealth = pickKey(sample, ["Engagement Health","Health"]);
+  // ✅ we DO NOT use Engagement Health anymore for display; we calculate from ER
   const kURL = pickKey(sample, ["URL","Link"]);
   const kNotes = pickKey(sample, ["Notes","Note"]);
 
@@ -2250,7 +2262,6 @@ function normalizeAllPostsRows(rows){
     const imp = toNumber(r[kImpressions]);
     const eng = toNumber(r[kEngagements]);
 
-    /* ✅ FIX: ALWAYS calculate ER if we can, otherwise fallback */
     let er = null;
     if (isNum(imp) && imp > 0 && isNum(eng)) {
       er = (eng / imp) * 100;
@@ -2258,7 +2269,8 @@ function normalizeAllPostsRows(rows){
       er = toNumber(r[kER]);
     }
 
-    const healthText = cleanHealthText(r[kHealth]);
+    // ✅ calculate health from ER
+    const h = healthFromER(er);
 
     return {
       title: String(r[kTitle] ?? "Untitled Post").trim(),
@@ -2267,7 +2279,9 @@ function normalizeAllPostsRows(rows){
       impressions: imp,
       engagements: eng,
       engagementRate: er,
-      healthText,
+      // store calculated values (no emojis)
+      healthText: h.label,
+      healthClass: h.className,
       url: String(r[kURL] ?? "").trim(),
       notes: String(r[kNotes] ?? "").trim()
     };
@@ -2307,8 +2321,10 @@ function renderAllPostsTable(){
     <tbody>
       ${rows.map(p => {
         const platforms = p.platforms.length ? p.platforms.join(", ") : "—";
-        const healthClass = healthClassFromText(p.healthText);
-        const healthSafe = escHtml(p.healthText || "—");
+
+        // ✅ prefer calculated healthClass; fall back to parsing healthText if needed
+        const healthClass = p.healthClass || healthClassFromText(p.healthText);
+        const healthSafe = escHtml(cleanHealthText(p.healthText || "—"));
 
         return `
           <tr>
