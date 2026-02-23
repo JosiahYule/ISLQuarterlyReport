@@ -2383,16 +2383,28 @@ function wirePostsTableFilters(){
   if (select) select.addEventListener("change", applyPostFilters);
 }
 
-// ---------- insights ----------
+// ---------- insights (FIXED: supports notWorking + next, and combines rows) ----------
 function renderInsights(rows){
   const data = Array.isArray(rows) ? rows : [];
 
+  // Normalize: "notWorking" => "notworking", "What's Not Working" => "whatsnotworking"
+  const norm = (s) => String(s ?? "")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")  // camelCase -> words
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")            // strip punctuation
+    .trim()
+    .replace(/\s+/g, "");                   // remove spaces entirely
+
+  // Collect (don’t overwrite) in case you have multiple rows per section
   const bySection = {};
   for (const r of data){
-    const section = String(r.Section ?? r.section ?? "").trim();
+    const sectionRaw = r.Section ?? r.section ?? "";
     const text = String(r.Text ?? r.text ?? "").trim();
-    if (!section) continue;
-    bySection[section.toLowerCase()] = text;
+    const key = norm(sectionRaw);
+    if (!key) continue;
+
+    if (!bySection[key]) bySection[key] = [];
+    if (text) bySection[key].push(text);
   }
 
   const set = (id, sectionNeedles) => {
@@ -2400,20 +2412,30 @@ function renderInsights(rows){
     if (!el) return;
 
     let val = "";
+
     for (const n of sectionNeedles){
-      const key = String(n).toLowerCase();
-      if (bySection[key]) { val = bySection[key]; break; }
-      const hit = Object.keys(bySection).find(k => k.includes(key));
-      if (hit) { val = bySection[hit]; break; }
+      const nk = norm(n);
+      // exact match first
+      if (bySection[nk]?.length){
+        val = bySection[nk].join("\n\n");
+        break;
+      }
+      // then “contains” match if someone uses longer labels
+      const hit = Object.keys(bySection).find(k => k.includes(nk) || nk.includes(k));
+      if (hit && bySection[hit]?.length){
+        val = bySection[hit].join("\n\n");
+        break;
+      }
     }
 
     el.innerHTML = val ? escHtml(val).replace(/\n/g, "<br>") : "";
   };
 
-  set("insWorking", ["what's working", "whats working", "working"]);
-  set("insNotWorking", ["what's not working", "whats not working", "not working"]);
-  set("insActions", ["actions from this data", "actions"]);
-  set("insNext", ["next quarter focus", "next quarter", "focus"]);
+  // ✅ These needles now include your actual sheet keys too
+  set("insWorking",    ["working", "what's working", "whats working"]);
+  set("insNotWorking", ["notWorking", "not working", "what's not working", "whats not working"]);
+  set("insActions",    ["actions", "actions from this data"]);
+  set("insNext",       ["next", "next quarter focus", "next quarter", "focus"]);
 }
 
 // ---------- menus ----------
