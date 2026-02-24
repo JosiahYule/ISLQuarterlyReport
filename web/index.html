@@ -900,26 +900,27 @@
 <script>
 /* =========================
    LIVE WEB APP JSON ENDPOINT
-   (Replace with your Apps Script web app URL)
 ========================= */
 const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbw-jUSh2nlMNemfIAkooJBNYKB8B9D3aEm9Ra1sxWfM2TXoScDauPZxQ8KKO3fl08EX6w/exec";
 
 /* =========================
-   INTERNAL STATE (kept same)
+   INTERNAL STATE
 ========================= */
 let REPORT = null;
 
 /* =========================
-   FETCH (changed from ./web-data.json)
+   FETCH
 ========================= */
 async function loadData(){
-  const res = await fetch(REPORT_ENDPOINT, { cache: "no-store" });
+  // Add nocache safely whether or not the URL already has query params
+  const url = REPORT_ENDPOINT + (REPORT_ENDPOINT.includes("?") ? "&" : "?") + "nocache=1";
+  const res = await fetch(url, { cache: "no-store" });
   if(!res.ok) throw new Error(`Web App JSON failed: ${res.status} ${res.statusText}`);
   return await res.json();
 }
 
 /* =========================
-   FORMATTERS (unchanged)
+   FORMATTERS
 ========================= */
 const fmtInt = n => (typeof n === "number" && Number.isFinite(n)) ? n.toLocaleString() : "—";
 const fmtPct = n => (typeof n === "number" && Number.isFinite(n)) ? (n.toFixed(2) + "%") : "—";
@@ -968,17 +969,17 @@ function quarterDropdown(){
   });
 }
 
-/* Candidate Actions: we prefer an explicit field, but fall back to conversions if your JSON still uses it */
+/* Candidate Actions: prefer explicit field, but fall back if you ever change naming */
 function getActionsFromOverall(o){
   if(typeof o?.actions === "number" && Number.isFinite(o.actions)) return o.actions;
   if(typeof o?.candidateActions === "number" && Number.isFinite(o.candidateActions)) return o.candidateActions;
-  if(typeof o?.conversions === "number" && Number.isFinite(o.conversions)) return o.conversions; // fallback
+  if(typeof o?.conversions === "number" && Number.isFinite(o.conversions)) return o.conversions;
   return undefined;
 }
 function getActionsDeltaFromDeltas(d){
   if(d?.actions) return d.actions;
   if(d?.candidateActions) return d.candidateActions;
-  if(d?.conversions) return d.conversions; // fallback
+  if(d?.conversions) return d.conversions;
   return undefined;
 }
 
@@ -989,17 +990,43 @@ function setHTML(id, value){
 }
 
 /* =========================
-   NEW: NORMALIZE WEB APP PAYLOAD
-   Converts your Apps Script JSON into the exact shape your page already expects.
+   ✅ FIXED: NORMALIZE PAYLOAD
+   - If Apps Script already returns the "new" shape (overall/deltas/channels/topPages/execSummary/insights),
+     we PASS THROUGH and just attach _meta.
+   - Otherwise we fall back to the older legacy mapping (kept for safety).
 ========================= */
 function normalizePayloadToReport(payload){
-  // Executive summary
+  // NEW SHAPE (your Apps Script doGet currently returns this)
+  const looksNew =
+    payload &&
+    typeof payload === "object" &&
+    payload.overall && typeof payload.overall === "object" &&
+    payload.deltas  && typeof payload.deltas  === "object";
+
+  if(looksNew){
+    const insights = payload.insights && typeof payload.insights === "object"
+      ? payload.insights
+      : { working:"", notWorking:"", actions:"", next:"" };
+
+    return {
+      _meta: {
+        generatedAt: payload.generatedAt || payload.config?.generatedAt || null
+      },
+      config: payload.config || {},
+      execSummary: Array.isArray(payload.execSummary) ? payload.execSummary : [],
+      overall: payload.overall || {},
+      deltas: payload.deltas || {},
+      channels: Array.isArray(payload.channels) ? payload.channels : [],
+      topPages: Array.isArray(payload.topPages) ? payload.topPages : [],
+      insights
+    };
+  }
+
+  // LEGACY SHAPE (older JSONs you may still have)
   const execSummary = Array.isArray(payload?.summaryBullets) ? payload.summaryBullets : [];
 
-  // Quarter totals mapping (flexible, based on your "field" labels)
   const overall = {};
   const deltas = {};
-
   const rows = Array.isArray(payload?.quarterTotals) ? payload.quarterTotals : [];
 
   const setFromRow = (row, key) => {
@@ -1012,45 +1039,16 @@ function normalizePayloadToReport(payload){
 
   rows.forEach(r => {
     const f = norm(r?.field);
-
-    // Sessions / Visits
-    if(f.includes("total visit") || f.includes("visits") || f.includes("sessions")){
-      setFromRow(r, "sessions");
-      return;
+    if(f.includes("total visit") || f.includes("visits") || f.includes("sessions")) { setFromRow(r,"sessions"); return; }
+    if(f.includes("users") || f.includes("website users"))                           { setFromRow(r,"users"); return; }
+    if(f.includes("engagement rate"))                                               { setFromRow(r,"engagementRate"); return; }
+    if(f.includes("avg time") || f.includes("time on site") || f.includes("avg engagement time")) {
+      setFromRow(r,"avgEngagementTimeSec"); return;
     }
-
-    // Users
-    if(f.includes("users") || f.includes("website users")){
-      setFromRow(r, "users");
-      return;
-    }
-
-    // Engagement Rate
-    if(f.includes("engagement rate")){
-      setFromRow(r, "engagementRate");
-      return;
-    }
-
-    // Avg time on site (seconds)
-    if(f.includes("avg time") || f.includes("average time") || f.includes("time on site") || f.includes("avg engagement time")){
-      setFromRow(r, "avgEngagementTimeSec");
-      return;
-    }
-
-    // Candidate actions
-    if(f.includes("candidate action") || f === "actions" || f.includes("actions")){
-      setFromRow(r, "actions");
-      return;
-    }
-
-    // Form submissions
-    if(f.includes("form submission") || f.includes("forms")){
-      setFromRow(r, "formSubmissions");
-      return;
-    }
+    if(f.includes("candidate action") || f === "actions" || f.includes("actions"))  { setFromRow(r,"actions"); return; }
+    if(f.includes("form submission") || f.includes("forms"))                        { setFromRow(r,"formSubmissions"); return; }
   });
 
-  // Channels -> keep your existing renderChannels/buildCharts happy
   const traffic = Array.isArray(payload?.trafficChannels) ? payload.trafficChannels : [];
   const channels = traffic.map(c => ({
     name: c?.channel ?? c?.name ?? "Channel",
@@ -1058,23 +1056,19 @@ function normalizePayloadToReport(payload){
     engagementRate: toPercentNumber_(c?.engagementRate)
   }));
 
-  // Top pages -> your renderTopPages expects REPORT.topPages with key/name/title
   const pages = Array.isArray(payload?.topLandingPages) ? payload.topLandingPages : [];
   const topPages = pages.map(p => ({
     key: String(p?.page ?? p?.key ?? p?.name ?? "").trim(),
-    name: String(p?.page ?? p?.key ?? p?.name ?? "").trim(),
-    views: toNumber_(p?.views),
+    pageViews: toNumber_(p?.views),
     bounceRate: toPercentNumber_(p?.bounceRate),
     avgTimeOnPageSec: toSeconds_(p?.avgTimeOnPage)
   }));
 
-  // Insights: array -> object
   const insightRows = Array.isArray(payload?.insights) ? payload.insights : [];
-  const insightsObj = {};
+  const insightsObj = { working:"", notWorking:"", actions:"", next:"" };
   insightRows.forEach(r => {
-    const k = norm(r?.Section);
-    const val = r?.Text ?? "";
-    // Expecting: working, notWorking, actions, next
+    const k = norm(r?.Section ?? r?.section);
+    const val = r?.Text ?? r?.text ?? "";
     if(k === "working") insightsObj.working = val;
     else if(k === "notworking" || k === "not_working" || k === "not working") insightsObj.notWorking = val;
     else if(k === "actions") insightsObj.actions = val;
@@ -1082,9 +1076,7 @@ function normalizePayloadToReport(payload){
   });
 
   return {
-    _meta: {
-      generatedAt: payload?.generatedAt || payload?.generated || payload?.timestamp || null
-    },
+    _meta: { generatedAt: payload?.generatedAt || payload?.generated || payload?.timestamp || null },
     execSummary,
     overall,
     deltas,
@@ -1094,17 +1086,14 @@ function normalizePayloadToReport(payload){
   };
 }
 
-/* helpers for normalization */
+/* helpers for legacy normalization */
 function toNumber_(v){
   if(typeof v === "number" && Number.isFinite(v)) return v;
   const n = Number(String(v ?? "").replace(/,/g,"").trim());
   return Number.isFinite(n) ? n : undefined;
 }
 function toPercentNumber_(v){
-  // supports 62.5 OR "62.5%" OR 0.625
-  if(typeof v === "number" && Number.isFinite(v)){
-    return (v <= 1 ? v * 100 : v);
-  }
+  if(typeof v === "number" && Number.isFinite(v)) return (v <= 1 ? v * 100 : v);
   const s = String(v ?? "").trim();
   if(!s) return undefined;
   const cleaned = s.replace("%","").replace(/,/g,"").trim();
@@ -1113,7 +1102,6 @@ function toPercentNumber_(v){
   return (n <= 1 ? n * 100 : n);
 }
 function toSeconds_(v){
-  // supports seconds number OR "m:ss" OR "mm:ss"
   if(typeof v === "number" && Number.isFinite(v)) return v;
   const s = String(v ?? "").trim();
   if(!s) return undefined;
@@ -1126,7 +1114,7 @@ function toSeconds_(v){
 }
 
 /* =========================
-   RENDERERS (mostly unchanged)
+   RENDERERS
 ========================= */
 function renderExecutiveSummary(){
   const ul = document.getElementById("execSummaryList");
@@ -1173,7 +1161,6 @@ function renderKPIs(){
   document.getElementById("kpiTime").textContent     = fmtTime(o.avgEngagementTimeSec);
   document.getElementById("kpiForms").textContent    = fmtInt(o.formSubmissions);
 
-  // Candidate Actions
   const actions = getActionsFromOverall(o);
   const actionsEl = document.getElementById("kpiActions");
   if(actionsEl) actionsEl.textContent = fmtInt(actions);
@@ -1212,12 +1199,11 @@ function renderChannels(){
 function getPageViews(p){
   if(typeof p?.pageViews === "number" && Number.isFinite(p.pageViews)) return p.pageViews;
   if(typeof p?.views === "number" && Number.isFinite(p.views)) return p.views;
-  if(typeof p?.sessions === "number" && Number.isFinite(p.sessions)) return p.sessions; // fallback
+  if(typeof p?.sessions === "number" && Number.isFinite(p.sessions)) return p.sessions;
   return undefined;
 }
 
 function getBounceRate(p){
-  // Bounce rate should be a percent number (e.g., 47.2). If you store 0.472, we convert.
   let v;
   if(typeof p?.bounceRate === "number" && Number.isFinite(p.bounceRate)) v = p.bounceRate;
   else if(typeof p?.bounce_rate === "number" && Number.isFinite(p.bounce_rate)) v = p.bounce_rate;
@@ -1230,7 +1216,7 @@ function getBounceRate(p){
 function getAvgTimeOnPageSec(p){
   if(typeof p?.avgTimeOnPageSec === "number" && Number.isFinite(p.avgTimeOnPageSec)) return p.avgTimeOnPageSec;
   if(typeof p?.avgTimeSec === "number" && Number.isFinite(p.avgTimeSec)) return p.avgTimeSec;
-  if(typeof p?.avgEngagementTimeSec === "number" && Number.isFinite(p.avgEngagementTimeSec)) return p.avgEngagementTimeSec; // fallback
+  if(typeof p?.avgEngagementTimeSec === "number" && Number.isFinite(p.avgEngagementTimeSec)) return p.avgEngagementTimeSec;
   return undefined;
 }
 
@@ -1239,7 +1225,6 @@ function renderTopPages(){
   if(!wrap) return;
   wrap.innerHTML = "";
 
-  // Fixed leadership set (order matters)
   const ORDER = [
     "Home Page",
     "About",
@@ -1253,8 +1238,6 @@ function renderTopPages(){
 
   const pages = Array.isArray(REPORT?.topPages) ? REPORT.topPages : [];
 
-  // Lookup map by a stable key in your JSON (recommended: "key")
-  // Accepts "key" OR "name" OR "title"
   const byKey = new Map();
   pages.forEach(p => {
     const raw = (p?.key ?? p?.name ?? p?.title ?? "");
@@ -1292,15 +1275,12 @@ let _engChart = null;
 function buildCharts(){
   const labels   = (REPORT?.channels || []).map(c => c.name);
   const sessions = (REPORT?.channels || []).map(c => c.sessions || 0);
-
-  // Engagement rate is stored as percent number (e.g., 62.5)
   const engRates = (REPORT?.channels || []).map(c => (typeof c.engagementRate === "number" ? c.engagementRate : 0));
 
   const sCtx = document.getElementById("sessionsChart")?.getContext("2d");
   const eCtx = document.getElementById("engChart")?.getContext("2d");
   if(!sCtx || !eCtx) return;
 
-  // Destroy previous charts if re-rendered
   if(_sessionsChart) _sessionsChart.destroy();
   if(_engChart) _engChart.destroy();
 
@@ -1316,9 +1296,7 @@ function buildCharts(){
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      scales: {
-        y: { beginAtZero: true, suggestedMax: 100 }
-      }
+      scales: { y: { beginAtZero: true, suggestedMax: 100 } }
     }
   });
 }
@@ -1326,14 +1304,16 @@ function buildCharts(){
 function renderGeneratedAt(){
   const el = document.getElementById("heroGenerated");
   if(!el) return;
+
   const iso = REPORT?._meta?.generatedAt;
   if(!iso) return;
 
   const d = new Date(iso);
   if(!Number.isFinite(d.getTime())) return;
 
-  // Simple readable format
-  const txt = d.toLocaleString(undefined, { year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+  const txt = d.toLocaleString(undefined, {
+    year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit"
+  });
   el.innerHTML = `<strong>Generated:</strong> ${txt}`;
 }
 
@@ -1344,6 +1324,13 @@ quarterDropdown();
 (async function init(){
   try{
     const payload = await loadData();
+
+    // If Apps Script returned an error payload, fail loudly with the message
+    if(payload?.error){
+      console.error(payload);
+      throw new Error(payload.error);
+    }
+
     REPORT = normalizePayloadToReport(payload);
 
     lockEditing();
