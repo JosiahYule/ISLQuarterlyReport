@@ -754,7 +754,7 @@
     <div class="hero-meta" aria-label="Report metadata">
       <div class="hero-chip"><strong>Source:</strong> GA4</div>
       <div class="hero-chip"><strong>Property:</strong> integratedstaffing.ca</div>
-      <div class="hero-chip"><strong>Generated:</strong> —</div>
+      <div class="hero-chip" id="heroGenerated"><strong>Generated:</strong> —</div>
     </div>
   </div>
 </section>
@@ -863,7 +863,7 @@
   <div id="topPages"></div>
 </section>
 
-   <section class="section" aria-label="Insights and analysis">
+<section class="section" aria-label="Insights and analysis">
   <div class="section-header">
     <div class="section-title">
       <h2>Insights, Analysis, and Actions</h2>
@@ -898,14 +898,29 @@
 </div>
 
 <script>
+/* =========================
+   LIVE WEB APP JSON ENDPOINT
+   (Replace with your Apps Script web app URL)
+========================= */
+const REPORT_ENDPOINT = "PASTE_YOUR_WEB_APP_URL_HERE";
+
+/* =========================
+   INTERNAL STATE (kept same)
+========================= */
 let REPORT = null;
 
+/* =========================
+   FETCH (changed from ./web-data.json)
+========================= */
 async function loadData(){
-  const res = await fetch("./web-data.json", { cache: "no-store" });
-  if(!res.ok) throw new Error("web-data.json not found or failed to load");
+  const res = await fetch(REPORT_ENDPOINT, { cache: "no-store" });
+  if(!res.ok) throw new Error(`Web App JSON failed: ${res.status} ${res.statusText}`);
   return await res.json();
 }
 
+/* =========================
+   FORMATTERS (unchanged)
+========================= */
 const fmtInt = n => (typeof n === "number" && Number.isFinite(n)) ? n.toLocaleString() : "—";
 const fmtPct = n => (typeof n === "number" && Number.isFinite(n)) ? (n.toFixed(2) + "%") : "—";
 
@@ -973,6 +988,146 @@ function setHTML(id, value){
   el.innerHTML = (value && String(value).trim()) ? String(value) : "";
 }
 
+/* =========================
+   NEW: NORMALIZE WEB APP PAYLOAD
+   Converts your Apps Script JSON into the exact shape your page already expects.
+========================= */
+function normalizePayloadToReport(payload){
+  // Executive summary
+  const execSummary = Array.isArray(payload?.summaryBullets) ? payload.summaryBullets : [];
+
+  // Quarter totals mapping (flexible, based on your "field" labels)
+  const overall = {};
+  const deltas = {};
+
+  const rows = Array.isArray(payload?.quarterTotals) ? payload.quarterTotals : [];
+
+  const setFromRow = (row, key) => {
+    const v = row?.value;
+    if(typeof v === "number" && Number.isFinite(v)) overall[key] = v;
+    deltas[key] = row?.delta ?? "";
+  };
+
+  const norm = (s) => String(s ?? "").trim().toLowerCase();
+
+  rows.forEach(r => {
+    const f = norm(r?.field);
+
+    // Sessions / Visits
+    if(f.includes("total visit") || f.includes("visits") || f.includes("sessions")){
+      setFromRow(r, "sessions");
+      return;
+    }
+
+    // Users
+    if(f.includes("users") || f.includes("website users")){
+      setFromRow(r, "users");
+      return;
+    }
+
+    // Engagement Rate
+    if(f.includes("engagement rate")){
+      setFromRow(r, "engagementRate");
+      return;
+    }
+
+    // Avg time on site (seconds)
+    if(f.includes("avg time") || f.includes("average time") || f.includes("time on site") || f.includes("avg engagement time")){
+      setFromRow(r, "avgEngagementTimeSec");
+      return;
+    }
+
+    // Candidate actions
+    if(f.includes("candidate action") || f === "actions" || f.includes("actions")){
+      setFromRow(r, "actions");
+      return;
+    }
+
+    // Form submissions
+    if(f.includes("form submission") || f.includes("forms")){
+      setFromRow(r, "formSubmissions");
+      return;
+    }
+  });
+
+  // Channels -> keep your existing renderChannels/buildCharts happy
+  const traffic = Array.isArray(payload?.trafficChannels) ? payload.trafficChannels : [];
+  const channels = traffic.map(c => ({
+    name: c?.channel ?? c?.name ?? "Channel",
+    sessions: toNumber_(c?.sessions),
+    engagementRate: toPercentNumber_(c?.engagementRate)
+  }));
+
+  // Top pages -> your renderTopPages expects REPORT.topPages with key/name/title
+  const pages = Array.isArray(payload?.topLandingPages) ? payload.topLandingPages : [];
+  const topPages = pages.map(p => ({
+    key: String(p?.page ?? p?.key ?? p?.name ?? "").trim(),
+    name: String(p?.page ?? p?.key ?? p?.name ?? "").trim(),
+    views: toNumber_(p?.views),
+    bounceRate: toPercentNumber_(p?.bounceRate),
+    avgTimeOnPageSec: toSeconds_(p?.avgTimeOnPage)
+  }));
+
+  // Insights: array -> object
+  const insightRows = Array.isArray(payload?.insights) ? payload.insights : [];
+  const insightsObj = {};
+  insightRows.forEach(r => {
+    const k = norm(r?.Section);
+    const val = r?.Text ?? "";
+    // Expecting: working, notWorking, actions, next
+    if(k === "working") insightsObj.working = val;
+    else if(k === "notworking" || k === "not_working" || k === "not working") insightsObj.notWorking = val;
+    else if(k === "actions") insightsObj.actions = val;
+    else if(k === "next") insightsObj.next = val;
+  });
+
+  return {
+    _meta: {
+      generatedAt: payload?.generatedAt || payload?.generated || payload?.timestamp || null
+    },
+    execSummary,
+    overall,
+    deltas,
+    channels,
+    topPages,
+    insights: insightsObj
+  };
+}
+
+/* helpers for normalization */
+function toNumber_(v){
+  if(typeof v === "number" && Number.isFinite(v)) return v;
+  const n = Number(String(v ?? "").replace(/,/g,"").trim());
+  return Number.isFinite(n) ? n : undefined;
+}
+function toPercentNumber_(v){
+  // supports 62.5 OR "62.5%" OR 0.625
+  if(typeof v === "number" && Number.isFinite(v)){
+    return (v <= 1 ? v * 100 : v);
+  }
+  const s = String(v ?? "").trim();
+  if(!s) return undefined;
+  const cleaned = s.replace("%","").replace(/,/g,"").trim();
+  const n = Number(cleaned);
+  if(!Number.isFinite(n)) return undefined;
+  return (n <= 1 ? n * 100 : n);
+}
+function toSeconds_(v){
+  // supports seconds number OR "m:ss" OR "mm:ss"
+  if(typeof v === "number" && Number.isFinite(v)) return v;
+  const s = String(v ?? "").trim();
+  if(!s) return undefined;
+  if(/^\d+:\d{2}$/.test(s)){
+    const [m,sec] = s.split(":").map(x => Number(x));
+    if(Number.isFinite(m) && Number.isFinite(sec)) return (m * 60 + sec);
+  }
+  const n = Number(s);
+  return Number.isFinite(n) ? n : undefined;
+}
+
+/* =========================
+   RENDERERS (mostly unchanged)
+========================= */
 function renderExecutiveSummary(){
   const ul = document.getElementById("execSummaryList");
   if(!ul) return;
@@ -1007,7 +1162,7 @@ function lockEditing(){
     el.setAttribute("contenteditable", canEdit ? "true" : "false");
   });
 }
-  
+
 function renderKPIs(){
   const o = REPORT?.overall || {};
   const d = REPORT?.deltas || {};
@@ -1018,7 +1173,7 @@ function renderKPIs(){
   document.getElementById("kpiTime").textContent     = fmtTime(o.avgEngagementTimeSec);
   document.getElementById("kpiForms").textContent    = fmtInt(o.formSubmissions);
 
-  // ✅ New KPI: Candidate Actions (replaces conversions + conversion rate)
+  // Candidate Actions
   const actions = getActionsFromOverall(o);
   const actionsEl = document.getElementById("kpiActions");
   if(actionsEl) actionsEl.textContent = fmtInt(actions);
@@ -1028,9 +1183,6 @@ function renderKPIs(){
   setDelta("dEngRate", d.engagementRate);
   setDelta("dTime", d.avgEngagementTimeSec);
   setDelta("dForms", d.formSubmissions);
-
-  // If your delta for time is a number of seconds, you might want it formatted.
-  // For now we keep your existing delta style (▲ / ▼ text coming from JSON).
   setDelta("dActions", getActionsDeltaFromDeltas(d));
 }
 
@@ -1141,9 +1293,8 @@ function buildCharts(){
   const labels   = (REPORT?.channels || []).map(c => c.name);
   const sessions = (REPORT?.channels || []).map(c => c.sessions || 0);
 
-  // Engagement rate chart expects a percent number (e.g., 62.5). If your JSON is 0.625, adjust below.
-  const engRatesRaw = (REPORT?.channels || []).map(c => (typeof c.engagementRate === "number" ? c.engagementRate : 0));
-  const engRates = engRatesRaw.map(v => (v <= 1 ? v * 100 : v)); // supports either 0-1 or 0-100 inputs
+  // Engagement rate is stored as percent number (e.g., 62.5)
+  const engRates = (REPORT?.channels || []).map(c => (typeof c.engagementRate === "number" ? c.engagementRate : 0));
 
   const sCtx = document.getElementById("sessionsChart")?.getContext("2d");
   const eCtx = document.getElementById("engChart")?.getContext("2d");
@@ -1172,13 +1323,31 @@ function buildCharts(){
   });
 }
 
+function renderGeneratedAt(){
+  const el = document.getElementById("heroGenerated");
+  if(!el) return;
+  const iso = REPORT?._meta?.generatedAt;
+  if(!iso) return;
+
+  const d = new Date(iso);
+  if(!Number.isFinite(d.getTime())) return;
+
+  // Simple readable format
+  const txt = d.toLocaleString(undefined, { year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+  el.innerHTML = `<strong>Generated:</strong> ${txt}`;
+}
+
 /* ✅ Wire dropdown first */
 quarterDropdown();
 
-/* Then load + render */
+/* Then load + normalize + render */
 (async function init(){
   try{
-    REPORT = await loadData();
+    const payload = await loadData();
+    REPORT = normalizePayloadToReport(payload);
+
+    lockEditing();
+    renderGeneratedAt();
     renderKPIs();
     renderChannels();
     renderTopPages();
@@ -1187,7 +1356,7 @@ quarterDropdown();
     renderInsights();
   }catch(err){
     console.error(err);
-    alert("Data failed to load. Open console for details (likely web-data.json path/format).");
+    alert("Data failed to load. Open console for details (likely Web App URL, permissions, or tab headers).");
   }
 })();
 </script>
