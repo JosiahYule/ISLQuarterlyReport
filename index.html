@@ -223,6 +223,33 @@
       flex:0 0 auto;
     }
 
+    /* === IS Home button (matches Website Analytics page) === */
+.home-mark{
+  width:54px;
+  height:40px;
+  border-radius:12px;
+  background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
+  display:grid;
+  place-items:center;
+  color:#fff;
+  font-size:20px;
+  font-weight:800;
+  letter-spacing:-0.02em;
+  text-decoration:none;
+  box-shadow:0 10px 18px rgba(2,8,23,.18);
+  transition:var(--transition);
+}
+.home-mark:hover{
+  transform:translateY(-1px);
+  filter:brightness(1.03);
+}
+.home-mark:active{ transform:translateY(0); }
+.home-mark:focus,
+.home-mark:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 4px rgba(0,112,202,.18), 0 10px 18px rgba(2,8,23,.18);
+}
+
     /* ============= QUARTER DROPDOWN MENU ============= */
     .pill-wrap{ position:relative; display:inline-flex; }
     .pill-trigger{
@@ -1328,25 +1355,7 @@
 <body>
   <div class="container">
 
-    <div class="topbar">
-      <div class="brand">
-        <div class="brand-menu-wrap">
-          <button class="brand-mark" id="brandToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Choose brand">ISL</button>
-          <div class="brand-menu" role="menu" aria-label="Brand selector">
-            <button class="brand-option" type="button" role="menuitem" data-brand="isl" data-label="ISL" data-name="Integrated Staffing" data-href="./index.html">
-              <span class="brand-option-mark isl" aria-hidden="true">ISL</span>
-              <span class="brand-option-label">Integrated Staffing</span>
-            </button>
-            <button class="brand-option" type="button" role="menuitem" data-brand="as" data-label="AS" data-name="Accountant Staffing" data-href="./as.html">
-              <span class="brand-option-mark as" aria-hidden="true">AS</span>
-              <span class="brand-option-label">Accountant Staffing</span>
-            </button>
-            <button class="brand-option" type="button" role="menuitem" data-brand="ads" data-label="ADS" data-name="Administrative Staffing" data-href="./ads.html">
-              <span class="brand-option-mark ads" aria-hidden="true">ADS</span>
-              <span class="brand-option-label">Administrative Staffing</span>
-            </button>
-          </div>
-        </div>
+<a class="home-mark" href="/index.html" aria-label="Back to main index">IS</a>
         <div class="brand-text">
           <strong id="brandNameLabel">Integrated Staffing</strong>
           <span>Quarterly Digital Media Performance Report</span>
