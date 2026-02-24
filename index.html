@@ -61,128 +61,60 @@
       padding:16px 0;
       position:relative;
     }
+
     .brand{display:flex;align-items:center;gap:14px;min-width:0}
-    .brand-menu-wrap{position:relative;display:inline-flex}
-.brand-mark{
-  width:54px;
-  height:40px;
-  border-radius:9px;
-  background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
-  position:relative;
 
-  display:grid;
-  place-items:center;
+    /* =========================
+       BRAND MARK (matches Website Performance Report)
+    ========================= */
+    .brand-mark{
+      width:48px;
+      height:48px;
+      border-radius:12px;
+      background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
+      box-shadow:0 4px 12px rgba(0,84,154,.2), inset 0 1px 0 rgba(255,255,255,.2);
+      position:relative;
+      overflow:hidden;
 
-  font-size:20px;
-  font-weight:800;
-  color:#fff;
-  line-height:1;
+      display:grid;
+      place-items:center;
 
-  text-decoration:none;
-  cursor:pointer;
-  transition:var(--transition);
-  font-family:var(--font);
-  border:none;
-  outline:none;
-  appearance:none;
-  -webkit-appearance:none;
-}
+      font-size:20px;
+      font-weight:900;
+      color:#fff;
+      line-height:1;
 
-.brand-mark.brand-as{
-  background:linear-gradient(135deg,#D68910,#F5B041);
-}
+      text-decoration:none;
+      cursor:pointer;
+      transition:var(--transition);
+      font-family:var(--font);
+      border:none;
+      outline:none;
+      appearance:none;
+      -webkit-appearance:none;
+    }
 
-.brand-mark.brand-ads{
-  background:linear-gradient(135deg,#0F5B78,#1C8DB5);
-}
+    .brand-mark::after{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background:radial-gradient(circle, rgba(255,255,255,.3), transparent 60%);
+      transform:rotate(25deg);
+      pointer-events:none;
+    }
 
-.brand-mark:hover{
-  transform:translateY(-1px);
-  filter:brightness(1.03);
-}
+    .brand-mark:hover{
+      transform:translateY(-1px);
+      box-shadow:0 6px 16px rgba(0,84,154,.25);
+    }
+    .brand-mark:active{ transform:translateY(0); }
 
-.brand-mark:active{
-  transform:translateY(0);
-}
+    .brand-mark:focus,
+    .brand-mark:focus-visible{
+      outline:none;
+      box-shadow:0 0 0 4px rgba(0,112,202,.25), 0 6px 16px rgba(0,0,0,.12);
+    }
 
-.brand-mark:focus,
-.brand-mark:focus-visible{
-  outline:none;
-  box-shadow:none;
-}
-
-.brand-menu{
-  position:absolute;
-  top:calc(100% + 4px);
-  left:0;
-  min-width:260px;
-  background:#fff;
-  border:1px solid rgba(15,23,42,.08);
-  border-radius:14px;
-  padding:8px;
-  box-shadow:0 12px 28px rgba(2,8,23,.14);
-  display:none;
-  z-index:120;
-}
-
-.brand-menu-wrap::after{
-  content:"";
-  position:absolute;
-  left:0;
-  right:0;
-  top:100%;
-  height:8px;
-}
-
-.brand-menu-wrap:hover .brand-menu,
-.brand-menu-wrap:focus-within .brand-menu,
-.brand-menu-wrap.open .brand-menu{
-  display:block;
-}
-
-.brand-option{
-  width:100%;
-  border:none;
-  background:transparent;
-  border-radius:10px;
-  padding:8px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  text-align:left;
-  cursor:pointer;
-  font-family:var(--font);
-  transition:var(--transition);
-}
-
-.brand-option:hover,
-.brand-option:focus-visible{
-  background:rgba(0,84,154,.08);
-  outline:none;
-}
-
-.brand-option-mark{
-  width:54px;
-  height:40px;
-  border-radius:9px;
-  color:#fff;
-  display:grid;
-  place-items:center;
-  font-family:var(--font);
-  font-size:20px;
-  font-weight:800;
-  flex:0 0 auto;
-}
-
-.brand-option-mark.isl{background:linear-gradient(135deg,#00549A,#0070CA);}
-.brand-option-mark.as{background:linear-gradient(135deg,#D68910,#F5B041);}
-.brand-option-mark.ads{background:linear-gradient(135deg,#0F5B78,#1C8DB5);}
-
-.brand-option-label{
-  font-size:15px;
-  font-weight:600;
-  color:var(--text);
-}
     .brand-text{display:flex;flex-direction:column;line-height:1.3;min-width:0}
     .brand-text strong{
       font-size:15px;
@@ -222,59 +154,6 @@
       box-shadow:0 0 0 3px rgba(0,112,202,.15);
       flex:0 0 auto;
     }
-
-/* =========================
-   BRAND MARK (Website Performance Report)
-   Copy/paste into Digital Media page
-========================= */
-
-.brand{display:flex;align-items:center;gap:14px;min-width:0}
-
-.brand-mark{
-  width:48px;
-  height:48px;
-  border-radius:12px;
-  background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
-  box-shadow:0 4px 12px rgba(0,84,154,.2), inset 0 1px 0 rgba(255,255,255,.2);
-  position:relative;
-  overflow:hidden;
-
-  display:grid;
-  place-items:center;
-
-  font-size:20px;
-  font-weight:900;
-  color:#fff;
-  line-height:1;
-
-  text-decoration:none;
-  cursor:pointer;
-  transition:var(--transition);
-}
-
-/* overlay shine (cannot block clicks) */
-.brand-mark::after{
-  content:"";
-  position:absolute;
-  inset:-40%;
-  background:radial-gradient(circle, rgba(255,255,255,.3), transparent 60%);
-  transform:rotate(25deg);
-  pointer-events:none;
-}
-
-.brand-mark:hover{
-  transform:translateY(-1px);
-  box-shadow:0 6px 16px rgba(0,84,154,.25);
-}
-
-.brand-mark:active{
-  transform:translateY(0);
-}
-
-.brand-mark:focus{
-  outline:none;
-  box-shadow:0 0 0 4px rgba(0,112,202,.25), 0 6px 16px rgba(0,0,0,.12);
-}
 
     /* ============= QUARTER DROPDOWN MENU ============= */
     .pill-wrap{ position:relative; display:inline-flex; }
@@ -1031,388 +910,384 @@
     }
 
     /* =========================
-   PLATFORM TILE (CLEANER)
-   paste at end of <style>
-========================= */
+       PLATFORM TILE (CLEANER)
+       paste at end of <style>
+    ========================= */
 
-.pstat{
-  padding: 16px 16px 14px;
-  border-radius: 14px;
-  overflow: hidden;
-}
+    .pstat{
+      padding: 16px 16px 14px;
+      border-radius: 14px;
+      overflow: hidden;
+    }
 
-.pstat-label{
-  margin-bottom: 10px;
-}
+    .pstat-label{
+      margin-bottom: 10px;
+    }
 
-/* Use a 2-column grid so the delta always has its own lane */
-.pstat-row{
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  column-gap: 12px;
-}
+    /* Use a 2-column grid so the delta always has its own lane */
+    .pstat-row{
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      column-gap: 12px;
+    }
 
-/* Value: keep it readable, but allow shrinking */
-.pstat-row strong{
-  min-width: 0;
-  font-size: 18px;
-  line-height: 1.1;
-}
+    /* Value: keep it readable, but allow shrinking */
+    .pstat-row strong{
+      min-width: 0;
+      font-size: 18px;
+      line-height: 1.1;
+    }
 
-/* Delta chip: consistent sizing + clean alignment */
-.pstat-row .delta{
-  margin: 0;                 /* no edge-hugging */
-  padding: 6px 10px;
-  border-radius: 999px;      /* cleaner “chip” look */
-  min-width: 76px;           /* makes them consistent */
-  justify-content: center;   /* centers the ▲ and % */
-  text-align: center;
-  font-size: 11px;
-  line-height: 1;
-  letter-spacing: .01em;
-  flex: 0 0 auto;
-}
+    /* Delta chip: consistent sizing + clean alignment */
+    .pstat-row .delta{
+      margin: 0;                 /* no edge-hugging */
+      padding: 6px 10px;
+      border-radius: 999px;      /* cleaner “chip” look */
+      min-width: 76px;           /* makes them consistent */
+      justify-content: center;   /* centers the ▲ and % */
+      text-align: center;
+      font-size: 11px;
+      line-height: 1;
+      letter-spacing: .01em;
+      flex: 0 0 auto;
+    }
 
-/* Slightly calmer backgrounds on the tiles */
-.pstat{
-  background: rgba(245,248,250,.55);
-  border-color: rgba(0,0,0,.06);
-}
+    /* Slightly calmer backgrounds on the tiles */
+    .pstat{
+      background: rgba(245,248,250,.55);
+      border-color: rgba(0,0,0,.06);
+    }
 
-/* Optional: reduce hover noise a bit */
-.pstat:hover{
-  box-shadow: 0 2px 10px rgba(0,0,0,.05);
-  transform: none;
-}
+    /* Optional: reduce hover noise a bit */
+    .pstat:hover{
+      box-shadow: 0 2px 10px rgba(0,0,0,.05);
+      transform: none;
+    }
 
-  /* =========================
-   DELTA ALWAYS ON ITS OWN LINE
-   paste at end of <style>
-========================= */
+    /* =========================
+       DELTA ALWAYS ON ITS OWN LINE
+       paste at end of <style>
+    ========================= */
 
-.pstat-row{
-  display:flex !important;
-  flex-direction:column;     /* stack value + delta */
-  align-items:flex-start;
-  gap:8px;
-}
+    .pstat-row{
+      display:flex !important;
+      flex-direction:column;     /* stack value + delta */
+      align-items:flex-start;
+      gap:8px;
+    }
 
-/* Big number stays first */
-.pstat-row strong{
-  font-size:18px;
-  font-weight:800;
-  line-height:1.1;
-}
+    /* Big number stays first */
+    .pstat-row strong{
+      font-size:18px;
+      font-weight:800;
+      line-height:1.1;
+    }
 
-/* Delta chip always below */
-.pstat-row .delta{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding:6px 10px;
-  border-radius:999px;
-  font-size:11px;
-  font-weight:700;
-  line-height:1;
-  white-space:nowrap;
-}
+    /* Delta chip always below */
+    .pstat-row .delta{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      line-height:1;
+      white-space:nowrap;
+    }
 
-/* =========================
-   KPI HOVER DEFINITIONS (TOOLTIPS)
-   paste at END of <style>
-========================= */
+    /* =========================
+       KPI HOVER DEFINITIONS (TOOLTIPS)
+       paste at END of <style>
+    ========================= */
 
-/* Tooltips need overflow visible (your earlier overflow:hidden clips them) */
-.section[aria-label="Quarter totals"]{ overflow: visible !important; }
-.section[aria-label="Platform breakdown"]{ overflow: hidden !important; }
+    /* Tooltips need overflow visible (your earlier overflow:hidden clips them) */
+    .section[aria-label="Quarter totals"]{ overflow: visible !important; }
+    .section[aria-label="Platform breakdown"]{ overflow: hidden !important; }
 
-.kpi-card{
-  position: relative;
-  outline: none;
-}
+    .kpi-card{
+      position: relative;
+      outline: none;
+    }
 
-/* Tooltip bubble */
-.kpi-card::after{
-  content: attr(data-tip);
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: calc(100% + 10px);
-  z-index: 50;
+    /* Tooltip bubble */
+    .kpi-card::after{
+      content: attr(data-tip);
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: calc(100% + 10px);
+      z-index: 50;
 
-  background: rgba(0, 61, 114, 0.96);
-  color: #fff;
-  border: 1px solid rgba(255,255,255,.14);
-  border-radius: 14px;
-  box-shadow: 0 14px 34px rgba(0,0,0,.18);
+      background: rgba(0, 61, 114, 0.96);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 14px;
+      box-shadow: 0 14px 34px rgba(0,0,0,.18);
 
-  padding: 12px 12px;
-  font-size: 12px;
-  line-height: 1.4;
-  font-weight: 500;
+      padding: 12px 12px;
+      font-size: 12px;
+      line-height: 1.4;
+      font-weight: 500;
 
-  opacity: 0;
-  transform: translateY(6px);
-  pointer-events: none;
-  transition: opacity .16s ease, transform .16s ease;
-}
+      opacity: 0;
+      transform: translateY(6px);
+      pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease;
+    }
 
-/* Tooltip arrow */
-.kpi-card::before{
-  content: "";
-  position: absolute;
-  left: 28px;
-  bottom: calc(100% + 4px);
-  z-index: 51;
+    /* Tooltip arrow */
+    .kpi-card::before{
+      content: "";
+      position: absolute;
+      left: 28px;
+      bottom: calc(100% + 4px);
+      z-index: 51;
 
-  width: 10px;
-  height: 10px;
-  background: rgba(0, 61, 114, 0.96);
-  border-left: 1px solid rgba(255,255,255,.14);
-  border-top: 1px solid rgba(255,255,255,.14);
-  transform: rotate(45deg);
+      width: 10px;
+      height: 10px;
+      background: rgba(0, 61, 114, 0.96);
+      border-left: 1px solid rgba(255,255,255,.14);
+      border-top: 1px solid rgba(255,255,255,.14);
+      transform: rotate(45deg);
 
-  opacity: 0;
-  transition: opacity .16s ease;
-  pointer-events: none;
-}
+      opacity: 0;
+      transition: opacity .16s ease;
+      pointer-events: none;
+    }
 
-/* Show on hover + keyboard focus */
-.kpi-card:hover::after,
-.kpi-card:hover::before,
-.kpi-card:focus::after,
-.kpi-card:focus::before,
-.kpi-card:focus-within::after,
-.kpi-card:focus-within::before{
-  opacity: 1;
-  transform: translateY(0);
-}
+    /* Show on hover + keyboard focus */
+    .kpi-card:hover::after,
+    .kpi-card:hover::before,
+    .kpi-card:focus::after,
+    .kpi-card:focus::before,
+    .kpi-card:focus-within::after,
+    .kpi-card:focus-within::before{
+      opacity: 1;
+      transform: translateY(0);
+    }
 
-/* Focus styling */
-.kpi-card:focus{
-  box-shadow: 0 0 0 4px rgba(0,112,202,.16), 0 12px 24px rgba(0,0,0,.10);
-  border-color: rgba(0,112,202,.22);
-}
+    /* Focus styling */
+    .kpi-card:focus{
+      box-shadow: 0 0 0 4px rgba(0,112,202,.16), 0 12px 24px rgba(0,0,0,.10);
+      border-color: rgba(0,112,202,.22);
+    }
 
-/* === KPI TOOLTIP FIX: allow tooltip to render outside the card === */
-.kpi-card{
-  overflow: visible !important;   /* this is the missing piece */
-  position: relative;
-  isolation: isolate;             /* keeps tooltip layering reliable */
-}    
+    /* === KPI TOOLTIP FIX: allow tooltip to render outside the card === */
+    .kpi-card{
+      overflow: visible !important;   /* this is the missing piece */
+      position: relative;
+      isolation: isolate;             /* keeps tooltip layering reliable */
+    }
 
-/* Mobile: no hover tooltips */
-@media (max-width: 700px){
-  .kpi-card::after,
-  .kpi-card::before{
-    display: none;
-  }
-}
+    /* Mobile: no hover tooltips */
+    @media (max-width: 700px){
+      .kpi-card::after,
+      .kpi-card::before{
+        display: none;
+      }
+    }
 
-/* KPI TOOLTIP – LESS COMPRESSED */
-.kpi-card::after{
-  left: 50% !important;
-  right: auto !important;
-  transform: translate(-50%, 6px) !important;
+    /* KPI TOOLTIP – LESS COMPRESSED */
+    .kpi-card::after{
+      left: 50% !important;
+      right: auto !important;
+      transform: translate(-50%, 6px) !important;
 
-  width: max-content;
-  max-width: 320px;
-  min-width: 220px;
+      width: max-content;
+      max-width: 320px;
+      min-width: 220px;
 
-  padding: 14px 16px;
-  font-size: 13px;
-  line-height: 1.5;
+      padding: 14px 16px;
+      font-size: 13px;
+      line-height: 1.5;
 
-  text-align: left;
-  white-space: normal;
-}
+      text-align: left;
+      white-space: normal;
+    }
 
-.kpi-card::before{
-  left: 50% !important;
-  transform: translateX(-50%) rotate(45deg) !important;
-}
+    .kpi-card::before{
+      left: 50% !important;
+      transform: translateX(-50%) rotate(45deg) !important;
+    }
 
-.kpi-card:hover::after,
-.kpi-card:focus::after{
-  transform: translate(-50%, 0) !important;
-}    
+    .kpi-card:hover::after,
+    .kpi-card:focus::after{
+      transform: translate(-50%, 0) !important;
+    }
 
-.platform-badge svg{
-  width: 18px;
-  height: 18px;
-  display:block;
-  fill: currentColor;
-}    
+    .platform-badge svg{
+      width: 18px;
+      height: 18px;
+      display:block;
+      fill: currentColor;
+    }
 
-/* ============= ALL POSTS (SCROLLABLE TABLE) ============= */
-.table-shell{
-  border:1px solid var(--border);
-  border-radius:var(--radius-lg);
-  background:#fff;
-  overflow:hidden;
-}
+    /* ============= ALL POSTS (SCROLLABLE TABLE) ============= */
+    .table-shell{
+      border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+      background:#fff;
+      overflow:hidden;
+    }
 
-.table-toolbar{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  align-items:center;
-  justify-content:space-between;
-  padding:14px 16px;
-  border-bottom:1px solid rgba(0,0,0,.06);
-  background:rgba(245,248,250,.55);
-}
+    .table-toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px 16px;
+      border-bottom:1px solid rgba(0,0,0,.06);
+      background:rgba(245,248,250,.55);
+    }
 
-.table-tools{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  align-items:center;
-}
+    .table-tools{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
 
-.table-input{
-  width:320px;
-  max-width:100%;
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid rgba(0,0,0,.10);
-  background:#fff;
-  font-family:var(--font);
-  font-size:13px;
-  color:var(--text);
-  outline:none;
-}
+    .table-input{
+      width:320px;
+      max-width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(0,0,0,.10);
+      background:#fff;
+      font-family:var(--font);
+      font-size:13px;
+      color:var(--text);
+      outline:none;
+    }
 
-.table-input:focus{
-  border-color:rgba(0,112,202,.35);
-  box-shadow:0 0 0 4px rgba(0,112,202,.10);
-}
+    .table-input:focus{
+      border-color:rgba(0,112,202,.35);
+      box-shadow:0 0 0 4px rgba(0,112,202,.10);
+    }
 
-.table-select{
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid rgba(0,0,0,.10);
-  background:#fff;
-  font-family:var(--font);
-  font-size:13px;
-  color:var(--text);
-  outline:none;
-}
+    .table-select{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(0,0,0,.10);
+      background:#fff;
+      font-family:var(--font);
+      font-size:13px;
+      color:var(--text);
+      outline:none;
+    }
 
-.table-wrap{
-  max-height:560px;
-  overflow:auto;
-}
+    .table-wrap{
+      max-height:560px;
+      overflow:auto;
+    }
 
-.post-table{
-  width:100%;
-  border-collapse:separate;
-  border-spacing:0;
-  font-size:13px;
-}
+    .post-table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      font-size:13px;
+    }
 
-.post-table thead th{
-  position:sticky;
-  top:0;
-  z-index:3;
-  text-align:left;
-  padding:12px 14px;
-  background:#fff;
-  border-bottom:1px solid rgba(0,0,0,.08);
-  font-size:11px;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  color:var(--muted);
-  font-weight:800;
-  white-space:nowrap;
-}
+    .post-table thead th{
+      position:sticky;
+      top:0;
+      z-index:3;
+      text-align:left;
+      padding:12px 14px;
+      background:#fff;
+      border-bottom:1px solid rgba(0,0,0,.08);
+      font-size:11px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--muted);
+      font-weight:800;
+      white-space:nowrap;
+    }
 
-.post-table tbody td{
-  padding:12px 14px;
-  border-bottom:1px solid rgba(0,0,0,.06);
-  vertical-align:top;
-}
+    .post-table tbody td{
+      padding:12px 14px;
+      border-bottom:1px solid rgba(0,0,0,.06);
+      vertical-align:top;
+    }
 
-.post-table tbody tr:hover{
-  background:rgba(0,112,202,.04);
-}
+    .post-table tbody tr:hover{
+      background:rgba(0,112,202,.04);
+    }
 
-.post-table a{
-  color:var(--isl-primary);
-  font-weight:800;
-  text-decoration:none;
-}
+    .post-table a{
+      color:var(--isl-primary);
+      font-weight:800;
+      text-decoration:none;
+    }
 
-.post-table a:hover{ text-decoration:underline; }
+    .post-table a:hover{ text-decoration:underline; }
 
-.health-pill{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:5px 10px;
-  border-radius:999px;
-  border:1px solid rgba(0,0,0,.06);
-  background:#fff;
-  font-size:12px;
-  font-weight:700;
-  white-space:nowrap;
-}
-    
-.health-dot{
-  width:8px;
-  height:8px;
-  border-radius:999px;
-}
+    .health-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:5px 10px;
+      border-radius:999px;
+      border:1px solid rgba(0,0,0,.06);
+      background:#fff;
+      font-size:12px;
+      font-weight:700;
+      white-space:nowrap;
+    }
 
-.health-very-strong .health-dot{ background:#2563EB; }
-.health-strong .health-dot{ background:#10B981; }
-.health-moderate .health-dot{ background:#F59E0B; }
-.health-low .health-dot{ background:#EF4444; }
+    .health-dot{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+    }
 
-.table-empty{
-  padding:18px 16px;
-  color:var(--muted);
-  font-size:13px;
-}    
+    .health-very-strong .health-dot{ background:#2563EB; }
+    .health-strong .health-dot{ background:#10B981; }
+    .health-moderate .health-dot{ background:#F59E0B; }
+    .health-low .health-dot{ background:#EF4444; }
+
+    .table-empty{
+      padding:18px 16px;
+      color:var(--muted);
+      font-size:13px;
+    }
   </style>
 </head>
 
 <body>
   <div class="container">
 
-<div class="container">
+    <!-- TOPBAR (FIXED) -->
+    <div class="topbar">
+      <div class="brand">
+        <a class="brand-mark" href="/index.html" aria-label="Back to main index">IS</a>
+        <div class="brand-text">
+          <strong id="brandNameLabel">Integrated Staffing</strong>
+          <span>Quarterly Digital Media Performance Report</span>
+        </div>
+      </div>
 
-  <!-- TOPBAR (FIXED) -->
-  <div class="topbar">
+      <div class="pill-wrap" aria-label="Report period selector">
+        <button class="pill pill-trigger" id="quarterBtn" type="button" aria-haspopup="menu" aria-expanded="false">
+          <span class="pill-dot" aria-hidden="true"></span>
+          <span>
+            <strong id="reportQuarterLabel">Q1</strong>
+            <span class="pill-range"> <span id="reportRangeLabel">Sep–Nov 2025</span></span>
+          </span>
+          <span class="pill-caret" aria-hidden="true">▾</span>
+        </button>
 
-<div class="brand">
-  <a class="brand-mark" href="/index.html" aria-label="Back to main index">IS</a>
-  <div class="brand-text">
-    <strong id="brandNameLabel">Integrated Staffing</strong>
-    <span>Quarterly Digital Media Performance Report</span>
-  </div>
-</div>
-
-    <div class="pill-wrap" aria-label="Report period selector">
-      <button class="pill pill-trigger" id="quarterBtn" type="button" aria-haspopup="menu" aria-expanded="false">
-        <span class="pill-dot" aria-hidden="true"></span>
-        <span>
-          <strong id="reportQuarterLabel">Q1</strong>
-          <span class="pill-range"> <span id="reportRangeLabel">Sep–Nov 2025</span></span>
-        </span>
-        <span class="pill-caret" aria-hidden="true">▾</span>
-      </button>
-
-      <div class="pill-menu" id="quarterMenu" role="menu" aria-label="Choose quarter">
-        <a class="pill-item" role="menuitem" href="/?report=islq1">Q1 • Sep–Nov 2025</a>
-        <a class="pill-item" role="menuitem" href="/?report=islq2">Q2 • Dec–Feb 2026</a>
-        <a class="pill-item" role="menuitem" href="/web/">Website • Q2 • Dec–Feb 2026</a>
+        <div class="pill-menu" id="quarterMenu" role="menu" aria-label="Choose quarter">
+          <a class="pill-item" role="menuitem" href="/?report=islq1">Q1 • Sep–Nov 2025</a>
+          <a class="pill-item" role="menuitem" href="/?report=islq2">Q2 • Dec–Feb 2026</a>
+          <a class="pill-item" role="menuitem" href="/web/">Website • Q2 • Dec–Feb 2026</a>
+        </div>
       </div>
     </div>
-
-  </div>
-  <!-- /TOPBAR -->
+    <!-- /TOPBAR -->
 
     <section class="hero" aria-label="Report header">
       <div class="hero-grid">
@@ -1445,7 +1320,7 @@
       <div class="summary-shell">
         <div class="summary-rail" aria-hidden="true"></div>
         <div class="summary-card" id="execSummaryBox" data-editable="true" aria-label="Editable executive summary">
-           <ul class="summary-list" id="execSummaryList" data-editable="true"></ul>
+          <ul class="summary-list" id="execSummaryList" data-editable="true"></ul>
         </div>
       </div>
     </section>
@@ -1459,63 +1334,63 @@
         <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Totals</span></div>
       </div>
 
-<div class="kpi-grid" aria-label="Total KPI cards">
-  <div class="kpi-card" style="--tone: var(--success);" tabindex="0"
-       data-tip="The number of posts published to our accounts during the time frame.">
-    <div class="kpi-label">Posts</div>
-    <div class="kpi-value" id="kpiPosts">—</div>
-    <div class="kpi-sub"><span class="delta" id="deltaPosts">—</span></div>
-  </div>
+      <div class="kpi-grid" aria-label="Total KPI cards">
+        <div class="kpi-card" style="--tone: var(--success);" tabindex="0"
+             data-tip="The number of posts published to our accounts during the time frame.">
+          <div class="kpi-label">Posts</div>
+          <div class="kpi-value" id="kpiPosts">—</div>
+          <div class="kpi-sub"><span class="delta" id="deltaPosts">—</span></div>
+        </div>
 
-  <div class="kpi-card" style="--tone: var(--isl-accent);" tabindex="0"
-       data-tip="The number of times posts on our Facebook, Instagram, and LinkedIn appeared on someone’s screen.">
-    <div class="kpi-label">Post Impressions</div>
-    <div class="kpi-value" id="kpiImpressions">—</div>
-    <div class="kpi-sub"><span class="delta" id="deltaImpressions">—</span></div>
-  </div>
+        <div class="kpi-card" style="--tone: var(--isl-accent);" tabindex="0"
+             data-tip="The number of times posts on our Facebook, Instagram, and LinkedIn appeared on someone’s screen.">
+          <div class="kpi-label">Post Impressions</div>
+          <div class="kpi-value" id="kpiImpressions">—</div>
+          <div class="kpi-sub"><span class="delta" id="deltaImpressions">—</span></div>
+        </div>
 
-  <div class="kpi-card" style="--tone: var(--warning);" tabindex="0"
-       data-tip="The number of reactions or likes to posts on our pages.">
-    <div class="kpi-label">Reactions & Likes</div>
-    <div class="kpi-value" id="kpiReactions">—</div>
-    <div class="kpi-sub"><span class="delta" id="deltaReactions">—</span></div>
-  </div>
+        <div class="kpi-card" style="--tone: var(--warning);" tabindex="0"
+             data-tip="The number of reactions or likes to posts on our pages.">
+          <div class="kpi-label">Reactions & Likes</div>
+          <div class="kpi-value" id="kpiReactions">—</div>
+          <div class="kpi-sub"><span class="delta" id="deltaReactions">—</span></div>
+        </div>
 
-  <div class="kpi-card" style="--tone: var(--isl-primary);" tabindex="0"
-       data-tip="The number of times people shared our Facebook, Instagram, and LinkedIn posts.">
-    <div class="kpi-label">Post Shares</div>
-    <div class="kpi-value" id="kpiShares">—</div>
-    <div class="kpi-sub"><span class="delta" id="deltaShares">—</span></div>
-  </div>
+        <div class="kpi-card" style="--tone: var(--isl-primary);" tabindex="0"
+             data-tip="The number of times people shared our Facebook, Instagram, and LinkedIn posts.">
+          <div class="kpi-label">Post Shares</div>
+          <div class="kpi-value" id="kpiShares">—</div>
+          <div class="kpi-sub"><span class="delta" id="deltaShares">—</span></div>
+        </div>
 
-  <div class="kpi-card" style="--tone: var(--danger);" tabindex="0"
-       data-tip="The number of people who followed our accounts.">
-    <div class="kpi-label">Followers (Total)</div>
-    <div class="kpi-value" id="kpiFollowers">—</div>
-    <div class="kpi-sub"><span class="delta" id="deltaFollowers">—</span></div>
-  </div>
+        <div class="kpi-card" style="--tone: var(--danger);" tabindex="0"
+             data-tip="The number of people who followed our accounts.">
+          <div class="kpi-label">Followers (Total)</div>
+          <div class="kpi-value" id="kpiFollowers">—</div>
+          <div class="kpi-sub"><span class="delta" id="deltaFollowers">—</span></div>
+        </div>
 
-  <div class="kpi-card" style="--tone: var(--isl-accent-bright);" tabindex="0"
-       data-tip="The number of times people clicked on the links in our posts.">
-    <div class="kpi-label">Post Link Clicks</div>
-    <div class="kpi-value" id="kpiLinkClicks">—</div>
-    <div class="kpi-sub"><span class="delta" id="deltaLinkClicks">—</span></div>
-  </div>
+        <div class="kpi-card" style="--tone: var(--isl-accent-bright);" tabindex="0"
+             data-tip="The number of times people clicked on the links in our posts.">
+          <div class="kpi-label">Post Link Clicks</div>
+          <div class="kpi-value" id="kpiLinkClicks">—</div>
+          <div class="kpi-sub"><span class="delta" id="deltaLinkClicks">—</span></div>
+        </div>
 
-  <div class="kpi-card" style="--tone: var(--warning);" tabindex="0"
-       data-tip="The number of comments and replies on our posts during the time frame.">
-    <div class="kpi-label">Comments & Replies</div>
-    <div class="kpi-value" id="kpiComments">—</div>
-    <div class="kpi-sub"><span class="delta" id="deltaComments">—</span></div>
-  </div>
+        <div class="kpi-card" style="--tone: var(--warning);" tabindex="0"
+             data-tip="The number of comments and replies on our posts during the time frame.">
+          <div class="kpi-label">Comments & Replies</div>
+          <div class="kpi-value" id="kpiComments">—</div>
+          <div class="kpi-sub"><span class="delta" id="deltaComments">—</span></div>
+        </div>
 
-  <div class="kpi-card" style="--tone: var(--success);" tabindex="0"
-       data-tip="The average engagement rate for the posts published to our accounts.">
-    <div class="kpi-label">Avg Engagement Rate</div>
-    <div class="kpi-value" id="kpiAvgEngRate">—</div>
-    <div class="kpi-sub"><span class="delta" id="deltaAvgEngRate">—</span></div>
-  </div>
-</div>
+        <div class="kpi-card" style="--tone: var(--success);" tabindex="0"
+             data-tip="The average engagement rate for the posts published to our accounts.">
+          <div class="kpi-label">Avg Engagement Rate</div>
+          <div class="kpi-value" id="kpiAvgEngRate">—</div>
+          <div class="kpi-sub"><span class="delta" id="deltaAvgEngRate">—</span></div>
+        </div>
+      </div>
     </section>
 
     <!-- ✅ Platform Breakdown is its own card, and is CLOSED properly before Top Posts -->
@@ -1568,34 +1443,34 @@
     </section>
 
     <section class="section" aria-label="All posts">
-  <div class="section-header">
-    <div class="section-title">
-      <h2>All Posts This Quarter</h2>
-      <p>Every post made on one of our accounts this quarter. Impressions, engagement, and reaction data is based on LinkedIn.</p>
-    </div>
-    <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Full list</span></div>
-  </div>
-
-  <div class="table-shell">
-    <div class="table-toolbar">
-      <div class="table-tools">
-        <input id="postsSearch" class="table-input" type="search" placeholder="Search post name, platform, notes..." aria-label="Search posts">
-        <select id="postsPlatform" class="table-select" aria-label="Filter by platform">
-          <option value="all">All platforms</option>
-          <option value="linkedin">LinkedIn</option>
-          <option value="facebook">Facebook</option>
-          <option value="instagram">Instagram</option>
-        </select>
+      <div class="section-header">
+        <div class="section-title">
+          <h2>All Posts This Quarter</h2>
+          <p>Every post made on one of our accounts this quarter. Impressions, engagement, and reaction data is based on LinkedIn.</p>
+        </div>
+        <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Full list</span></div>
       </div>
-      <div class="pill" aria-label="Post count"><span class="pill-dot" aria-hidden="true"></span><span><strong id="postsCount">0</strong> posts</span></div>
-    </div>
 
-    <div class="table-wrap" role="region" aria-label="Posts table scroll area">
-      <table class="post-table" id="postsTable"></table>
-      <div class="table-empty" id="postsEmpty" style="display:none;">No posts match your filters.</div>
-    </div>
-  </div>
-</section>
+      <div class="table-shell">
+        <div class="table-toolbar">
+          <div class="table-tools">
+            <input id="postsSearch" class="table-input" type="search" placeholder="Search post name, platform, notes..." aria-label="Search posts">
+            <select id="postsPlatform" class="table-select" aria-label="Filter by platform">
+              <option value="all">All platforms</option>
+              <option value="linkedin">LinkedIn</option>
+              <option value="facebook">Facebook</option>
+              <option value="instagram">Instagram</option>
+            </select>
+          </div>
+          <div class="pill" aria-label="Post count"><span class="pill-dot" aria-hidden="true"></span><span><strong id="postsCount">0</strong> posts</span></div>
+        </div>
+
+        <div class="table-wrap" role="region" aria-label="Posts table scroll area">
+          <table class="post-table" id="postsTable"></table>
+          <div class="table-empty" id="postsEmpty" style="display:none;">No posts match your filters.</div>
+        </div>
+      </div>
+    </section>
 
     <section class="section" aria-label="Insights and analysis">
       <div class="section-header">
@@ -1609,26 +1484,22 @@
       <div class="insight-grid">
         <div class="insight-card">
           <h3>What's Working</h3>
-          <div class="body" id="insWorking" data-editable="true">
-          </div>
+          <div class="body" id="insWorking" data-editable="true"></div>
         </div>
 
         <div class="insight-card">
           <h3>What's Not Working</h3>
-          <div class="body" id="insNotWorking" data-editable="true">
-          </div>
+          <div class="body" id="insNotWorking" data-editable="true"></div>
         </div>
 
         <div class="insight-card">
           <h3>Actions From This Data</h3>
-          <div class="body" id="insActions" data-editable="true">
-          </div>
+          <div class="body" id="insActions" data-editable="true"></div>
         </div>
 
         <div class="insight-card">
           <h3>Next Quarter Focus</h3>
-          <div class="body" id="insNext" data-editable="true">
-          </div>
+          <div class="body" id="insNext" data-editable="true"></div>
         </div>
       </div>
     </section>
@@ -2493,34 +2364,12 @@ function wireMenus(){
     });
   }
 
-  const brandWrap = document.querySelector(".brand-menu-wrap");
-  const brandBtn = $("brandToggle");
-
-  if (brandWrap && brandBtn){
-    brandBtn.addEventListener("click", () => {
-      brandWrap.classList.toggle("open");
-      brandBtn.setAttribute("aria-expanded", brandWrap.classList.contains("open") ? "true" : "false");
-    });
-
-    document.querySelectorAll(".brand-option").forEach(opt => {
-      opt.addEventListener("click", () => {
-        const href = opt.getAttribute("data-href");
-        if (href) window.location.href = href;
-      });
-    });
-  }
-
   document.addEventListener("click", (e) => {
     const t = e.target;
 
     if (wrap && !wrap.contains(t)) {
       wrap.classList.remove("open");
       btn && btn.setAttribute("aria-expanded", "false");
-    }
-
-    if (brandWrap && !brandWrap.contains(t)) {
-      brandWrap.classList.remove("open");
-      brandBtn && brandBtn.setAttribute("aria-expanded", "false");
     }
   });
 }
