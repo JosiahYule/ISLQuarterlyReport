@@ -1336,6 +1336,17 @@ function renderGeneratedAt(){
 /* ✅ Wire dropdown first */
 quarterDropdown();
 
+// If we're on the /web/ page, show "Web" in the top pill
+(function setWebPillLabel(){
+  const onWeb = window.location.pathname.toLowerCase().includes("/web");
+  if(!onWeb) return;
+
+  const q = document.getElementById("reportQuarterLabel");
+  const r = document.getElementById("reportRangeLabel"); // optional
+  if(q) q.textContent = "Web";
+  if(r) r.textContent = ""; // optional: blank the range
+})();    
+
 /* Then load + normalize + render */
 (async function init(){
   try{
