@@ -129,6 +129,31 @@
       white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
     }
 
+.pill{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 16px;
+  border-radius:999px;
+  background:var(--card);
+  border:1px solid var(--border);
+  box-shadow:0 1px 3px rgba(0,0,0,.06);
+  font-size:13px;
+  font-weight:500;
+  color:var(--text);
+  white-space:nowrap;
+  transition:var(--transition);
+}
+.pill:hover{
+  box-shadow:0 4px 12px rgba(0,0,0,.08);
+  transform:translateY(-1px);
+}
+.pill-dot{
+  width:8px;height:8px;
+  border-radius:99px;
+  background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));
+  box-shadow:0 0 0 3px rgba(0,112,202,.15);
+  flex:0 0 auto;
+}
+  
 /* ============= QUARTER DROPDOWN MENU ============= */
     .pill-wrap{ position:relative; display:inline-flex; }
     .pill-trigger{
