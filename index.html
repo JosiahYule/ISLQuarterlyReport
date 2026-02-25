@@ -1706,7 +1706,7 @@ function formatGeneratedLabel(iso){
 async function loadReport(){
   const params = new URLSearchParams(window.location.search);
   const reportKey = String(params.get("report") || DEFAULT_REPORT).toLowerCase();
-  const url = `${REPORT_ENDPOINT}?report=${encodeURIComponent(reportKey)}&nocache=1`;
+  const url = `${REPORT_ENDPOINT}?report=${encodeURIComponent(reportKey)}`;
   const res = await fetch(url, { cache: "no-store" });
   if(!res.ok) throw new Error(`Fetch failed: ${res.status}`);
   const json = await res.json();
