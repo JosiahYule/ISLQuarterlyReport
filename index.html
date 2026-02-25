@@ -2063,6 +2063,7 @@ function renderTopPosts(rows){
   const kTitle = pickKey(sample, ["Post Name","Title","Post"]);
   const kImpressions = pickKey(sample, ["Impressions","Post Impressions"]);
   const kEngagements = pickKey(sample, ["Engagements","Engagement"]);
+  // keep as fallback only (if impressions/engagements aren't usable)
   const kER = pickKey(sample, ["Engagement Rate","Post Engagement Rate","ER"]);
   const kURL = pickKey(sample, ["URL","Link"]);
   const kNotes = pickKey(sample, ["Notes","Note"]);
@@ -2079,36 +2080,51 @@ function renderTopPosts(rows){
 
     const inner = list.map((r, idx) => {
       const title = String(r[kTitle] ?? "Untitled").trim();
-      const imp = fmtInt(r[kImpressions]);
-      const eng = fmtInt(r[kEngagements]);
 
       const impN = toNumber(r[kImpressions]);
       const engN = toNumber(r[kEngagements]);
-      let erN = toNumber(r[kER]);
-      if (erN === null && isNum(impN) && impN > 0 && isNum(engN)) erN = (engN / impN) * 100;
+
+      const imp = fmtInt(impN);
+      const eng = fmtInt(engN);
+
+      // ✅ ER calculated the SAME way as All Posts (engagements/impressions * 100)
+      let erN = null;
+      if (isNum(impN) && impN > 0 && isNum(engN)) {
+        erN = (engN / impN) * 100;
+      } else {
+        // fallback only if we can't calculate
+        erN = toNumber(r[kER]);
+      }
       const er = (erN === null) ? "—" : `${erN.toFixed(2)}%`;
 
       const url = String(r[kURL] ?? "").trim();
       const notes = String(r[kNotes] ?? "").trim();
-
-      const mathLine = `Impressions: ${imp} • Engagements: ${eng} • Engagement Rate: ${er}`;
 
       return `
         <details class="post-mini">
           <summary>
             <span class="rank">#${idx + 1}</span>
             <span class="ptitle">${escHtml(title)}</span>
+
+            <!-- ✅ collapsed row now shows: Impressions, Engagements, ER -->
             <span class="quick">
               <span><strong>${escHtml(imp)}</strong> imp</span>
+              <span><strong>${escHtml(eng)}</strong> eng</span>
               <span><strong>${escHtml(er)}</strong> ER</span>
             </span>
           </summary>
+
           <div class="post-details">
             <div class="mini-stat"><span>Impressions</span><strong>${escHtml(imp)}</strong></div>
             <div class="mini-stat"><span>Engagements</span><strong>${escHtml(eng)}</strong></div>
             <div class="mini-stat"><span>Engagement Rate</span><strong>${escHtml(er)}</strong></div>
             <div class="mini-stat"><span>Link</span><strong>${url ? `<a href="${escHtml(url)}" target="_blank" rel="noopener">View</a>` : "—"}</strong></div>
-            <div class="math">${escHtml(mathLine)}${notes ? " • Notes: " + escHtml(notes) : ""}</div>
+
+            <!-- ✅ show the math as a single line, and include notes if present -->
+            <div class="math">
+              ${escHtml(`Engagement Rate = (Engagements ÷ Impressions) × 100 = ${er}`)}
+              ${notes ? " • Notes: " + escHtml(notes) : ""}
+            </div>
           </div>
         </details>
       `;
