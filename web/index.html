@@ -452,66 +452,55 @@
     display:block;
   }
 
-  /* ============= TOP PAGES (details.page in your Web HTML) ============= */
-  details.page{
-    background:var(--card);
+  /* ============= TOP PAGES (TABLE STYLE MATCHING ALL POSTS) ============= */
+  .table-shell{
     border:1px solid var(--border);
     border-radius:var(--radius-lg);
-    box-shadow:0 1px 3px rgba(0,0,0,.04);
+    background:#fff;
     overflow:hidden;
-    transition:var(--transition);
-    margin-bottom:12px;
-  }
-  details.page:hover{
-    box-shadow:0 8px 20px rgba(0,0,0,.08);
-    border-color:rgba(0,112,202,.15);
   }
 
-  details.page > summary{
-    list-style:none;
-    cursor:pointer;
-    padding:16px 18px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:14px;
-    font-weight:600;
-    color:var(--isl-navy);
-    user-select:none;
-  }
-  details.page > summary::-webkit-details-marker{display:none}
-
-  .page-body{
-    padding:16px;
-    border-top:1px solid var(--border);
-    background:rgba(245,248,250,.45);
-    display:grid;
-    grid-template-columns:repeat(3, minmax(0,1fr));
-    gap:12px;
+  .table-wrap{
+    max-height:560px;
+    overflow:auto;
   }
 
-  .mini{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:var(--radius-md);
-    padding:12px;
-    min-width:0;
+  .post-table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+    font-size:13px;
   }
-  .mini span{
-    display:block;
-    font-size:10px;
-    color:var(--muted);
+
+  .post-table thead th{
+    position:sticky;
+    top:0;
+    z-index:3;
+    text-align:left;
+    padding:12px 14px;
+    background:#fff;
+    border-bottom:1px solid rgba(0,0,0,.08);
+    font-size:11px;
     letter-spacing:.08em;
     text-transform:uppercase;
-    font-weight:600;
-    margin-bottom:8px;
+    color:var(--muted);
+    font-weight:500;
+    white-space:nowrap;
   }
-  .mini strong{
-    display:block;
-    font-size:16px;
-    font-weight:400;
-    letter-spacing:-0.01em;
-    color:var(--text);
+
+  .post-table tbody td{
+    padding:12px 14px;
+    border-bottom:1px solid rgba(0,0,0,.06);
+    vertical-align:top;
+  }
+
+  .post-table tbody tr:hover{
+    background:rgba(0,112,202,.04);
+  }
+
+  .top-pages-table td:nth-child(n+2),
+  .top-pages-table th:nth-child(n+2){
+    text-align:right;
   }
 
   .hero-grid{
@@ -721,12 +710,11 @@
     }
 
     .kpi-grid{grid-template-columns:1fr}
-    .page-body{grid-template-columns:1fr}
   }
 
   @media print{
     body{background:#fff}
-    .section,.hero,.chart-card,.kpi-card,.channel,.mini{ box-shadow:none; page-break-inside:avoid; }
+    .section,.hero,.chart-card,.kpi-card,.channel,.table-shell{ box-shadow:none; page-break-inside:avoid; }
     .container{padding:20px}
   }
 
@@ -1004,7 +992,11 @@
     </div>
   </div>
 
-  <div id="topPages"></div>
+  <div class="table-shell">
+    <div class="table-wrap" role="region" aria-label="Top landing pages table scroll area">
+      <table class="post-table top-pages-table" id="topPages"></table>
+    </div>
+  </div>
 </section>
 
 <section class="section" id="insights" aria-label="Insights and analysis">
@@ -1365,9 +1357,8 @@ function getAvgTimeOnPageSec(p){
 }
 
 function renderTopPages(){
-  const wrap = document.getElementById("topPages");
-  if(!wrap) return;
-  wrap.innerHTML = "";
+  const table = document.getElementById("topPages");
+  if(!table) return;
 
   const ORDER = [
     "Home Page",
@@ -1389,28 +1380,36 @@ function renderTopPages(){
     if(k) byKey.set(k, p);
   });
 
-  ORDER.forEach(label => {
+  const rows = ORDER.map(label => {
     const p = byKey.get(label.toLowerCase()) || {};
-
-    const views = getPageViews(p);
-    const bounce = getBounceRate(p);
-    const timeSec = getAvgTimeOnPageSec(p);
-
-    const d = document.createElement("details");
-    d.className = "page";
-    d.innerHTML = `
-      <summary>
-        ${label}
-        <span>${fmtInt(views)} views</span>
-      </summary>
-      <div class="page-body">
-        <div class="mini"><span>Page Views</span><strong>${fmtInt(views)}</strong></div>
-        <div class="mini"><span>Bounce Rate</span><strong>${fmtPct(bounce)}</strong></div>
-        <div class="mini"><span>Avg Time on Page</span><strong>${fmtTime(timeSec)}</strong></div>
-      </div>
-    `;
-    wrap.appendChild(d);
+    return {
+      label,
+      views: getPageViews(p),
+      bounce: getBounceRate(p),
+      timeSec: getAvgTimeOnPageSec(p)
+    };
   });
+
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>Landing Page</th>
+        <th>Page Views</th>
+        <th>Bounce Rate</th>
+        <th>Avg Time on Page</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows.map(row => `
+        <tr>
+          <td>${row.label}</td>
+          <td>${fmtInt(row.views)}</td>
+          <td>${fmtPct(row.bounce)}</td>
+          <td>${fmtTime(row.timeSec)}</td>
+        </tr>
+      `).join("")}
+    </tbody>
+  `;
 }
 
 let _sessionsChart = null;
