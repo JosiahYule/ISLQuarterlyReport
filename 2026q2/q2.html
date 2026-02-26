@@ -50,6 +50,73 @@
       font-weight:400;
     }
 
+    body.page-transitioning{
+      opacity:.92;
+      filter:saturate(.95);
+      transition:opacity .22s ease, filter .22s ease;
+    }
+
+    .hero{
+      position:relative;
+      overflow:hidden;
+      isolation:isolate;
+    }
+    .hero::before,
+    .hero::after{
+      content:"";
+      position:absolute;
+      width:280px;
+      height:280px;
+      border-radius:50%;
+      pointer-events:none;
+      z-index:-1;
+      opacity:.22;
+      filter:blur(8px);
+      animation:ambientFloat 26s ease-in-out infinite alternate;
+    }
+    .hero::before{
+      top:-110px;
+      right:-70px;
+      background:radial-gradient(circle at 35% 35%, rgba(77,163,232,.45), rgba(77,163,232,0) 68%);
+    }
+    .hero::after{
+      bottom:-130px;
+      left:-80px;
+      background:radial-gradient(circle at 65% 50%, rgba(0,84,154,.32), rgba(0,84,154,0) 66%);
+      animation-delay:.9s;
+    }
+
+    .reveal{
+      opacity:0;
+      transform:translateY(18px) scale(.995);
+      transition:opacity .55s ease, transform .55s cubic-bezier(.22,.76,.3,1);
+    }
+    .reveal.is-visible{
+      opacity:1;
+      transform:translateY(0) scale(1);
+    }
+
+    .kpi-value{ font-variant-numeric:tabular-nums; }
+
+    .ct-btn{ transition:transform .18s ease, box-shadow .18s ease, background-color .18s ease; }
+    .ct-btn:active{ transform:scale(.98); }
+
+    @keyframes ambientFloat{
+      0%{ transform:translate3d(0,0,0) scale(1); }
+      100%{ transform:translate3d(14px,-10px,0) scale(1.08); }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      html,body{ scroll-behavior:auto; }
+      *,*::before,*::after{
+        animation-duration:.01ms !important;
+        animation-iteration-count:1 !important;
+        transition-duration:.01ms !important;
+      }
+      .reveal,
+      .reveal.is-visible{ opacity:1; transform:none; }
+    }
+
     .container{max-width:1240px;margin:0 auto;padding:32px 24px 48px}
 
     /* ============= TOPBAR ============= */
@@ -1696,6 +1763,7 @@
    LOAD JSON (report-data.json)
 ========================= */
 let REPORT = null;
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbzodE1whq3quWi64_JHp4OWFO52ADfWrpiMrWR_CQMUlDKkL_FUWIsu8E2tWmDjBZuveQ/exec";
 async function loadReport(){
   const res = await fetch(REPORT_ENDPOINT, { cache: "default" });
@@ -1818,6 +1886,55 @@ const fmtPct = (n) =>
   typeof n === "number" && Number.isFinite(n)
     ? (n.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "%")
     : "—";
+
+function animateCount(el, targetValue, { duration = 900, format = "int", compact = false } = {}){
+  if(!el || typeof targetValue !== "number" || !Number.isFinite(targetValue)) return;
+  if(prefersReducedMotion){
+    if(format === "pct") el.textContent = fmtPct(targetValue);
+    else if(compact) el.textContent = fmtCompact(targetValue);
+    else el.textContent = fmtInt(targetValue);
+    return;
+  }
+
+  const start = performance.now();
+  const from = 0;
+  const tick = (now) => {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = from + ((targetValue - from) * eased);
+    if(format === "pct") el.textContent = `${current.toFixed(2)}%`;
+    else if(compact) el.textContent = fmtCompact(current);
+    else el.textContent = Math.round(current).toLocaleString();
+    if(progress < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+function wireRevealAnimations(){
+  const revealTargets = Array.from(document.querySelectorAll('.section, .hero, .footer, .chart-card, .table-shell'));
+  revealTargets.forEach((el) => el.classList.add('reveal'));
+
+  if(prefersReducedMotion || !("IntersectionObserver" in window)){
+    revealTargets.forEach((el) => el.classList.add('is-visible'));
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if(!entry.isIntersecting) return;
+      entry.target.classList.add('is-visible');
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.16, rootMargin: '0px 0px -10% 0px' });
+
+  revealTargets.forEach((el) => observer.observe(el));
+}
+
+function wireQuarterTransition(){
+  document.querySelectorAll('.pill-item[href]').forEach((link) => {
+    link.addEventListener('click', () => document.body.classList.add('page-transitioning'));
+  });
+}
 
 function setText(id, value){
   const el = byId(id);
@@ -2022,14 +2139,25 @@ function renderHeader(){
 }
 
 function renderKPIs(){
-  setText("kpiPosts", fmtInt(REPORT.overall.posts));
-  setText("kpiImpressions", fmtCompact(REPORT.overall.impressions));
-  setText("kpiShares", fmtInt(REPORT.overall.shares));
-  setText("kpiReactions", fmtInt(REPORT.overall.reactions));
-  setText("kpiFollowers", fmtInt(REPORT.overall.followers));
-  setText("kpiLinkClicks", fmtInt(REPORT.overall.linkClicks));
-  setText("kpiComments", fmtInt(REPORT.overall.comments));
-  setText("kpiAvgEngRate", fmtPct(REPORT.overall.avgEngagementRate));
+  const o = REPORT.overall || {};
+
+  const kpiPosts = byId("kpiPosts");
+  const kpiImpressions = byId("kpiImpressions");
+  const kpiShares = byId("kpiShares");
+  const kpiReactions = byId("kpiReactions");
+  const kpiFollowers = byId("kpiFollowers");
+  const kpiLinkClicks = byId("kpiLinkClicks");
+  const kpiComments = byId("kpiComments");
+  const kpiAvgEngRate = byId("kpiAvgEngRate");
+
+  if(kpiPosts){ kpiPosts.textContent = fmtInt(o.posts); if(Number.isFinite(o.posts)) animateCount(kpiPosts, o.posts); }
+  if(kpiImpressions){ kpiImpressions.textContent = fmtCompact(o.impressions); if(Number.isFinite(o.impressions)) animateCount(kpiImpressions, o.impressions, { compact: true }); }
+  if(kpiShares){ kpiShares.textContent = fmtInt(o.shares); if(Number.isFinite(o.shares)) animateCount(kpiShares, o.shares); }
+  if(kpiReactions){ kpiReactions.textContent = fmtInt(o.reactions); if(Number.isFinite(o.reactions)) animateCount(kpiReactions, o.reactions); }
+  if(kpiFollowers){ kpiFollowers.textContent = fmtInt(o.followers); if(Number.isFinite(o.followers)) animateCount(kpiFollowers, o.followers); }
+  if(kpiLinkClicks){ kpiLinkClicks.textContent = fmtInt(o.linkClicks); if(Number.isFinite(o.linkClicks)) animateCount(kpiLinkClicks, o.linkClicks); }
+  if(kpiComments){ kpiComments.textContent = fmtInt(o.comments); if(Number.isFinite(o.comments)) animateCount(kpiComments, o.comments); }
+  if(kpiAvgEngRate){ kpiAvgEngRate.textContent = fmtPct(o.avgEngagementRate); if(Number.isFinite(o.avgEngagementRate)) animateCount(kpiAvgEngRate, o.avgEngagementRate, { format: "pct" }); }
 
   setDelta(byId("deltaPosts"), REPORT.deltas.posts);
   setDelta(byId("deltaImpressions"), REPORT.deltas.impressions);
@@ -2264,6 +2392,12 @@ function buildReach(type){
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: prefersReducedMotion ? false : {
+        duration: 720,
+        delay(context){
+          return (context?.type === 'data' && context.mode === 'default') ? (context.dataIndex * 90) : 0;
+        }
+      },
       plugins: {
         legend: { display: type === "pie", labels: { boxWidth: 10, boxHeight: 10 } },
         tooltip: commonTooltip
@@ -2310,6 +2444,12 @@ function buildEng(type){
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: prefersReducedMotion ? false : {
+        duration: 720,
+        delay(context){
+          return (context?.type === 'data' && context.mode === 'default') ? (context.dataIndex * 90) : 0;
+        }
+      },
       plugins: {
         legend: { display: type === "pie", labels: { boxWidth: 10, boxHeight: 10 } },
         tooltip: commonTooltip
@@ -2701,6 +2841,8 @@ window.REPORT = REPORT;    // ✅ also expose normalized version
     quarterDropdown();
     brandDropdown();
     wireFloatingSectionMenu();
+    wireQuarterTransition();
+    wireRevealAnimations();
 
   } catch(err){
     console.error(err);
