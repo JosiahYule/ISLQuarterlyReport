@@ -488,6 +488,28 @@
     white-space:nowrap;
   }
 
+  .sort-btn{
+    border:0;
+    background:transparent;
+    color:inherit;
+    font:inherit;
+    letter-spacing:inherit;
+    text-transform:inherit;
+    padding:0;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .sort-btn.align-right{ justify-content:flex-end; width:100%; }
+
+  .sort-arrow{
+    font-size:10px;
+    color:#97a0ad;
+    line-height:1;
+  }
+
   .post-table tbody td{
     padding:12px 14px;
     border-bottom:1px solid rgba(0,0,0,.06);
@@ -1043,6 +1065,7 @@ const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbw-jUSh2nlMNemf
    INTERNAL STATE
 ========================= */
 let REPORT = null;
+let TOP_PAGES_SORT = { key: "views", dir: "desc" };
 
 /* =========================
    FETCH
@@ -1356,6 +1379,20 @@ function getAvgTimeOnPageSec(p){
   return undefined;
 }
 
+function getSortArrow(key){
+  if(TOP_PAGES_SORT.key !== key) return "↕";
+  return TOP_PAGES_SORT.dir === "asc" ? "▲" : "▼";
+}
+
+function toggleTopPagesSort(key){
+  if(TOP_PAGES_SORT.key === key){
+    TOP_PAGES_SORT = { key, dir: TOP_PAGES_SORT.dir === "asc" ? "desc" : "asc" };
+  }else{
+    TOP_PAGES_SORT = { key, dir: "desc" };
+  }
+  renderTopPages();
+}
+
 function renderTopPages(){
   const table = document.getElementById("topPages");
   if(!table) return;
@@ -1380,27 +1417,55 @@ function renderTopPages(){
     if(k) byKey.set(k, p);
   });
 
-  const rows = ORDER.map(label => {
+  const rows = ORDER.map((label, orderIndex) => {
     const p = byKey.get(label.toLowerCase()) || {};
     return {
       label,
+      orderIndex,
       views: getPageViews(p),
       bounce: getBounceRate(p),
       timeSec: getAvgTimeOnPageSec(p)
     };
   });
 
+  const sortableRows = [...rows].sort((a, b) => {
+    const key = TOP_PAGES_SORT.key;
+    const dirMult = TOP_PAGES_SORT.dir === "asc" ? 1 : -1;
+    const av = a[key];
+    const bv = b[key];
+    const aNum = (typeof av === "number" && Number.isFinite(av)) ? av : null;
+    const bNum = (typeof bv === "number" && Number.isFinite(bv)) ? bv : null;
+
+    if(aNum === null && bNum === null) return a.orderIndex - b.orderIndex;
+    if(aNum === null) return 1;
+    if(bNum === null) return -1;
+    if(aNum === bNum) return a.orderIndex - b.orderIndex;
+    return (aNum - bNum) * dirMult;
+  });
+
   table.innerHTML = `
     <thead>
       <tr>
         <th>Landing Page</th>
-        <th>Page Views</th>
-        <th>Bounce Rate</th>
-        <th>Avg Time on Page</th>
+        <th>
+          <button type="button" class="sort-btn align-right" data-sort-key="views" aria-label="Sort by page views">
+            Page Views <span class="sort-arrow">${getSortArrow("views")}</span>
+          </button>
+        </th>
+        <th>
+          <button type="button" class="sort-btn align-right" data-sort-key="bounce" aria-label="Sort by bounce rate">
+            Bounce Rate <span class="sort-arrow">${getSortArrow("bounce")}</span>
+          </button>
+        </th>
+        <th>
+          <button type="button" class="sort-btn align-right" data-sort-key="timeSec" aria-label="Sort by average time on page">
+            Avg Time on Page <span class="sort-arrow">${getSortArrow("timeSec")}</span>
+          </button>
+        </th>
       </tr>
     </thead>
     <tbody>
-      ${rows.map(row => `
+      ${sortableRows.map(row => `
         <tr>
           <td>${row.label}</td>
           <td>${fmtInt(row.views)}</td>
@@ -1410,7 +1475,12 @@ function renderTopPages(){
       `).join("")}
     </tbody>
   `;
+
+  table.querySelectorAll("[data-sort-key]").forEach(btn => {
+    btn.addEventListener("click", () => toggleTopPagesSort(btn.dataset.sortKey));
+  });
 }
+
 
 let _sessionsChart = null;
 let _engChart = null;
