@@ -49,6 +49,47 @@
     font-weight:400;
   }
 
+  .loading-overlay{
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(250,251,252,.92);
+    backdrop-filter:blur(2px);
+    z-index:1000;
+    transition:opacity .25s ease, visibility .25s ease;
+  }
+  .loading-overlay.is-hidden{
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+  }
+  .loading-card{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+    padding:22px 26px;
+    border-radius:16px;
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow:var(--shadow);
+  }
+  .gear-spinner{
+    width:52px;
+    height:52px;
+    color:var(--isl-primary);
+    animation:gearSpin 1s linear infinite;
+  }
+  .loading-text{
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:.02em;
+    color:var(--muted);
+  }
+  @keyframes gearSpin{ to{ transform:rotate(360deg); } }
+
   .container{max-width:1240px;margin:0 auto;padding:32px 24px 48px}
 
   /* ============= TOPBAR ============= */
@@ -984,6 +1025,14 @@
 </head>
 
 <body>
+<div class="loading-overlay" id="loadingOverlay" role="status" aria-live="polite" aria-label="Loading report data">
+  <div class="loading-card">
+    <svg class="gear-spinner" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M19.14,12.94a7.43,7.43,0,0,0,.05-.94,7.43,7.43,0,0,0-.05-.94l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.6-.22l-2.49,1a7.2,7.2,0,0,0-1.62-.94l-.38-2.65A.49.49,0,0,0,13.79,2H10.21a.49.49,0,0,0-.49.42L9.34,5.07a7.2,7.2,0,0,0-1.62.94l-2.49-1a.5.5,0,0,0-.6.22l-2,3.46a.5.5,0,0,0,.12.64L4.86,11.06a7.43,7.43,0,0,0-.05.94,7.43,7.43,0,0,0,.05.94L2.75,14.59a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.6.22l2.49-1a7.2,7.2,0,0,0,1.62.94l.38,2.65a.49.49,0,0,0,.49.42h3.58a.49.49,0,0,0,.49-.42l.38-2.65a7.2,7.2,0,0,0,1.62-.94l2.49,1a.5.5,0,0,0,.6-.22l2-3.46a.5.5,0,0,0-.12-.64ZM12,15.5A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/>
+    </svg>
+    <p class="loading-text">Loading report data…</p>
+  </div>
+</div>
 <div class="container">
 
 <!-- TOPBAR -->
@@ -1763,6 +1812,12 @@ function renderGeneratedAt(){
   el.innerHTML = `<strong>Generated:</strong> ${txt}`;
 }
 
+function hideLoadingOverlay(){
+  const overlay = document.getElementById("loadingOverlay");
+  if(!overlay) return;
+  overlay.classList.add("is-hidden");
+}
+
 /* ✅ Wire dropdown first */
 quarterDropdown();
 
@@ -1861,6 +1916,8 @@ function wireFloatingSectionMenu(){
   }catch(err){
     console.error(err);
     alert("Data failed to load. Open console for details (likely Web App URL, permissions, or tab headers).");
+  }finally{
+    hideLoadingOverlay();
   }
 })();
 </script>
