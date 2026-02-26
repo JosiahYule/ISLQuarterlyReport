@@ -6,7 +6,7 @@
   <title>Integrated Staffing — Quarterly Website Performance Report</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <style>
   :root{
@@ -1293,7 +1293,7 @@ let TOP_PAGES_SORT = { key: "views", dir: "desc" };
 async function loadData(){
   // Add nocache safely whether or not the URL already has query params
   const url = REPORT_ENDPOINT + (REPORT_ENDPOINT.includes("?") ? "&" : "?") + "nocache=1";
-  const res = await fetch(url, { cache: "no-store" });
+  const res = await fetch(url, { cache: "default" });
   if(!res.ok) throw new Error(`Web App JSON failed: ${res.status} ${res.statusText}`);
   return await res.json();
 }
