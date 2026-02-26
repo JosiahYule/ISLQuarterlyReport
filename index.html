@@ -38,7 +38,7 @@
     *{margin:0;padding:0;box-sizing:border-box}
     html,body{height:100%}
 
-    body{
+  body{
       font-family:var(--font);
       color:var(--text);
       background:#fff;
@@ -47,8 +47,80 @@
       scroll-behavior:smooth;
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
-      font-weight:400;
+    font-weight:400;
+  }
+
+  body.page-transitioning{
+    opacity:.92;
+    filter:saturate(.95);
+    transition:opacity .22s ease, filter .22s ease;
+  }
+
+  .hero{
+    position:relative;
+    overflow:hidden;
+    isolation:isolate;
+  }
+  .hero::before,
+  .hero::after{
+    content:"";
+    position:absolute;
+    inset:auto;
+    width:280px;
+    height:280px;
+    border-radius:50%;
+    pointer-events:none;
+    z-index:-1;
+    opacity:.24;
+    filter:blur(8px);
+    animation:ambientFloat 26s ease-in-out infinite alternate;
+  }
+  .hero::before{
+    top:-110px;
+    right:-70px;
+    background:radial-gradient(circle at 35% 35%, rgba(77,163,232,.48), rgba(77,163,232,0) 68%);
+  }
+  .hero::after{
+    bottom:-130px;
+    left:-80px;
+    background:radial-gradient(circle at 65% 50%, rgba(0,84,154,.34), rgba(0,84,154,0) 66%);
+    animation-delay:.9s;
+  }
+
+  .reveal{
+    opacity:0;
+    transform:translateY(18px) scale(.995);
+    transition:opacity .55s ease, transform .55s cubic-bezier(.22,.76,.3,1);
+  }
+  .reveal.is-visible{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+
+  .kpi-card .kpi-value{
+    font-variant-numeric:tabular-nums;
+  }
+
+  .ct-btn{
+    transition:transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+  }
+  .ct-btn:active{ transform:scale(.98); }
+
+  @keyframes ambientFloat{
+    0%{ transform:translate3d(0,0,0) scale(1); }
+    100%{ transform:translate3d(14px,-10px,0) scale(1.08); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html,body{ scroll-behavior:auto; }
+    *,*::before,*::after{
+      animation-duration:.01ms !important;
+      animation-iteration-count:1 !important;
+      transition-duration:.01ms !important;
     }
+    .reveal,
+    .reveal.is-visible{ opacity:1; transform:none; }
+  }
 
   
   .loading-overlay{
@@ -1793,6 +1865,7 @@ let POSTS_SORT = { key: "date", dir: "desc" };
 
 let reachChart = null;
 let engChart = null;
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbxYvOvx6CIxqkyc8R1EnoDS3a7dXISab5SYFlgIQRyveNToBfbT1G57dtM1rXTv9Ybu/exec";
 const DEFAULT_REPORT = "islq2";
@@ -1890,6 +1963,53 @@ function healthClassFromText(h){
   if (s.includes("moderate")) return "health-moderate";
   if (s.includes("low")) return "health-low";
   return "";
+}
+
+function animateCount(el, targetValue, { duration = 900, percent = false } = {}){
+  if (!el || !isNum(targetValue)) return;
+  if (prefersReducedMotion){
+    el.textContent = percent ? fmtPct(targetValue) : fmtInt(targetValue);
+    return;
+  }
+
+  const start = performance.now();
+  const from = 0;
+  const run = (now) => {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = from + ((targetValue - from) * eased);
+    el.textContent = percent ? `${current.toFixed(2)}%` : Math.round(current).toLocaleString();
+    if (progress < 1) requestAnimationFrame(run);
+  };
+  requestAnimationFrame(run);
+}
+
+function wireRevealAnimations(){
+  const revealTargets = Array.from(document.querySelectorAll('.section, .hero, .footer, .chart-card'));
+  revealTargets.forEach((el) => el.classList.add('reveal'));
+
+  if (prefersReducedMotion || !("IntersectionObserver" in window)){
+    revealTargets.forEach((el) => el.classList.add('is-visible'));
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('is-visible');
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.16, rootMargin: '0px 0px -10% 0px' });
+
+  revealTargets.forEach((el) => observer.observe(el));
+}
+
+function wireQuarterTransition(){
+  document.querySelectorAll('.pill-item[href]').forEach((link) => {
+    link.addEventListener('click', () => {
+      document.body.classList.add('page-transitioning');
+    });
+  });
 }
 
 /* handle camelCase keys like avgEngagementRate */
@@ -2067,8 +2187,13 @@ function renderQuarterTotals(rows){
     const dEl = $(deltaId);
 
     if (vEl){
-      if (!row) vEl.textContent = "—";
-      else vEl.textContent = isPercent ? fmtPct(row.value) : fmtInt(row.value);
+      if (!row){
+        vEl.textContent = "—";
+      } else {
+        const numericValue = toNumber(row.value);
+        vEl.textContent = isPercent ? fmtPct(row.value) : fmtInt(row.value);
+        if (isNum(numericValue)) animateCount(vEl, numericValue, { percent: isPercent });
+      }
     }
 
     if (dEl){
@@ -2131,6 +2256,12 @@ function buildOrUpdateChart(which, canvasId, labels, values, typeOverride=null){
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: prefersReducedMotion ? false : {
+        duration: 720,
+        delay(context){
+          return (context?.type === 'data' && context.mode === 'default') ? (context.dataIndex * 90) : 0;
+        }
+      },
       plugins: {
         legend: { display: type === "pie" }
       },
@@ -2801,6 +2932,8 @@ async function init(){
     wireChartToggles();
     wireMenus();
     wireFloatingSectionMenu();
+    wireQuarterTransition();
+    wireRevealAnimations();
 
   }catch(err){
     console.error("Dashboard error:", err);
