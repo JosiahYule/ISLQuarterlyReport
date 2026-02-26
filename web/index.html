@@ -49,6 +49,73 @@
     font-weight:400;
   }
 
+  body.page-transitioning{
+    opacity:.92;
+    filter:saturate(.95);
+    transition:opacity .22s ease, filter .22s ease;
+  }
+
+  .hero{
+    position:relative;
+    overflow:hidden;
+    isolation:isolate;
+  }
+  .hero::before,
+  .hero::after{
+    content:"";
+    position:absolute;
+    width:260px;
+    height:260px;
+    border-radius:50%;
+    pointer-events:none;
+    z-index:-1;
+    opacity:.2;
+    filter:blur(8px);
+    animation:ambientFloat 26s ease-in-out infinite alternate;
+  }
+  .hero::before{
+    top:-110px;
+    right:-70px;
+    background:radial-gradient(circle at 35% 35%, rgba(77,163,232,.42), rgba(77,163,232,0) 68%);
+  }
+  .hero::after{
+    bottom:-130px;
+    left:-80px;
+    background:radial-gradient(circle at 65% 50%, rgba(0,84,154,.3), rgba(0,84,154,0) 66%);
+    animation-delay:.9s;
+  }
+
+  .reveal{
+    opacity:0;
+    transform:translateY(18px) scale(.995);
+    transition:opacity .55s ease, transform .55s cubic-bezier(.22,.76,.3,1);
+  }
+  .reveal.is-visible{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+
+  .kpi-value{ font-variant-numeric:tabular-nums; }
+
+  .ct-btn{ transition:transform .18s ease, box-shadow .18s ease, background-color .18s ease; }
+  .ct-btn:active{ transform:scale(.98); }
+
+  @keyframes ambientFloat{
+    0%{ transform:translate3d(0,0,0) scale(1); }
+    100%{ transform:translate3d(14px,-10px,0) scale(1.08); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html,body{ scroll-behavior:auto; }
+    *,*::before,*::after{
+      animation-duration:.01ms !important;
+      animation-iteration-count:1 !important;
+      transition-duration:.01ms !important;
+    }
+    .reveal,
+    .reveal.is-visible{ opacity:1; transform:none; }
+  }
+
 
   .loading-overlay{
     position:fixed;
@@ -1286,6 +1353,7 @@ const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbw-jUSh2nlMNemf
 ========================= */
 let REPORT = null;
 let TOP_PAGES_SORT = { key: "views", dir: "desc" };
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* =========================
    FETCH
@@ -1309,6 +1377,55 @@ function fmtTime(sec){
   const m = Math.floor(sec / 60);
   const s = Math.round(sec % 60);
   return `${m}:${String(s).padStart(2,"0")}`;
+}
+
+function animateCount(el, targetValue, { duration = 900, format = "int" } = {}){
+  if(!el || typeof targetValue !== "number" || !Number.isFinite(targetValue)) return;
+  if(prefersReducedMotion){
+    el.textContent = format === "pct" ? fmtPct(targetValue) : (format === "time" ? fmtTime(targetValue) : fmtInt(targetValue));
+    return;
+  }
+
+  const start = performance.now();
+  const from = 0;
+  const tick = (now) => {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = from + ((targetValue - from) * eased);
+
+    if(format === "pct") el.textContent = `${current.toFixed(2)}%`;
+    else if(format === "time") el.textContent = fmtTime(current);
+    else el.textContent = Math.round(current).toLocaleString();
+
+    if(progress < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+function wireRevealAnimations(){
+  const revealTargets = Array.from(document.querySelectorAll('.section, .hero, .footer, .chart-card, .table-shell'));
+  revealTargets.forEach((el) => el.classList.add('reveal'));
+
+  if(prefersReducedMotion || !("IntersectionObserver" in window)){
+    revealTargets.forEach((el) => el.classList.add('is-visible'));
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if(!entry.isIntersecting) return;
+      entry.target.classList.add('is-visible');
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.16, rootMargin: '0px 0px -10% 0px' });
+
+  revealTargets.forEach((el) => observer.observe(el));
+}
+
+function wireQuarterTransition(){
+  document.querySelectorAll('.pill-item[href]').forEach((link) => {
+    link.addEventListener('click', () => document.body.classList.add('page-transitioning'));
+  });
 }
 
 function setDelta(id, val){
@@ -1534,15 +1651,21 @@ function renderKPIs(){
   const o = REPORT?.overall || {};
   const d = REPORT?.deltas || {};
 
-  document.getElementById("kpiSessions").textContent = fmtInt(o.sessions);
-  document.getElementById("kpiUsers").textContent    = fmtInt(o.users);
-  document.getElementById("kpiEngRate").textContent  = fmtPct(o.engagementRate);
-  document.getElementById("kpiTime").textContent     = fmtTime(o.avgEngagementTimeSec);
-  document.getElementById("kpiForms").textContent    = fmtInt(o.formSubmissions);
+  const kpiSessions = document.getElementById("kpiSessions");
+  const kpiUsers = document.getElementById("kpiUsers");
+  const kpiEngRate = document.getElementById("kpiEngRate");
+  const kpiTime = document.getElementById("kpiTime");
+  const kpiForms = document.getElementById("kpiForms");
+  const actionsEl = document.getElementById("kpiActions");
+
+  if(kpiSessions){ kpiSessions.textContent = fmtInt(o.sessions); if(Number.isFinite(o.sessions)) animateCount(kpiSessions, o.sessions, { format: "int" }); }
+  if(kpiUsers){ kpiUsers.textContent = fmtInt(o.users); if(Number.isFinite(o.users)) animateCount(kpiUsers, o.users, { format: "int" }); }
+  if(kpiEngRate){ kpiEngRate.textContent = fmtPct(o.engagementRate); if(Number.isFinite(o.engagementRate)) animateCount(kpiEngRate, o.engagementRate, { format: "pct" }); }
+  if(kpiTime){ kpiTime.textContent = fmtTime(o.avgEngagementTimeSec); if(Number.isFinite(o.avgEngagementTimeSec)) animateCount(kpiTime, o.avgEngagementTimeSec, { format: "time" }); }
+  if(kpiForms){ kpiForms.textContent = fmtInt(o.formSubmissions); if(Number.isFinite(o.formSubmissions)) animateCount(kpiForms, o.formSubmissions, { format: "int" }); }
 
   const actions = getActionsFromOverall(o);
-  const actionsEl = document.getElementById("kpiActions");
-  if(actionsEl) actionsEl.textContent = fmtInt(actions);
+  if(actionsEl){ actionsEl.textContent = fmtInt(actions); if(Number.isFinite(actions)) animateCount(actionsEl, actions, { format: "int" }); }
 
   setDelta("dSessions", d.sessions);
   setDelta("dUsers", d.users);
@@ -1769,6 +1892,12 @@ function buildOrUpdateTrafficChart(which, labels, values, type = "bar"){
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: prefersReducedMotion ? false : {
+        duration: 720,
+        delay(context){
+          return (context?.type === 'data' && context.mode === 'default') ? (context.dataIndex * 90) : 0;
+        }
+      },
       plugins: {
         legend: { display: type === "pie" }
       },
@@ -1941,6 +2070,8 @@ function wireFloatingSectionMenu(){
     renderExecutiveSummary();
     renderInsights();
     wireFloatingSectionMenu();
+    wireQuarterTransition();
+    wireRevealAnimations();
   }catch(err){
     console.error(err);
     alert("Data failed to load. Open console for details (likely Web App URL, permissions, or tab headers).");
