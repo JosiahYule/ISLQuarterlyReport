@@ -1209,6 +1209,28 @@
       white-space:nowrap;
     }
 
+    .sort-btn{
+      border:0;
+      background:transparent;
+      color:inherit;
+      font:inherit;
+      letter-spacing:inherit;
+      text-transform:inherit;
+      padding:0;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .sort-btn.align-right{ justify-content:flex-end; width:100%; }
+
+    .sort-arrow{
+      font-size:10px;
+      color:#97a0ad;
+      line-height:1;
+    }
+
     .post-table tbody td{
       padding:12px 14px;
       border-bottom:1px solid rgba(0,0,0,.06);
@@ -1652,6 +1674,7 @@
 let RAW = null;
 let ALL_POSTS = [];
 let FILTERED_POSTS = [];
+let POSTS_SORT = { key: "date", dir: "desc" };
 
 let reachChart = null;
 let engChart = null;
@@ -2358,13 +2381,13 @@ function renderAllPostsTable(){
   table.innerHTML = `
     <thead>
       <tr>
-        <th>Post</th>
-        <th>Platform</th>
-        <th style="text-align:right;">Impressions</th>
-        <th style="text-align:right;">Engagements</th>
-        <th style="text-align:right;">Engagement Rate</th>
-        <th>Health</th>
-        <th>Link</th>
+        <th>${sortHeaderButton("title", "Post")}</th>
+        <th>${sortHeaderButton("platform", "Platform")}</th>
+        <th style="text-align:right;">${sortHeaderButton("impressions", "Impressions", true)}</th>
+        <th style="text-align:right;">${sortHeaderButton("engagements", "Engagements", true)}</th>
+        <th style="text-align:right;">${sortHeaderButton("engagementRate", "Engagement Rate", true)}</th>
+        <th>${sortHeaderButton("health", "Health")}</th>
+        <th>${sortHeaderButton("url", "Link")}</th>
       </tr>
     </thead>
     <tbody>
@@ -2399,6 +2422,58 @@ function renderAllPostsTable(){
   `;
 }
 
+function sortHeaderButton(key, label, rightAligned = false){
+  const isActive = POSTS_SORT.key === key;
+  const arrow = !isActive ? "↕" : (POSTS_SORT.dir === "asc" ? "↑" : "↓");
+  return `<button type="button" class="sort-btn${rightAligned ? " align-right" : ""}" data-sort-key="${key}" aria-label="Sort by ${escHtml(label)}">${escHtml(label)} <span class="sort-arrow" aria-hidden="true">${arrow}</span></button>`;
+}
+
+function sortFilteredPosts(){
+  const key = POSTS_SORT.key;
+  const direction = POSTS_SORT.dir === "asc" ? 1 : -1;
+
+  FILTERED_POSTS = FILTERED_POSTS
+    .map((p, index) => ({ p, index }))
+    .sort((a, b) => {
+      const av = getSortValue(a.p, key);
+      const bv = getSortValue(b.p, key);
+
+      if (av === bv) return a.index - b.index;
+      if (av === null || av === "") return 1;
+      if (bv === null || bv === "") return -1;
+      return av > bv ? direction : -direction;
+    })
+    .map(row => row.p);
+}
+
+function getSortValue(post, key){
+  switch (key){
+    case "title": return String(post.title ?? "").toLowerCase();
+    case "platform": return String((post.platforms || []).join(", ") || "").toLowerCase();
+    case "impressions": return toNumber(post.impressions);
+    case "engagements": return toNumber(post.engagements);
+    case "engagementRate": return toNumber(post.engagementRate);
+    case "health": return String(post.healthText ?? "").toLowerCase();
+    case "url": return post.url ? 1 : 0;
+    case "date": {
+      const t = new Date(post.date).getTime();
+      return Number.isNaN(t) ? null : t;
+    }
+    default: return String(post[key] ?? "").toLowerCase();
+  }
+}
+
+function togglePostsSort(key){
+  if (POSTS_SORT.key === key){
+    POSTS_SORT.dir = POSTS_SORT.dir === "asc" ? "desc" : "asc";
+  } else {
+    POSTS_SORT.key = key;
+    POSTS_SORT.dir = key === "title" || key === "platform" || key === "health" ? "asc" : "desc";
+  }
+  sortFilteredPosts();
+  renderAllPostsTable();
+}
+
 function applyPostFilters(){
   const q = String($("postsSearch")?.value ?? "").trim().toLowerCase();
   const platform = String($("postsPlatform")?.value ?? "all").toLowerCase();
@@ -2422,14 +2497,23 @@ function applyPostFilters(){
     return hay.includes(q);
   });
 
+  sortFilteredPosts();
   renderAllPostsTable();
 }
 
 function wirePostsTableFilters(){
   const search = $("postsSearch");
   const select = $("postsPlatform");
+  const table = $("postsTable");
   if (search) search.addEventListener("input", applyPostFilters);
   if (select) select.addEventListener("change", applyPostFilters);
+  if (table) {
+    table.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-sort-key]");
+      if (!btn) return;
+      togglePostsSort(String(btn.dataset.sortKey || ""));
+    });
+  }
 }
 
 // ---------- insights (FIXED: supports notWorking + next, and combines rows) ----------
