@@ -6,7 +6,7 @@
   <title>Integrated Staffing - Quarterly Digital Media Performance Report</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <style>
     :root{
@@ -1698,7 +1698,7 @@
 let REPORT = null;
 const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbzodE1whq3quWi64_JHp4OWFO52ADfWrpiMrWR_CQMUlDKkL_FUWIsu8E2tWmDjBZuveQ/exec";
 async function loadReport(){
-  const res = await fetch(REPORT_ENDPOINT, { cache: "no-store" });
+  const res = await fetch(REPORT_ENDPOINT, { cache: "default" });
   if(!res.ok) throw new Error(`Could not load report JSON: ${res.status} ${res.statusText}`);
   return await res.json();
 }
@@ -1721,7 +1721,7 @@ async function loadPosts() {
 
     const res = await fetch(POSTS_ENDPOINT, {
       method: "GET",
-      cache: "no-store",
+      cache: "default",
       headers: {
         "Accept": "application/json"
       }
@@ -2552,53 +2552,58 @@ function renderPostsTable(){
   }
   empty.style.display = "none";
 
-  table.innerHTML = `
-    <thead>
-      <tr>
-        <th>Post</th>
-        <th>Date</th>
-        <th>Platforms</th>
-        <th>Impr.</th>
-        <th>Eng.</th>
-        <th>ER</th>
-        <th>Health</th>
-        <th>Likes</th>
-        <th>Comments</th>
-        <th>Shares</th>
-        <th>Link</th>
-        <th>Notes</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${POSTS_VIEW.map(p => {
-        const plats = (p.platforms || []).join(", ");
-        const hClass = healthClass(p.engagementHealth);
-        const hLabel = escapeHtml(p.engagementHealth || "—");
+  if(!table.tHead){
+    table.insertAdjacentHTML("beforeend", `
+      <thead>
+        <tr>
+          <th>Post</th>
+          <th>Date</th>
+          <th>Platforms</th>
+          <th>Impr.</th>
+          <th>Eng.</th>
+          <th>ER</th>
+          <th>Health</th>
+          <th>Likes</th>
+          <th>Comments</th>
+          <th>Shares</th>
+          <th>Link</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    `);
+  }
 
-        return `
-          <tr>
-            <td><strong>${escapeHtml(p.title)}</strong></td>
-            <td>${fmtDate(p.date)}</td>
-            <td>${escapeHtml(plats || "—")}</td>
-            <td>${fmtInt(p.impressions)}</td>
-            <td>${fmtInt(p.engagements)}</td>
-            <td>${fmtPct(p.engagementRate)}</td>
-            <td>
-              <span class="health-pill ${hClass}">
-                <span class="health-dot" aria-hidden="true"></span>
-                ${hLabel}
-              </span>
-            </td>
-            <td>${fmtInt(p.likes)}</td>
-            <td>${fmtInt(p.comments)}</td>
-            <td>${fmtInt(p.shares)}</td>
-            <td>${p.url ? `<a href="${p.url}" target="_blank" rel="noopener">Open</a>` : "—"}</td>
-            <td>${escapeHtml(p.notes)}</td>
-          </tr>
-        `;
-      }).join("")}
-    </tbody>
-  `;
+  const tbody = table.tBodies[0];
+  if(!tbody) return;
+
+  tbody.innerHTML = POSTS_VIEW.map(p => {
+    const plats = (p.platforms || []).join(", ");
+    const hClass = healthClass(p.engagementHealth);
+    const hLabel = escapeHtml(p.engagementHealth || "—");
+
+    return `
+      <tr>
+        <td><strong>${escapeHtml(p.title)}</strong></td>
+        <td>${fmtDate(p.date)}</td>
+        <td>${escapeHtml(plats || "—")}</td>
+        <td>${fmtInt(p.impressions)}</td>
+        <td>${fmtInt(p.engagements)}</td>
+        <td>${fmtPct(p.engagementRate)}</td>
+        <td>
+          <span class="health-pill ${hClass}">
+            <span class="health-dot" aria-hidden="true"></span>
+            ${hLabel}
+          </span>
+        </td>
+        <td>${fmtInt(p.likes)}</td>
+        <td>${fmtInt(p.comments)}</td>
+        <td>${fmtInt(p.shares)}</td>
+        <td>${p.url ? `<a href="${p.url}" target="_blank" rel="noopener">Open</a>` : "—"}</td>
+        <td>${escapeHtml(p.notes)}</td>
+      </tr>
+    `;
+  }).join("");
 }
 
 function applyPostsFilters(){
@@ -2705,6 +2710,5 @@ window.REPORT = REPORT;    // ✅ also expose normalized version
 </script>
 </body>
 </html>
-
 
 
