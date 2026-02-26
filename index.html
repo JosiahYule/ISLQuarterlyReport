@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Integrated Staffing - Quarterly Digital Media Performance Report</title>
 
-  <link href="https://fonts.cdnfonts.com/css/gotham" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <style>
@@ -31,7 +31,7 @@
       --radius-lg:16px;
       --radius-md:12px;
 
-      --font:"Gotham","Gotham SSm",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      --font:"Helvetica Neue",Helvetica,Arial,sans-serif;
       --transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -41,9 +41,10 @@
     body{
       font-family:var(--font);
       color:var(--text);
-      background:var(--bg);
+      background:#fff;
       line-height:1.6;
       overflow-x:hidden;
+      scroll-behavior:smooth;
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
       font-weight:400;
@@ -871,6 +872,7 @@
       .hero{padding:32px 24px}
       .hero h1{font-size:32px}
       .section{padding:24px 20px}
+      .glass-nav{left:12px;bottom:12px;width:148px;box-shadow:0 6px 14px rgba(15,39,76,.12)}
 
       .topbar{
         flex-direction:column;
@@ -1254,6 +1256,110 @@
       color:var(--muted);
       font-size:13px;
     }
+
+    /* ============= APPLE-STYLE GLASS + FLOATING SECTION MENU ============= */
+    .hero,
+    .section,
+    .pill,
+    .chart-card,
+    .platform,
+    .insight-card,
+    .table-shell,
+    .platform-acc,
+    .post-mini,
+    .summary-card,
+    .kpi-card{
+      backdrop-filter: blur(22px) saturate(150%);
+      -webkit-backdrop-filter: blur(22px) saturate(150%);
+    }
+
+    .section,
+    .chart-card,
+    .platform,
+    .insight-card,
+    .kpi-card,
+    .table-shell,
+    .platform-acc,
+    .summary-card,
+    .post-mini{
+      background:rgba(255,255,255,.72);
+      border:1px solid rgba(255,255,255,.7);
+      box-shadow:0 14px 40px rgba(15, 39, 76, .12);
+    }
+
+    .glass-nav{
+      position:fixed;
+      left:24px;
+      bottom:24px;
+      z-index:200;
+      width:154px;
+      padding:8px;
+      border-radius:14px;
+      background:rgba(248, 252, 255, .92);
+      border:1px solid rgba(255, 255, 255, .95);
+      box-shadow:0 10px 22px rgba(15, 39, 76, .14);
+      backdrop-filter:blur(16px) saturate(160%);
+      -webkit-backdrop-filter:blur(16px) saturate(160%);
+      transition:width .2s ease, box-shadow .2s ease;
+    }
+
+    .glass-nav:hover,
+    .glass-nav:focus-within{
+      width:min(200px, 70vw);
+      box-shadow:0 12px 24px rgba(15, 39, 76, .16);
+    }
+
+    .glass-nav-title{
+      font-size:10px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:#26435f;
+      margin:2px 4px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .glass-nav-list{
+      list-style:none;
+      display:grid;
+      gap:4px;
+      margin-top:6px;
+      max-height:0;
+      opacity:0;
+      overflow:hidden;
+      pointer-events:none;
+      transform:translateY(4px);
+      transition:max-height .22s ease, opacity .22s ease, transform .22s ease;
+    }
+
+    .glass-nav:hover .glass-nav-list,
+    .glass-nav:focus-within .glass-nav-list{
+      max-height:360px;
+      opacity:1;
+      pointer-events:auto;
+      transform:translateY(0);
+    }
+
+    .glass-nav-link{
+      display:block;
+      text-decoration:none;
+      padding:7px 9px;
+      border-radius:10px;
+      color:#15314d;
+      font-size:12px;
+      font-weight:600;
+      transition:var(--transition);
+      border:1px solid transparent;
+    }
+
+    .glass-nav-link:hover,
+    .glass-nav-link:focus-visible,
+    .glass-nav-link.is-active{
+      background:rgba(0,112,202,.14);
+      border-color:rgba(0,112,202,.2);
+      color:#053f71;
+      outline:none;
+    }
   </style>
 </head>
 
@@ -1288,7 +1394,20 @@
     </div>
     <!-- /TOPBAR -->
 
-    <section class="hero" aria-label="Report header">
+    <nav class="glass-nav" aria-label="Section navigation" tabindex="0">
+      <div class="glass-nav-title">Jump to section</div>
+      <ul class="glass-nav-list">
+        <li><a class="glass-nav-link" href="#overview">Overview</a></li>
+        <li><a class="glass-nav-link" href="#summary">Summary</a></li>
+        <li><a class="glass-nav-link" href="#quarter-totals">Quarter Totals</a></li>
+        <li><a class="glass-nav-link" href="#platform-breakdown">Platforms</a></li>
+        <li><a class="glass-nav-link" href="#top-posts">Top Posts</a></li>
+        <li><a class="glass-nav-link" href="#all-posts">All Posts</a></li>
+        <li><a class="glass-nav-link" href="#insights">Insights</a></li>
+      </ul>
+    </nav>
+
+    <section class="hero" id="overview" aria-label="Report header">
       <div class="hero-grid">
         <div>
           <h1>Quarterly Performance Report</h1>
@@ -1304,7 +1423,7 @@
       </div>
     </section>
 
-    <section class="section" aria-label="Executive summary">
+    <section class="section" id="summary" aria-label="Executive summary">
       <div class="section-header">
         <div class="section-title">
           <h2>Summary</h2>
@@ -1324,7 +1443,7 @@
       </div>
     </section>
 
-    <section class="section" aria-label="Quarter totals">
+    <section class="section" id="quarter-totals" aria-label="Quarter totals">
       <div class="section-header">
         <div class="section-title">
           <h2>Quarter Totals</h2>
@@ -1393,7 +1512,7 @@
     </section>
 
     <!-- ✅ Platform Breakdown is its own card, and is CLOSED properly before Top Posts -->
-    <section class="section" aria-label="Platform breakdown">
+    <section class="section" id="platform-breakdown" aria-label="Platform breakdown">
       <div class="section-header">
         <div class="section-title">
           <h2>Platform Breakdown</h2>
@@ -1429,7 +1548,7 @@
       </div>
     </section>
 
-    <section class="section" aria-label="Top posts">
+    <section class="section" id="top-posts" aria-label="Top posts">
       <div class="section-header">
         <div class="section-title">
           <h2>Top Performing Posts</h2>
@@ -1441,7 +1560,7 @@
       <div class="top-compact" id="topCompact"></div>
     </section>
 
-    <section class="section" aria-label="All posts">
+    <section class="section" id="all-posts" aria-label="All posts">
       <div class="section-header">
         <div class="section-title">
           <h2>All Posts This Quarter</h2>
@@ -1471,7 +1590,7 @@
       </div>
     </section>
 
-    <section class="section" aria-label="Insights and analysis">
+    <section class="section" id="insights" aria-label="Insights and analysis">
       <div class="section-header">
         <div class="section-title">
           <h2>Insights, Analysis, and Actions</h2>
@@ -2368,6 +2487,40 @@ function renderInsights(rows){
   set("insNext",       ["next", "next quarter focus", "next quarter", "focus"]);
 }
 
+
+function wireFloatingSectionMenu(){
+  const links = Array.from(document.querySelectorAll(".glass-nav-link"));
+  if (!links.length) return;
+
+  const sections = links
+    .map(link => document.querySelector(link.getAttribute("href")))
+    .filter(Boolean);
+
+  const setActive = (id) => {
+    links.forEach((link) => {
+      const active = link.getAttribute("href") === `#${id}`;
+      link.classList.toggle("is-active", active);
+      if (active) link.setAttribute("aria-current", "true");
+      else link.removeAttribute("aria-current");
+    });
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    const visible = entries
+      .filter(entry => entry.isIntersecting)
+      .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+    if (visible[0]) setActive(visible[0].target.id);
+  }, {
+    root: null,
+    threshold: [0.25, 0.5, 0.75],
+    rootMargin: "-25% 0px -45% 0px"
+  });
+
+  sections.forEach(section => observer.observe(section));
+  if (sections[0]) setActive(sections[0].id);
+}
+
 // ---------- menus ----------
 function wireMenus(){
   const wrap = document.querySelector(".pill-wrap");
@@ -2411,6 +2564,7 @@ async function init(){
 
     wireChartToggles();
     wireMenus();
+    wireFloatingSectionMenu();
 
   }catch(err){
     console.error("Dashboard error:", err);
