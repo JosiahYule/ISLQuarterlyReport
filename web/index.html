@@ -322,6 +322,90 @@
     border-color:rgba(0,112,202,.15);
   }
 
+  /* ============= KPI/CHANNEL TOOLTIPS (matches report style) ============= */
+  .section#quarter-totals,
+  .section#traffic-channels{ overflow:visible !important; }
+
+  .kpi-card,
+  .channel{
+    position:relative;
+    overflow:visible;
+    isolation:isolate;
+    outline:none;
+  }
+
+  .kpi-card::after,
+  .channel::after{
+    content:attr(data-tip);
+    position:absolute;
+    left:50%;
+    bottom:calc(100% + 10px);
+    z-index:50;
+    transform:translate(-50%, 6px);
+
+    width:max-content;
+    max-width:320px;
+    min-width:220px;
+    padding:14px 16px;
+
+    background:rgba(0, 61, 114, 0.96);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:14px;
+    box-shadow:0 14px 34px rgba(0,0,0,.18);
+    font-size:13px;
+    line-height:1.5;
+    font-weight:500;
+    text-align:left;
+    white-space:normal;
+
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .16s ease, transform .16s ease;
+  }
+
+  .kpi-card::before,
+  .channel::before{
+    content:"";
+    position:absolute;
+    left:50%;
+    bottom:calc(100% + 4px);
+    z-index:51;
+    width:10px;
+    height:10px;
+    background:rgba(0, 61, 114, 0.96);
+    border-left:1px solid rgba(255,255,255,.14);
+    border-top:1px solid rgba(255,255,255,.14);
+    transform:translateX(-50%) rotate(45deg);
+    opacity:0;
+    transition:opacity .16s ease;
+    pointer-events:none;
+  }
+
+  .kpi-card:hover::after,
+  .kpi-card:hover::before,
+  .kpi-card:focus::after,
+  .kpi-card:focus::before,
+  .channel:hover::after,
+  .channel:hover::before,
+  .channel:focus::after,
+  .channel:focus::before{
+    opacity:1;
+  }
+
+  .kpi-card:hover::after,
+  .kpi-card:focus::after,
+  .channel:hover::after,
+  .channel:focus::after{
+    transform:translate(-50%, 0);
+  }
+
+  .kpi-card:focus,
+  .channel:focus{
+    box-shadow:0 0 0 4px rgba(0,112,202,.16), 0 12px 24px rgba(0,0,0,.10);
+    border-color:rgba(0,112,202,.22);
+  }
+
   .kpi-label{
     font-size:11px;
     font-weight:700;
@@ -732,6 +816,13 @@
     }
 
     .kpi-grid{grid-template-columns:1fr}
+
+    .kpi-card::after,
+    .kpi-card::before,
+    .channel::after,
+    .channel::before{
+      display:none;
+    }
   }
 
   @media print{
@@ -943,37 +1034,37 @@
   </div>
 
   <div class="kpi-grid">
-    <div class="kpi-card">
+    <div class="kpi-card" tabindex="0" data-tip="Total visits (sessions) tracks all website visits in the quarter, including returning users and multiple visits by the same person.">
       <div class="kpi-label">Total Visits</div>
       <div class="kpi-value" id="kpiSessions">—</div>
       <span class="delta" id="dSessions">—</span>
     </div>
 
-    <div class="kpi-card">
+    <div class="kpi-card" tabindex="0" data-tip="Website users represents unique visitors in the quarter. This helps separate overall traffic volume from audience size.">
       <div class="kpi-label">Website Users</div>
       <div class="kpi-value" id="kpiUsers">—</div>
       <span class="delta" id="dUsers">—</span>
     </div>
 
-    <div class="kpi-card">
+    <div class="kpi-card" tabindex="0" data-tip="Engagement rate is the percentage of sessions considered engaged (meaningful activity, longer time on site, or key actions).">
       <div class="kpi-label">Engagement Rate</div>
       <div class="kpi-value" id="kpiEngRate">—</div>
       <span class="delta" id="dEngRate">—</span>
     </div>
 
-    <div class="kpi-card">
+    <div class="kpi-card" tabindex="0" data-tip="Average time on site shows how long users spend actively engaged on the website during a typical visit.">
       <div class="kpi-label">Avg Time on Site</div>
       <div class="kpi-value" id="kpiTime">—</div>
       <span class="delta" id="dTime">—</span>
     </div>
 
-    <div class="kpi-card">
+    <div class="kpi-card" tabindex="0" data-tip="Candidate actions combines high-intent recruiting behaviors like apply clicks, form starts, and job interest actions.">
       <div class="kpi-label">Candidate Actions</div>
       <div class="kpi-value" id="kpiActions">—</div>
       <span class="delta" id="dActions">—</span>
     </div>
 
-    <div class="kpi-card">
+    <div class="kpi-card" tabindex="0" data-tip="Form submissions counts completed website forms submitted this quarter, including contact and application-related forms.">
      <div class="kpi-label">Form Submissions</div>
      <div class="kpi-value" id="kpiForms">—</div>
      <span class="delta" id="dForms">—</span>
@@ -1332,6 +1423,22 @@ function renderKPIs(){
   setDelta("dActions", getActionsDeltaFromDeltas(d));
 }
 
+function getChannelTooltip(name){
+  const key = String(name || "").trim().toLowerCase();
+  const tips = {
+    direct: "Direct traffic includes people who visit the site by typing the URL, using a bookmark, or from untagged links.",
+    "organic search": "Organic Search traffic comes from unpaid search engine results (e.g., Google/Bing) and reflects SEO visibility.",
+    paid: "Paid traffic is driven by advertising campaigns where clicks are purchased (search, display, or social ads).",
+    "paid search": "Paid Search traffic comes from sponsored search listings and campaign keywords.",
+    referral: "Referral traffic comes from users clicking links to the website from other external websites.",
+    social: "Social traffic comes from social media platforms and includes both paid and organic social visits.",
+    email: "Email traffic comes from newsletter and email campaign links that bring users to the site.",
+    display: "Display traffic comes from banner/display advertising placements across partner sites and ad networks.",
+    "cross-network": "Cross-network traffic is attributed to campaigns that run across multiple Google networks (e.g., Performance Max)."
+  };
+  return tips[key] || `${name || "This channel"} groups sessions by acquisition source so you can compare traffic volume, share, and engagement quality.`;
+}
+
 function renderChannels(){
   const grid = document.getElementById("channelGrid");
   if(!grid) return;
@@ -1342,6 +1449,8 @@ function renderChannels(){
   (REPORT?.channels || []).forEach(c => {
     const div = document.createElement("div");
     div.className = "channel";
+    div.tabIndex = 0;
+    div.setAttribute("data-tip", getChannelTooltip(c.name));
 
     const share = totalSessions > 0 ? ( (c.sessions || 0) / totalSessions * 100 ) : undefined;
 
