@@ -15,10 +15,10 @@
       --isl-accent:#0070CA;
       --isl-accent-bright:#4DA3E8;
 
-      --bg:#FAFBFC;
+      --bg:#F4F8FC;
       --card:#FFFFFF;
-      --border:rgba(0,0,0,.06);
-      --shadow:0 2px 8px rgba(0,0,0,.04), 0 12px 24px rgba(0,0,0,.06);
+      --border:rgba(255,255,255,.48);
+      --shadow:0 12px 30px rgba(8,35,64,.10), 0 26px 60px rgba(8,35,64,.08);
 
       --text:#0B1220;
       --muted:#64748B;
@@ -41,7 +41,10 @@
     body{
       font-family:var(--font);
       color:var(--text);
-      background:#fff;
+      background:
+        radial-gradient(circle at 15% -10%, rgba(77,163,232,.16), transparent 45%),
+        radial-gradient(circle at 85% 0%, rgba(0,84,154,.08), transparent 35%),
+        var(--bg);
       line-height:1.6;
       overflow-x:hidden;
       scroll-behavior:smooth;
@@ -329,7 +332,7 @@
 
     /* ============= SECTIONS ============= */
     .section{
-      background:var(--card);
+      background:linear-gradient(140deg, rgba(255,255,255,.82), rgba(255,255,255,.62));
       border:1px solid var(--border);
       border-radius:var(--radius-xl);
       box-shadow:var(--shadow);
@@ -337,9 +340,22 @@
       margin-bottom:24px;
       transition:var(--transition);
       overflow:hidden; /* ✅ prevents any accidental overflow */
+      position:relative;
+      backdrop-filter:blur(12px) saturate(135%);
+      -webkit-backdrop-filter:blur(12px) saturate(135%);
     }
+    .section::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(115deg, rgba(255,255,255,.65), rgba(255,255,255,0) 44%);
+      pointer-events:none;
+      z-index:0;
+    }
+    .section > *{ position:relative; z-index:1; }
     .section:hover{
-      box-shadow:0 4px 12px rgba(0,0,0,.06), 0 16px 32px rgba(0,0,0,.08);
+      transform:translateY(-2px);
+      box-shadow:0 16px 36px rgba(8,35,64,.14), 0 30px 70px rgba(8,35,64,.10);
     }
     .section-header{
       display:flex;
