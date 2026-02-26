@@ -1648,28 +1648,20 @@ let _engChart = null;
 
 function channelColor(index){
   const fills = [
-    "rgba(0,84,154,0.85)",
-    "rgba(0,112,202,0.8)",
-    "rgba(77,163,232,0.78)",
-    "rgba(16,185,129,0.75)",
-    "rgba(245,158,11,0.75)",
-    "rgba(99,102,241,0.72)",
-    "rgba(236,72,153,0.72)",
-    "rgba(20,184,166,0.72)"
+    "rgba(0,112,202,0.82)",   // blue
+    "rgba(245,158,11,0.82)",  // yellow
+    "rgba(239,68,68,0.82)",   // red
+    "rgba(16,185,129,0.82)"   // green
   ];
   return fills[index % fills.length];
 }
 
 function channelBorder(index){
   const borders = [
-    "rgba(0,61,114,1)",
-    "rgba(0,84,154,1)",
-    "rgba(0,112,202,1)",
-    "rgba(5,150,105,1)",
-    "rgba(217,119,6,1)",
-    "rgba(79,70,229,1)",
-    "rgba(219,39,119,1)",
-    "rgba(13,148,136,1)"
+    "rgba(0,84,154,1)",   // blue
+    "rgba(217,119,6,1)",  // yellow
+    "rgba(220,38,38,1)",  // red
+    "rgba(5,150,105,1)"   // green
   ];
   return borders[index % borders.length];
 }
