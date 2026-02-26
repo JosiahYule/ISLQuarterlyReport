@@ -516,13 +516,20 @@
   }
   .chart-card:hover{ box-shadow:0 8px 20px rgba(0,0,0,.08); }
 
+  .chart-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:12px;
+  }
+
   .chart-title{
     font-size:13px;
     font-weight:700;
     letter-spacing:.05em;
     text-transform:uppercase;
     color:var(--muted);
-    margin-bottom:12px;
   }
 
   .chart-wrap{
@@ -534,6 +541,39 @@
     width:100% !important;
     height:100% !important;
     display:block;
+  }
+
+  .chart-toggle{
+    display:inline-flex;
+    padding:4px;
+    border-radius:999px;
+    background:rgba(0,0,0,.03);
+    border:1px solid rgba(0,0,0,.06);
+    flex:0 0 auto;
+  }
+
+  .ct-btn{
+    appearance:none;
+    -webkit-appearance:none;
+    border:0;
+    background:transparent;
+    font-family:var(--font);
+    cursor:pointer;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:500;
+    color:var(--muted);
+    transition:var(--transition);
+  }
+
+  .ct-btn:hover{ color:var(--text); }
+
+  .ct-btn.is-active{
+    background:#fff;
+    color:var(--isl-navy);
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    border:1px solid rgba(0,0,0,.06);
   }
 
   /* ============= TOP PAGES (TABLE STYLE MATCHING ALL POSTS) ============= */
@@ -1085,12 +1125,24 @@
 
   <div class="charts">
     <div class="chart-card">
-      <div class="chart-title">Sessions by Channel</div>
+      <div class="chart-head">
+        <div class="chart-title">Sessions by Channel</div>
+        <div class="chart-toggle" role="group" aria-label="Sessions chart type">
+          <button type="button" class="ct-btn is-active" data-chart="sessions" data-type="bar">Bar</button>
+          <button type="button" class="ct-btn" data-chart="sessions" data-type="pie">Pie</button>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="sessionsChart"></canvas></div>
     </div>
 
     <div class="chart-card">
-      <div class="chart-title">Engagement Rate by Channel</div>
+      <div class="chart-head">
+        <div class="chart-title">Engagement Rate by Channel</div>
+        <div class="chart-toggle" role="group" aria-label="Engagement chart type">
+          <button type="button" class="ct-btn is-active" data-chart="engagement" data-type="bar">Bar</button>
+          <button type="button" class="ct-btn" data-chart="engagement" data-type="pie">Pie</button>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="engChart"></canvas></div>
     </div>
   </div>
@@ -1594,32 +1646,104 @@ function renderTopPages(){
 let _sessionsChart = null;
 let _engChart = null;
 
+function channelColor(index){
+  const fills = [
+    "rgba(0,112,202,0.82)",   // blue
+    "rgba(245,158,11,0.82)",  // yellow
+    "rgba(239,68,68,0.82)",   // red
+    "rgba(16,185,129,0.82)"   // green
+  ];
+  return fills[index % fills.length];
+}
+
+function channelBorder(index){
+  const borders = [
+    "rgba(0,84,154,1)",   // blue
+    "rgba(217,119,6,1)",  // yellow
+    "rgba(220,38,38,1)",  // red
+    "rgba(5,150,105,1)"   // green
+  ];
+  return borders[index % borders.length];
+}
+
+function buildOrUpdateTrafficChart(which, labels, values, type = "bar"){
+  const isSessions = which === "sessions";
+  const ctx = document.getElementById(isSessions ? "sessionsChart" : "engChart")?.getContext("2d");
+  if(!ctx) return;
+
+  const existingChart = isSessions ? _sessionsChart : _engChart;
+  if(existingChart) existingChart.destroy();
+
+  const backgroundColor = labels.map((_, i) => channelColor(i));
+  const borderColor = labels.map((_, i) => channelBorder(i));
+
+  const nextChart = new Chart(ctx, {
+    type,
+    data: {
+      labels,
+      datasets: [{
+        label: isSessions ? "Sessions" : "Engagement Rate (%)",
+        data: values,
+        backgroundColor,
+        borderColor,
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: type === "pie" }
+      },
+      scales: type === "pie" ? {} : {
+        y: {
+          beginAtZero: true,
+          ...(isSessions ? {} : { suggestedMax: 100 })
+        }
+      }
+    }
+  });
+
+  if(isSessions) _sessionsChart = nextChart;
+  else _engChart = nextChart;
+}
+
 function buildCharts(){
   const labels   = (REPORT?.channels || []).map(c => c.name);
   const sessions = (REPORT?.channels || []).map(c => c.sessions || 0);
   const engRates = (REPORT?.channels || []).map(c => (typeof c.engagementRate === "number" ? c.engagementRate : 0));
 
-  const sCtx = document.getElementById("sessionsChart")?.getContext("2d");
-  const eCtx = document.getElementById("engChart")?.getContext("2d");
-  if(!sCtx || !eCtx) return;
+  const activeSessionsType = document.querySelector('.ct-btn[data-chart="sessions"].is-active')?.dataset.type || "bar";
+  const activeEngType = document.querySelector('.ct-btn[data-chart="engagement"].is-active')?.dataset.type || "bar";
 
-  if(_sessionsChart) _sessionsChart.destroy();
-  if(_engChart) _engChart.destroy();
+  buildOrUpdateTrafficChart("sessions", labels, sessions, activeSessionsType);
+  buildOrUpdateTrafficChart("engagement", labels, engRates, activeEngType);
+}
 
-  _sessionsChart = new Chart(sCtx, {
-    type: "bar",
-    data: { labels, datasets: [{ label: "Sessions", data: sessions }] },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
+function wireTrafficChartToggles(){
+  document.querySelectorAll(".ct-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const chartKey = btn.dataset.chart;
+      const type = btn.dataset.type;
+      const group = btn.closest(".chart-toggle");
 
-  _engChart = new Chart(eCtx, {
-    type: "bar",
-    data: { labels, datasets: [{ label: "Engagement Rate (%)", data: engRates }] },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: { y: { beginAtZero: true, suggestedMax: 100 } }
-    }
+      if(group){
+        group.querySelectorAll(".ct-btn").forEach(node => node.classList.remove("is-active"));
+        btn.classList.add("is-active");
+      }
+
+      if(chartKey === "sessions" && _sessionsChart){
+        const labels = _sessionsChart.data.labels.slice();
+        const values = _sessionsChart.data.datasets[0].data.slice();
+        buildOrUpdateTrafficChart("sessions", labels, values, type);
+      }
+
+      if(chartKey === "engagement" && _engChart){
+        const labels = _engChart.data.labels.slice();
+        const values = _engChart.data.datasets[0].data.slice();
+        buildOrUpdateTrafficChart("engagement", labels, values, type);
+      }
+    });
   });
 }
 
@@ -1724,6 +1848,7 @@ function wireFloatingSectionMenu(){
 
     REPORT = normalizePayloadToReport(payload);
 
+    wireTrafficChartToggles();
     lockEditing();
     renderGeneratedAt();
     renderKPIs();
