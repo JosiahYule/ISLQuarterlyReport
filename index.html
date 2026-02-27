@@ -1295,6 +1295,32 @@
       align-items:center;
     }
 
+    .posts-view-toggle{
+      display:inline-flex;
+      border:1px solid rgba(0,0,0,.1);
+      border-radius:12px;
+      padding:3px;
+      background:#fff;
+      gap:4px;
+    }
+
+    .posts-view-btn{
+      border:0;
+      border-radius:9px;
+      padding:7px 10px;
+      font-size:12px;
+      font-weight:600;
+      color:#445066;
+      background:transparent;
+      cursor:pointer;
+      transition:var(--transition);
+    }
+
+    .posts-view-btn.is-active{
+      background:rgba(0,112,202,.12);
+      color:var(--isl-primary);
+    }
+
     .table-input{
       width:320px;
       max-width:100%;
@@ -1420,6 +1446,76 @@
       padding:18px 16px;
       color:var(--muted);
       font-size:13px;
+    }
+
+    .posts-calendar{
+      padding:14px;
+      display:grid;
+      gap:14px;
+    }
+
+    .calendar-month{
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:14px;
+      background:#fff;
+      overflow:hidden;
+    }
+
+    .calendar-title{
+      padding:10px 12px;
+      font-size:13px;
+      font-weight:700;
+      border-bottom:1px solid rgba(0,0,0,.08);
+      background:rgba(245,248,250,.7);
+    }
+
+    .calendar-grid{ display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); }
+
+    .calendar-dow,
+    .calendar-day{
+      min-height:90px;
+      border-right:1px solid rgba(0,0,0,.06);
+      border-bottom:1px solid rgba(0,0,0,.06);
+      padding:8px;
+    }
+
+    .calendar-dow{
+      min-height:auto;
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted);
+      font-weight:600;
+      background:rgba(250,251,252,.85);
+    }
+
+    .calendar-grid > :nth-child(7n){ border-right:0; }
+    .calendar-day.is-blank{ background:rgba(248,250,252,.55); }
+    .calendar-day-number{ font-size:11px; color:var(--muted); margin-bottom:6px; font-weight:600; }
+    .calendar-posts{ display:grid; gap:6px; }
+
+    .calendar-post{
+      border:1px solid rgba(0,0,0,.08);
+      border-left:4px solid rgba(148,163,184,.9);
+      border-radius:8px;
+      padding:6px;
+      font-size:11px;
+      line-height:1.35;
+      background:#fff;
+    }
+
+    .calendar-post.health-very-strong{ border-left-color:#2563EB; background:rgba(37,99,235,.06); }
+    .calendar-post.health-strong{ border-left-color:#10B981; background:rgba(16,185,129,.07); }
+    .calendar-post.health-moderate{ border-left-color:#F59E0B; background:rgba(245,158,11,.09); }
+    .calendar-post.health-low{ border-left-color:#EF4444; background:rgba(239,68,68,.08); }
+    .calendar-post strong{ display:block; color:var(--text); }
+    .calendar-post span{ color:#5b6475; }
+
+    @media (max-width:700px){
+      .calendar-grid{ grid-template-columns:1fr; }
+      .calendar-dow{ display:none; }
+      .calendar-grid > :nth-child(7n){ border-right:1px solid rgba(0,0,0,.06); }
+      .calendar-day{ min-height:auto; }
     }
 
     /* ============= APPLE-STYLE GLASS + FLOATING SECTION MENU ============= */
@@ -1788,12 +1884,17 @@
               <option value="facebook">Facebook</option>
               <option value="instagram">Instagram</option>
             </select>
+            <div class="posts-view-toggle" role="group" aria-label="Posts layout toggle">
+              <button type="button" class="posts-view-btn is-active" data-posts-view="table">Table</button>
+              <button type="button" class="posts-view-btn" data-posts-view="calendar">Calendar</button>
+            </div>
           </div>
           <div class="pill" aria-label="Post count"><span class="pill-dot" aria-hidden="true"></span><span><strong id="postsCount">0</strong> posts</span></div>
         </div>
 
         <div class="table-wrap" role="region" aria-label="Posts table scroll area">
           <table class="post-table" id="postsTable"></table>
+          <div class="posts-calendar" id="postsCalendar" style="display:none;"></div>
           <div class="table-empty" id="postsEmpty" style="display:none;">No posts match your filters.</div>
         </div>
       </div>
@@ -1862,6 +1963,7 @@ let RAW = null;
 let ALL_POSTS = [];
 let FILTERED_POSTS = [];
 let POSTS_SORT = { key: "date", dir: "desc" };
+let POSTS_VIEW = "table";
 
 let reachChart = null;
 let engChart = null;
@@ -2609,20 +2711,29 @@ function normalizeAllPostsRows(rows){
 // ---------- all posts render + filtering ----------
 function renderAllPostsTable(){
   const table = $("postsTable");
+  const calendar = $("postsCalendar");
   const countEl = $("postsCount");
   const emptyEl = $("postsEmpty");
-  if (!table) return;
+  if (!table || !calendar) return;
 
   const rows = FILTERED_POSTS;
-
   if (countEl) countEl.textContent = String(rows.length);
+
+  table.style.display = POSTS_VIEW === "table" ? "table" : "none";
+  calendar.style.display = POSTS_VIEW === "calendar" ? "grid" : "none";
 
   if (!rows.length){
     table.innerHTML = "";
+    calendar.innerHTML = "";
     if (emptyEl) emptyEl.style.display = "block";
     return;
   }
   if (emptyEl) emptyEl.style.display = "none";
+
+  if (POSTS_VIEW === "calendar"){
+    renderPostsCalendar(rows);
+    return;
+  }
 
   if (!table.tHead){
     table.insertAdjacentHTML("beforeend", `
@@ -2647,8 +2758,6 @@ function renderAllPostsTable(){
 
   tbody.innerHTML = rows.map(p => {
     const platforms = p.platforms.length ? p.platforms.join(", ") : "—";
-
-    // ✅ prefer calculated healthClass; fall back to parsing healthText if needed
     const healthClass = p.healthClass || healthClassFromText(p.healthText);
     const healthSafe = escHtml(cleanHealthText(p.healthText || "—"));
 
@@ -2673,6 +2782,70 @@ function renderAllPostsTable(){
       </tr>
     `;
   }).join("");
+}
+
+function renderPostsCalendar(rows){
+  const calendar = $("postsCalendar");
+  if (!calendar) return;
+
+  const datedRows = rows
+    .map(p => {
+      const normalized = fmtDateYMD(p.date);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) return null;
+      const d = new Date(`${normalized}T00:00:00`);
+      if (Number.isNaN(d.getTime())) return null;
+      return { post: p, dateObj: d, normalized };
+    })
+    .filter(Boolean)
+    .sort((a,b) => a.dateObj - b.dateObj);
+
+  if (!datedRows.length){
+    calendar.innerHTML = '<div class="table-empty">No valid post dates available for calendar view.</div>';
+    return;
+  }
+
+  const byMonth = new Map();
+  for (const row of datedRows){
+    const monthKey = `${row.dateObj.getFullYear()}-${String(row.dateObj.getMonth()+1).padStart(2,"0")}`;
+    if (!byMonth.has(monthKey)) byMonth.set(monthKey, []);
+    byMonth.get(monthKey).push(row);
+  }
+
+  calendar.innerHTML = Array.from(byMonth.entries()).map(([monthKey, monthRows]) => {
+    const [year, month] = monthKey.split("-").map(Number);
+    return buildCalendarMonth(monthRows, year, month);
+  }).join("");
+}
+
+function buildCalendarMonth(rows, year, month){
+  const firstDay = new Date(year, month - 1, 1).getDay();
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const monthLabel = new Date(year, month - 1, 1).toLocaleString(undefined, { month: "long", year: "numeric" });
+  const byDay = new Map();
+
+  for (const row of rows){
+    const dayNum = row.dateObj.getDate();
+    if (!byDay.has(dayNum)) byDay.set(dayNum, []);
+    byDay.get(dayNum).push(row.post);
+  }
+
+  const headers = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d => `<div class="calendar-dow">${d}</div>`).join("");
+  const cells = [];
+
+  for (let i = 0; i < firstDay; i++) cells.push('<div class="calendar-day is-blank"></div>');
+
+  for (let day = 1; day <= daysInMonth; day++){
+    const posts = byDay.get(day) || [];
+    const postHtml = posts.map(post => {
+      const healthClass = post.healthClass || healthClassFromText(post.healthText);
+      const health = cleanHealthText(post.healthText || "—");
+      return `<div class="calendar-post ${healthClass}"><strong>${escHtml(post.title)}</strong><span>${escHtml(health)} • ${escHtml((post.platforms || []).join(", ") || "—")}</span></div>`;
+    }).join("");
+
+    cells.push(`<div class="calendar-day"><div class="calendar-day-number">${day}</div><div class="calendar-posts">${postHtml}</div></div>`);
+  }
+
+  return `<article class="calendar-month"><div class="calendar-title">${escHtml(monthLabel)}</div><div class="calendar-grid">${headers}${cells.join("")}</div></article>`;
 }
 
 function sortHeaderButton(key, label, rightAligned = false){
@@ -2767,6 +2940,31 @@ function wirePostsTableFilters(){
       togglePostsSort(String(btn.dataset.sortKey || ""));
     });
   }
+}
+
+function wirePostsViewToggle(){
+  const buttons = Array.from(document.querySelectorAll("[data-posts-view]"));
+  if (!buttons.length) return;
+
+  const syncButtons = () => {
+    buttons.forEach((b) => {
+      const active = b.dataset.postsView === POSTS_VIEW;
+      b.classList.toggle("is-active", active);
+      b.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+  };
+
+  syncButtons();
+
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const nextView = String(btn.dataset.postsView || "table");
+      if (nextView !== "table" && nextView !== "calendar") return;
+      POSTS_VIEW = nextView;
+      syncButtons();
+      renderAllPostsTable();
+    });
+  });
 }
 
 // ---------- insights (FIXED: supports notWorking + next, and combines rows) ----------
@@ -2925,6 +3123,7 @@ async function init(){
     FILTERED_POSTS = ALL_POSTS.slice();
 
     wirePostsTableFilters();
+    wirePostsViewToggle();
     renderAllPostsTable();
 
     renderInsights(RAW.insights);
