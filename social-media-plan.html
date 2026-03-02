@@ -49,6 +49,15 @@
     .subtle-btn{border:1px solid var(--border);background:#fff;padding:8px 12px;border-radius:10px;font:inherit;font-weight:500;cursor:pointer;color:#334155}
     .saved-text{font-size:.82rem;color:var(--muted)}
 
+    .ai-panel{margin-top:16px}
+    .ai-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+    .ai-kicker{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+    .ai-refresh{border:1px solid var(--border);background:#fff;color:#334155;border-radius:999px;padding:6px 12px;font:inherit;font-size:.8rem;font-weight:500;cursor:pointer}
+    .ai-list{display:grid;gap:10px}
+    .ai-item{background:rgba(255,255,255,.8);border:1px solid rgba(148,163,184,.2);border-radius:12px;padding:12px 13px}
+    .ai-item strong{display:block;font-size:.78rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:6px}
+    .ai-item p{margin:0;font-size:.9rem;color:#1e293b;line-height:1.45}
+
     .main-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px}
     .calendar-board{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:12px;background:linear-gradient(180deg,#f9fcff,#f2f7fd);padding:12px;border-radius:14px;border:1px solid rgba(148,163,184,.24)}
     .day{border:1px solid rgba(148,163,184,.25);background:#fff;border-radius:12px;padding:14px;min-height:168px;cursor:pointer;text-align:left;transition:var(--trans);display:flex;flex-direction:column;gap:8px}
@@ -112,6 +121,19 @@
       <textarea id="notes" rows="5" placeholder="Notes"></textarea>
     </section>
 
+
+
+    <section class="panel ai-panel">
+      <div class="ai-head">
+        <div>
+          <div class="ai-kicker">Planning Assistant</div>
+          <h2>AI Recommendations</h2>
+        </div>
+        <button type="button" id="aiRefresh" class="ai-refresh">Refresh</button>
+      </div>
+      <div id="aiList" class="ai-list"></div>
+    </section>
+
     <div class="modal" id="editorModal" aria-hidden="true">
       <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="editorTitle">
         <div class="modal-head">
@@ -149,6 +171,8 @@
     const editorModal = document.getElementById("editorModal");
     const closeModal = document.getElementById("closeModal");
     const buttons = document.querySelectorAll(".toggle button");
+    const aiList = document.getElementById("aiList");
+    const aiRefresh = document.getElementById("aiRefresh");
 
     const fields = {
       priorities: document.getElementById("priorities"),
@@ -168,7 +192,8 @@
       data: {
         is: { priorities: "", notes: "", posts: {} },
         as: { priorities: "", notes: "", posts: {} }
-      }
+      },
+      quarter: null
     };
 
     function formatWeekOf(date = new Date()) {
@@ -243,6 +268,103 @@
       }
     });
 
+
+
+    async function loadQuarterContext() {
+      try {
+        const response = await fetch("./2026q1/2026-q1.json");
+        if (!response.ok) return;
+        state.quarter = await response.json();
+      } catch {
+        state.quarter = null;
+      }
+    }
+
+    function escapeHtml(text) {
+      return String(text || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function listItems(text) {
+      return String(text || "")
+        .split(/\n+/)
+        .map((line) => line.replace(/^[-•\s]+/, "").trim())
+        .filter(Boolean);
+    }
+
+    function renderAssistant() {
+      const messages = [];
+      const priorities = listItems(state.data[state.brand].priorities);
+      const notes = listItems(state.data[state.brand].notes);
+      const posts = state.data[state.brand].posts || {};
+      const weekPosts = DAYS.map((day) => posts[day] || {});
+      const scheduled = weekPosts.filter((post) => post.postTitle);
+      const withCTA = scheduled.filter((post) => post.cta);
+
+      priorities.forEach((item, index) => {
+        messages.push({
+          label: `Priority ${index + 1}`,
+          text: `You wrote: "${item}". What does success look like by Friday, and which platform should carry this priority first?`
+        });
+      });
+
+      notes.forEach((item, index) => {
+        messages.push({
+          label: `Note ${index + 1}`,
+          text: `Recommendation: convert this into a concrete action with owner + date. Question: what is the next smallest step for "${item}"?`
+        });
+      });
+
+      if (state.quarter?.overall) {
+        const avgER = state.quarter.overall.avgengagementrate;
+        const topPlatform = (state.quarter.platforms || []).slice().sort((a,b)=>b.engagementRate-a.engagementRate)[0];
+        messages.push({
+          label: "Quarter Alignment",
+          text: `Q${state.quarter.quarterLabel?.replace("Q","") || ""} avg engagement rate was ${avgER}%. ${topPlatform?.name || "LinkedIn"} led engagement. Are this week's posts weighted toward your highest-engagement platform and strongest themes?`
+        });
+
+        const notWorking = state.quarter.insights?.notWorking;
+        if (notWorking) {
+          messages.push({
+            label: "Insight Check",
+            text: `From quarterly insights: ${notWorking} Consider adding one experiment this week to directly address this.`
+          });
+        }
+      }
+
+      if (scheduled.length < 3) {
+        messages.push({
+          label: "Cadence",
+          text: "You currently have fewer than 3 scheduled posts. Would you like to add at least one awareness, one credibility, and one conversion post this week?"
+        });
+      }
+
+      if (scheduled.length && withCTA.length < scheduled.length) {
+        messages.push({
+          label: "Conversion Quality",
+          text: "Some planned posts are missing a CTA. Add a measurable CTA so weekly results can tie back to quarterly growth goals."
+        });
+      }
+
+      if (!messages.length) {
+        messages.push({
+          label: "Start Here",
+          text: "Add a priority or note and I will turn it into recommendations, follow-up questions, and quarter-aligned checks."
+        });
+      }
+
+      aiList.innerHTML = messages.slice(0, 8).map((message) => `
+        <article class="ai-item">
+          <strong>${escapeHtml(message.label)}</strong>
+          <p>${escapeHtml(message.text)}</p>
+        </article>
+      `).join("");
+    }
+
     function render() {
       const integrated = state.brand === "is";
       document.documentElement.style.setProperty("--primary", integrated ? "#00549A" : "#C77800");
@@ -262,6 +384,7 @@
       });
 
       renderCalendar();
+      renderAssistant();
     }
 
     function bindGlobalInput(input, key) {
@@ -269,6 +392,7 @@
         setSavedLabel("Saving...");
         state.data[state.brand][key] = input.value;
         persist();
+        renderAssistant();
       });
     }
 
@@ -286,6 +410,10 @@
         state.brand = btn.dataset.brand;
         render();
       });
+    });
+
+    aiRefresh.addEventListener("click", () => {
+      renderAssistant();
     });
 
     document.getElementById("clearWeek").addEventListener("click", () => {
@@ -307,7 +435,7 @@
 
     weekBadge.textContent = `Week of ${formatWeekOf()}`;
     load();
-    render();
+    loadQuarterContext().finally(() => render());
   </script>
 </body>
 </html>
