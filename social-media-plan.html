@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weekly Social Media Plan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --primary:#00549A;
+      --accent:#0070CA;
+      --bg:#F4F8FC;
+      --surface:#FFFFFF;
+      --border:rgba(15,23,42,.1);
+      --text:#0F172A;
+      --muted:#64748B;
+      --shadow:0 10px 30px rgba(15,23,42,.08);
+      --radius:16px;
+      --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+      --trans:all .2s ease;
+    }
+
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#f8fbff,#eff5fb);font-family:var(--font);color:var(--text)}
+    .container{max-width:1220px;margin:0 auto;padding:28px 20px 42px}
+
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand-mark{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;font-size:18px;font-weight:800;box-shadow:0 8px 18px rgba(0,84,154,.25)}
+    h1{margin:0;font-size:clamp(1.35rem,2vw,2rem)}
+    .subtitle{margin:2px 0 0;color:var(--muted);font-size:.94rem}
+
+    .toggle{display:flex;gap:8px;padding:6px;background:var(--surface);border:1px solid var(--border);border-radius:999px;box-shadow:0 4px 12px rgba(15,23,42,.05)}
+    .toggle button{border:0;background:transparent;border-radius:999px;padding:10px 16px;font:inherit;font-weight:700;color:var(--muted);cursor:pointer;transition:var(--trans)}
+    .toggle button.active{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;box-shadow:0 7px 14px rgba(0,84,154,.22)}
+
+    .panel{background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:var(--radius);padding:18px}
+    .panel h2{margin:0 0 12px;font-size:1.02rem}
+
+    textarea,input,select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#fff;font:inherit;color:var(--text)}
+    textarea:focus,input:focus,select:focus{outline:2px solid rgba(0,112,202,.26);border-color:transparent}
+
+    .meta-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+    .week-badge{font-size:.85rem;font-weight:600;color:#334155;background:rgba(148,163,184,.12);padding:6px 10px;border-radius:999px}
+    .meta-actions{display:flex;gap:8px;align-items:center}
+    .subtle-btn{border:1px solid var(--border);background:#fff;padding:8px 12px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer;color:#334155}
+    .saved-text{font-size:.82rem;color:var(--muted)}
+
+    .main-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;margin-top:16px}
+    .calendar{display:grid;grid-template-columns:repeat(7,minmax(90px,1fr));gap:10px}
+    .day{border:1px solid var(--border);background:#fff;border-radius:12px;padding:12px;min-height:118px;cursor:pointer;text-align:left;transition:var(--trans)}
+    .day:hover{transform:translateY(-1px);box-shadow:0 8px 16px rgba(15,23,42,.08)}
+    .day.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,112,202,.14)}
+    .day-name{display:block;font-size:.9rem;font-weight:700;margin-bottom:6px}
+    .day-text{display:block;color:var(--muted);font-size:.78rem;line-height:1.35}
+
+    .fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .full{grid-column:1 / -1}
+
+    @media (max-width:1000px){
+      .main-grid{grid-template-columns:1fr}
+      .calendar{grid-template-columns:repeat(2,minmax(130px,1fr))}
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" id="brandMark">IS</div>
+        <div>
+          <h1>Weekly Social Media Plan</h1>
+          <p class="subtitle" id="brandSubtitle">Integrated Staffing</p>
+        </div>
+      </div>
+      <div class="toggle" role="tablist" aria-label="Staffing brand toggle">
+        <button type="button" data-brand="is" class="active">Integrated Staffing</button>
+        <button type="button" data-brand="as">Accountant Staffing / Administrative Staffing</button>
+      </div>
+    </header>
+
+    <section class="panel">
+      <div class="meta-row">
+        <span class="week-badge" id="weekBadge">Week of --</span>
+        <div class="meta-actions">
+          <span id="saveState" class="saved-text">Saved</span>
+          <button id="clearWeek" type="button" class="subtle-btn">Clear current brand week</button>
+        </div>
+      </div>
+      <h2>Weekly Priorities</h2>
+      <textarea id="priorities" rows="4" placeholder="List your top priorities for this week..."></textarea>
+    </section>
+
+    <section class="main-grid">
+      <section class="panel">
+        <h2>Week Calendar</h2>
+        <div class="calendar" id="calendar"></div>
+      </section>
+
+      <section class="panel">
+        <h2 id="editorTitle">Post Details • Monday</h2>
+        <div class="fields">
+          <input id="postTitle" class="full" placeholder="Post title" />
+          <select id="platform">
+            <option value="">Platform</option>
+            <option>LinkedIn</option>
+            <option>Facebook</option>
+            <option>Instagram</option>
+            <option>X / Twitter</option>
+          </select>
+          <input id="time" type="time" />
+          <input id="status" class="full" placeholder="Status (Draft / Scheduled / Posted)" />
+          <textarea id="caption" class="full" rows="4" placeholder="Caption / copy"></textarea>
+          <input id="cta" class="full" placeholder="Call-to-action" />
+          <input id="asset" class="full" placeholder="Asset reference or link" />
+        </div>
+      </section>
+    </section>
+
+    <section class="panel" style="margin-top:16px;">
+      <h2>Notes</h2>
+      <textarea id="notes" rows="5" placeholder="Weekly notes, approvals, follow-ups, and ideas..."></textarea>
+    </section>
+  </main>
+
+  <script>
+    const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+    const STORAGE_KEY = "weekly-social-plan-v2";
+
+    const calendar = document.getElementById("calendar");
+    const weekBadge = document.getElementById("weekBadge");
+    const saveState = document.getElementById("saveState");
+    const brandSubtitle = document.getElementById("brandSubtitle");
+    const brandMark = document.getElementById("brandMark");
+    const buttons = document.querySelectorAll(".toggle button");
+
+    const fields = {
+      priorities: document.getElementById("priorities"),
+      notes: document.getElementById("notes"),
+      postTitle: document.getElementById("postTitle"),
+      platform: document.getElementById("platform"),
+      time: document.getElementById("time"),
+      status: document.getElementById("status"),
+      caption: document.getElementById("caption"),
+      cta: document.getElementById("cta"),
+      asset: document.getElementById("asset")
+    };
+
+    const state = {
+      brand: "is",
+      selectedDay: "Monday",
+      data: {
+        is: { priorities: "", notes: "", posts: {} },
+        as: { priorities: "", notes: "", posts: {} }
+      }
+    };
+
+    function formatWeekOf(date = new Date()) {
+      const day = date.getDay();
+      const diffToMonday = (day + 6) % 7;
+      const monday = new Date(date);
+      monday.setDate(date.getDate() - diffToMonday);
+      return monday.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+    }
+
+    function setSavedLabel(text) {
+      saveState.textContent = text;
+    }
+
+    function currentPost() {
+      const posts = state.data[state.brand].posts;
+      if (!posts[state.selectedDay]) posts[state.selectedDay] = {};
+      return posts[state.selectedDay];
+    }
+
+    function persist() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
+      setSavedLabel("Saved");
+    }
+
+    function load() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return;
+      try {
+        const parsed = JSON.parse(saved);
+        state.data = {
+          is: { ...state.data.is, ...(parsed.is || {}) },
+          as: { ...state.data.as, ...(parsed.as || {}) }
+        };
+      } catch {
+        console.warn("Unable to parse saved social plan data.");
+      }
+    }
+
+    function renderCalendar() {
+      calendar.innerHTML = "";
+      DAYS.forEach((day) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "day" + (day === state.selectedDay ? " active" : "");
+        const post = state.data[state.brand].posts[day] || {};
+        button.innerHTML = `
+          <span class="day-name">${day}</span>
+          <span class="day-text">${post.postTitle || "No post planned"}</span>
+          <span class="day-text">${post.platform || ""}</span>
+        `;
+        button.addEventListener("click", () => {
+          state.selectedDay = day;
+          render();
+        });
+        calendar.appendChild(button);
+      });
+    }
+
+    function render() {
+      const integrated = state.brand === "is";
+      document.documentElement.style.setProperty("--primary", integrated ? "#00549A" : "#C77800");
+      document.documentElement.style.setProperty("--accent", integrated ? "#0070CA" : "#F0A31A");
+      brandSubtitle.textContent = integrated ? "Integrated Staffing" : "Accountant Staffing / Administrative Staffing";
+      brandMark.textContent = integrated ? "IS" : "AS";
+
+      buttons.forEach((btn) => btn.classList.toggle("active", btn.dataset.brand === state.brand));
+
+      fields.priorities.value = state.data[state.brand].priorities || "";
+      fields.notes.value = state.data[state.brand].notes || "";
+
+      const post = currentPost();
+      document.getElementById("editorTitle").textContent = `Post Details • ${state.selectedDay}`;
+      ["postTitle","platform","time","status","caption","cta","asset"].forEach((key) => {
+        fields[key].value = post[key] || "";
+      });
+
+      renderCalendar();
+    }
+
+    function bindGlobalInput(input, key) {
+      input.addEventListener("input", () => {
+        setSavedLabel("Saving...");
+        state.data[state.brand][key] = input.value;
+        persist();
+      });
+    }
+
+    function bindPostInput(input, key) {
+      input.addEventListener("input", () => {
+        setSavedLabel("Saving...");
+        currentPost()[key] = input.value;
+        persist();
+        renderCalendar();
+      });
+    }
+
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        state.brand = btn.dataset.brand;
+        render();
+      });
+    });
+
+    document.getElementById("clearWeek").addEventListener("click", () => {
+      state.data[state.brand] = { priorities: "", notes: "", posts: {} };
+      state.selectedDay = "Monday";
+      persist();
+      render();
+    });
+
+    bindGlobalInput(fields.priorities, "priorities");
+    bindGlobalInput(fields.notes, "notes");
+    bindPostInput(fields.postTitle, "postTitle");
+    bindPostInput(fields.platform, "platform");
+    bindPostInput(fields.time, "time");
+    bindPostInput(fields.status, "status");
+    bindPostInput(fields.caption, "caption");
+    bindPostInput(fields.cta, "cta");
+    bindPostInput(fields.asset, "asset");
+
+    weekBadge.textContent = `Week of ${formatWeekOf()}`;
+    load();
+    render();
+  </script>
+</body>
+</html>
