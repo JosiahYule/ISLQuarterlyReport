@@ -378,9 +378,12 @@
       return posts[day];
     }
 
-    function currentPost() {
+    function currentPost(createIfMissing = true) {
       const postsForDay = dayPosts();
-      if (!postsForDay[state.selectedPostIndex]) postsForDay[state.selectedPostIndex] = {};
+      if (!postsForDay[state.selectedPostIndex]) {
+        if (!createIfMissing) return {};
+        postsForDay[state.selectedPostIndex] = {};
+      }
       return postsForDay[state.selectedPostIndex];
     }
 
@@ -436,13 +439,8 @@
 
     function openEditor(day, postIndex = null) {
       state.selectedDay = day;
-      if (postIndex == null) {
-        const postsForDay = dayPosts(day);
-        postsForDay.push({});
-        state.selectedPostIndex = postsForDay.length - 1;
-      } else {
-        state.selectedPostIndex = postIndex;
-      }
+      if (postIndex == null) state.selectedPostIndex = dayPosts(day).length;
+      else state.selectedPostIndex = postIndex;
       editorModal.classList.add("open");
       editorModal.setAttribute("aria-hidden", "false");
       render();
@@ -525,7 +523,7 @@
       const todos = state.data[state.brand].todos || [];
       todoList.innerHTML = "";
       todos.forEach((todo, index) => {
-        const row = document.createElement("label");
+        const row = document.createElement("div");
         row.className = "todo-item" + (todo.done ? " done" : "");
         row.innerHTML = `<input type="checkbox" data-todo-check="${index}" ${todo.done ? "checked" : ""} /><input type="text" data-todo-text="${index}" placeholder="Task ${index + 1}" value="${escapeHtml(todo.text || "")}" /><button type="button" class="todo-delete" data-todo-delete="${index}" aria-label="Delete task ${index + 1}">🗑️</button>`;
         todoList.appendChild(row);
@@ -585,7 +583,7 @@
 
       renderTodos();
 
-      const post = currentPost();
+      const post = editorModal.classList.contains("open") ? currentPost(false) : {};
       document.getElementById("editorTitle").textContent = `Post Details • ${state.selectedDay}`;
       ["postTitle","time","status","caption"].forEach((key) => { fields[key].value = post[key] || ""; });
       fields.postLink.value = post.postLink || post.asset || "";
@@ -611,7 +609,7 @@
       });
     }
 
-    buttons.forEach((btn) => btn.addEventListener("click", () => { state.brand = btn.dataset.brand; render(); }));
+    buttons.forEach((btn) => btn.addEventListener("click", () => { state.brand = btn.dataset.brand; state.selectedDay = "Monday"; state.selectedPostIndex = 0; render(); }));
 
     [fields.priority1, fields.priority2, fields.priority3].forEach((input, index) => {
       input.addEventListener("input", () => {
