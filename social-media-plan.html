@@ -130,8 +130,8 @@
     <section class="panel ai-panel">
       <div class="ai-head">
         <div>
-          <div class="ai-kicker">Planning Assistant</div>
-          <h2>AI Recommendations</h2>
+          <div class="ai-kicker">Your Strategy Partner</div>
+          <h2>Marketing Team Copilot</h2>
         </div>
         <button type="button" id="aiRefresh" class="ai-refresh">Refresh</button>
       </div>
@@ -327,60 +327,73 @@
       const weekPosts = DAYS.map((day) => posts[day] || {});
       const scheduled = weekPosts.filter((post) => post.postTitle);
       const withCTA = scheduled.filter((post) => post.cta);
+      const platformCounts = scheduled.reduce((acc, post) => {
+        const key = (post.platform || "Unassigned").trim() || "Unassigned";
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+      const topPlannedPlatform = Object.entries(platformCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+
+      messages.push({
+        label: "Team Check-in",
+        text: `Hey team — I reviewed this week's plan. Right now we have ${scheduled.length} planned post${scheduled.length === 1 ? "" : "s"}. Want me to pressure-test the mix for awareness, engagement, and conversion?`
+      });
 
       priorities.forEach((item, index) => {
         messages.push({
           label: `Priority ${index + 1}`,
-          text: `You wrote: "${item}". What does success look like by Friday, and which platform should carry this priority first?`
+          text: `I like this direction: "${item}". If we were in a weekly standup, I'd ask: what's our success metric by Friday, and what is the one post concept most likely to move it?`
         });
       });
 
       notes.forEach((item, index) => {
         messages.push({
           label: `Note ${index + 1}`,
-          text: `Recommendation: convert this into a concrete action with owner + date. Question: what is the next smallest step for "${item}"?`
+          text: `Good call capturing this: "${item}". To make it execution-ready, should we assign an owner, a deadline, and a clear outcome so nothing slips?`
         });
       });
 
       if (state.quarter?.overall) {
         const avgER = state.quarter.overall.avgengagementrate;
         const topPlatform = (state.quarter.platforms || []).slice().sort((a,b)=>b.engagementRate-a.engagementRate)[0];
+        const topPlatformName = topPlatform?.name || "LinkedIn";
+
         messages.push({
-          label: "Quarter Alignment",
-          text: `Q${state.quarter.quarterLabel?.replace("Q","") || ""} avg engagement rate was ${avgER}%. ${topPlatform?.name || "LinkedIn"} led engagement. Are this week's posts weighted toward your highest-engagement platform and strongest themes?`
+          label: "Quarter Strategy Link",
+          text: `Quarter context: average engagement rate was ${avgER}%, with ${topPlatformName} leading. Do we want this week to deliberately lean into ${topPlatformName}${topPlannedPlatform && topPlannedPlatform !== "Unassigned" ? ` (currently most planned: ${topPlannedPlatform})` : ""} and then run one measured test on a secondary platform?`
         });
 
         const notWorking = state.quarter.insights?.notWorking;
         if (notWorking) {
           messages.push({
-            label: "Insight Check",
-            text: `From quarterly insights: ${notWorking} Consider adding one experiment this week to directly address this.`
+            label: "What We Should Fix",
+            text: `One thing flagged last quarter: ${notWorking} I'd recommend one focused experiment this week tied to that gap, with a single success KPI so we can learn fast.`
           });
         }
       }
 
       if (scheduled.length < 3) {
         messages.push({
-          label: "Cadence",
-          text: "You currently have fewer than 3 scheduled posts. Would you like to add at least one awareness, one credibility, and one conversion post this week?"
+          label: "Content Cadence",
+          text: "I'd push us to schedule at least 3 posts this week: one trust-building story, one value/education piece, and one conversion-focused post with a clear next step. Want me to draft that mix?"
         });
       }
 
       if (scheduled.length && withCTA.length < scheduled.length) {
         messages.push({
-          label: "Conversion Quality",
-          text: "Some planned posts are missing a CTA. Add a measurable CTA so weekly results can tie back to quarterly growth goals."
+          label: "Performance Lens",
+          text: "Some posts are still missing CTAs. If we tighten those, we can tie weekly execution back to quarterly growth goals much more confidently."
         });
       }
 
-      if (!messages.length) {
+      if (!priorities.length && !notes.length && !scheduled.length) {
         messages.push({
-          label: "Start Here",
-          text: "Add a priority or note and I will turn it into recommendations, follow-up questions, and quarter-aligned checks."
+          label: "Kickoff Prompt",
+          text: "Drop your first priority and I'll help shape messaging angles, platform choices, and a practical execution plan like we’re collaborating in a planning meeting."
         });
       }
 
-      aiList.innerHTML = messages.slice(0, 8).map((message) => `
+      aiList.innerHTML = messages.slice(0, 10).map((message) => `
         <article class="ai-item">
           <strong>${escapeHtml(message.label)}</strong>
           <p>${escapeHtml(message.text)}</p>
