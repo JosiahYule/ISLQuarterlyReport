@@ -49,23 +49,23 @@
     .subtle-btn{border:1px solid var(--border);background:#fff;padding:8px 12px;border-radius:10px;font:inherit;font-weight:500;cursor:pointer;color:#334155}
     .saved-text{font-size:.82rem;color:var(--muted)}
 
-    .ai-panel{margin-top:16px}
+    .priority-list{margin:0;padding-left:20px;display:grid;gap:8px}
+    .priority-list li{padding-left:2px}
+
+    .ai-partner{position:fixed;left:16px;bottom:16px;z-index:50;width:min(420px,calc(100vw - 32px));background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.9));border:1px solid var(--border);box-shadow:var(--shadow);border-radius:16px;overflow:hidden}
+    .ai-partner summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;background:rgba(0,84,154,.06)}
+    .ai-partner summary::-webkit-details-marker{display:none}
+    .ai-partner summary strong{font-size:.88rem}
+    .ai-partner summary span{font-size:.78rem;color:var(--muted)}
+    .ai-partner[open] summary{border-bottom:1px solid var(--border)}
+    .ai-panel{padding:12px}
     .ai-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
     .ai-tools{display:flex;align-items:center;gap:8px}
     .ai-kicker{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
-    .ai-refresh{border:1px solid var(--border);background:#fff;color:#334155;border-radius:999px;padding:6px 12px;font:inherit;font-size:.8rem;font-weight:500;cursor:pointer}
-    .copilot-count{font-size:.76rem;color:#334155;background:#eef2ff;border:1px solid rgba(99,102,241,.2);padding:5px 9px;border-radius:999px;font-weight:600}
-    .ai-list{display:grid;gap:10px}
-    .ai-item{width:100%;background:rgba(255,255,255,.8);border:1px solid rgba(148,163,184,.2);border-radius:12px;padding:12px 13px;text-align:left;cursor:pointer;transition:var(--trans)}
-    .ai-item:hover{border-color:rgba(0,112,202,.35);transform:translateY(-1px)}
-    .ai-item strong{display:block;font-size:.78rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:6px}
-    .ai-item p{margin:0;font-size:.9rem;color:#1e293b;line-height:1.45}
-    .copilot-empty{border:1px dashed rgba(100,116,139,.45);border-radius:12px;padding:12px;color:#475569;background:rgba(248,250,252,.8);font-size:.9rem}
-    .copilot-chat{margin-top:12px;border:1px solid rgba(148,163,184,.28);border-radius:14px;background:#fff;padding:12px;display:none;gap:10px}
-    .copilot-chat.open{display:grid}
+    .copilot-chat{border:1px solid rgba(148,163,184,.28);border-radius:14px;background:#fff;padding:12px;display:grid;gap:10px}
     .chat-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
     .chat-head strong{font-size:.85rem;color:#1e293b}
-    .resolve-btn{border:1px solid #198754;background:#22c55e;color:#fff;border-radius:999px;padding:6px 11px;font:inherit;font-size:.75rem;font-weight:600;cursor:pointer}
+    .clear-chat{border:1px solid rgba(148,163,184,.45);background:#fff;color:#334155;border-radius:999px;padding:6px 11px;font:inherit;font-size:.75rem;font-weight:600;cursor:pointer}
     .chat-log{display:grid;gap:8px;max-height:240px;overflow:auto;padding-right:4px}
     .chat-msg{padding:8px 10px;border-radius:10px;font-size:.85rem;line-height:1.4}
     .chat-msg.user{background:#e0f2fe;justify-self:end;max-width:92%}
@@ -111,6 +111,13 @@
     @media (max-width:1000px){
       .calendar-board{grid-template-columns:repeat(2,minmax(130px,1fr))}
     }
+
+    @media (max-width:720px){
+      .container{padding:20px 14px 110px}
+      .toggle{width:100%}
+      .toggle button{flex:1}
+      .ai-partner{left:12px;right:12px;bottom:12px;width:auto}
+    }
   </style>
 </head>
 <body>
@@ -137,8 +144,12 @@
           <button id="clearWeek" type="button" class="subtle-btn">Reset week</button>
         </div>
       </div>
-      <h2>Priorities</h2>
-      <textarea id="priorities" rows="4" placeholder="Top priorities"></textarea>
+      <h2>Priorities (max 3)</h2>
+      <ul class="priority-list">
+        <li><input id="priority1" type="text" placeholder="Priority 1" /></li>
+        <li><input id="priority2" type="text" placeholder="Priority 2" /></li>
+        <li><input id="priority3" type="text" placeholder="Priority 3" /></li>
+      </ul>
     </section>
 
     <section class="main-grid">
@@ -155,40 +166,38 @@
 
 
 
-    <section class="panel ai-panel">
-      <div class="ai-head">
-        <div>
-          <div class="ai-kicker">Your Strategy Partner</div>
-          <h2>Marketing Team Copilot</h2>
+    <details class="ai-partner" id="aiPartner" open>
+      <summary>
+        <strong>AI Strategy Partner</strong>
+        <span>Daily conversation</span>
+      </summary>
+      <section class="ai-panel">
+        <div class="ai-head">
+          <div>
+            <div class="ai-kicker">Your Strategy Partner</div>
+            <h2>Marketing Team Copilot</h2>
+          </div>
+          <div class="ai-tools">
+            <button type="button" id="clearChat" class="clear-chat">Clear chat</button>
+          </div>
         </div>
-        <div class="ai-tools">
-          <span class="copilot-count" id="copilotCount">0 open points</span>
-          <button type="button" id="aiRefresh" class="ai-refresh">Refresh</button>
-        </div>
-      </div>
-      <div id="nextAction" class="next-action"></div>
-      <div id="aiList" class="ai-list"></div>
-      <div class="resolved-wrap" id="resolvedWrap">
-        <button type="button" class="resolved-toggle" id="resolvedToggle">Show resolved points</button>
-        <div class="resolved-list" id="resolvedList"></div>
-      </div>
-      <section id="copilotChat" class="copilot-chat" aria-live="polite">
-        <div class="chat-head">
-          <strong id="chatTopic">Open a point to chat with Strategic Copilot</strong>
-          <button type="button" id="resolvePoint" class="resolve-btn">Resolve</button>
-        </div>
-        <div id="chatLog" class="chat-log"></div>
-        <form id="chatForm" class="chat-compose">
-          <input id="chatInput" type="text" placeholder="Ask for ideas, copy angles, or next steps..." autocomplete="off" />
-          <button type="submit" class="send-btn">Send</button>
-        </form>
-        <div class="chip-row" id="quickChipRow">
-          <button type="button" class="quick-chip" data-chip="Give me 3 hook ideas for this.">3 hooks</button>
-          <button type="button" class="quick-chip" data-chip="Write two CTA options for this point.">CTA options</button>
-          <button type="button" class="quick-chip" data-chip="Repurpose this for LinkedIn and Facebook.">Repurpose</button>
-        </div>
+        <section id="copilotChat" class="copilot-chat" aria-live="polite">
+          <div class="chat-head">
+            <strong id="chatTopic">Daily planning conversation</strong>
+          </div>
+          <div id="chatLog" class="chat-log"></div>
+          <form id="chatForm" class="chat-compose">
+            <input id="chatInput" type="text" placeholder="Ask for ideas, copy angles, or next steps..." autocomplete="off" />
+            <button type="submit" class="send-btn">Send</button>
+          </form>
+          <div class="chip-row" id="quickChipRow">
+            <button type="button" class="quick-chip" data-chip="Give me 3 hook ideas for this.">3 hooks</button>
+            <button type="button" class="quick-chip" data-chip="Write two CTA options for this point.">CTA options</button>
+            <button type="button" class="quick-chip" data-chip="Repurpose this for LinkedIn and Facebook.">Repurpose</button>
+          </div>
+        </section>
       </section>
-    </section>
+    </details>
 
     <div class="modal" id="editorModal" aria-hidden="true">
       <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="editorTitle">
@@ -227,24 +236,19 @@
     const editorModal = document.getElementById("editorModal");
     const closeModal = document.getElementById("closeModal");
     const buttons = document.querySelectorAll(".toggle button");
-    const aiList = document.getElementById("aiList");
-    const aiRefresh = document.getElementById("aiRefresh");
-    const nextAction = document.getElementById("nextAction");
-    const resolvedWrap = document.getElementById("resolvedWrap");
-    const resolvedToggle = document.getElementById("resolvedToggle");
-    const resolvedList = document.getElementById("resolvedList");
+    const aiPartner = document.getElementById("aiPartner");
     const quickChipRow = document.getElementById("quickChipRow");
     const postAssist = document.getElementById("postAssist");
-    const copilotCount = document.getElementById("copilotCount");
-    const copilotChat = document.getElementById("copilotChat");
     const chatTopic = document.getElementById("chatTopic");
     const chatLog = document.getElementById("chatLog");
     const chatForm = document.getElementById("chatForm");
     const chatInput = document.getElementById("chatInput");
-    const resolvePoint = document.getElementById("resolvePoint");
+    const clearChat = document.getElementById("clearChat");
 
     const fields = {
-      priorities: document.getElementById("priorities"),
+      priority1: document.getElementById("priority1"),
+      priority2: document.getElementById("priority2"),
+      priority3: document.getElementById("priority3"),
       notes: document.getElementById("notes"),
       postTitle: document.getElementById("postTitle"),
       platform: document.getElementById("platform"),
@@ -256,20 +260,14 @@
     };
 
     function emptyBrandState() {
-      return { priorities: "", notes: "", posts: {}, copilot: { dismissed: [], chats: {} } };
+      return { priorities: ["", "", ""], notes: "", posts: {}, copilot: { dailyChat: [] } };
     }
 
     const state = {
       brand: "is",
       selectedDay: "Monday",
-      data: {
-        is: emptyBrandState(),
-        as: emptyBrandState()
-      },
-      quarter: null,
-      activePointId: null,
-      showResolved: false,
-      cachedMessages: []
+      data: { is: emptyBrandState(), as: emptyBrandState() },
+      quarter: null
     };
 
     function formatWeekOf(date = new Date()) {
@@ -280,9 +278,7 @@
       return monday.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
     }
 
-    function setSavedLabel(text) {
-      saveState.textContent = text;
-    }
+    function setSavedLabel(text) { saveState.textContent = text; }
 
     function currentPost() {
       const posts = state.data[state.brand].posts;
@@ -292,15 +288,19 @@
 
     function brandCopilot() {
       const data = state.data[state.brand];
-      if (!data.copilot) data.copilot = { dismissed: [], chats: {} };
-      if (!Array.isArray(data.copilot.dismissed)) data.copilot.dismissed = [];
-      if (!data.copilot.chats || typeof data.copilot.chats !== "object") data.copilot.chats = {};
+      if (!data.copilot || typeof data.copilot !== "object") data.copilot = { dailyChat: [] };
+      if (!Array.isArray(data.copilot.dailyChat)) data.copilot.dailyChat = [];
       return data.copilot;
     }
 
     function persist() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
       setSavedLabel("Saved");
+    }
+
+    function listItems(textOrArray) {
+      if (Array.isArray(textOrArray)) return textOrArray.map((line) => String(line || "").trim()).filter(Boolean);
+      return String(textOrArray || "").split(/\n+/).map((line) => line.replace(/^[-•\s]+/, "").trim()).filter(Boolean);
     }
 
     function load() {
@@ -310,13 +310,13 @@
         const parsed = JSON.parse(saved);
         ["is", "as"].forEach((brand) => {
           const source = parsed[brand] || {};
+          const priorities = Array.isArray(source.priorities) ? source.priorities.slice(0, 3) : listItems(source.priorities).slice(0, 3);
+          while (priorities.length < 3) priorities.push("");
           state.data[brand] = {
             ...emptyBrandState(),
             ...source,
-            copilot: {
-              dismissed: source?.copilot?.dismissed || [],
-              chats: source?.copilot?.chats || {}
-            }
+            priorities,
+            copilot: { dailyChat: source?.copilot?.dailyChat || [] }
           };
         });
       } catch {
@@ -338,20 +338,12 @@
         dayCard.className = "day" + (day === state.selectedDay ? " active" : "");
         const post = state.data[state.brand].posts[day] || {};
         const hasPost = Boolean(post.postTitle);
-
         dayCard.innerHTML = `<span class="day-name">${day}</span>`;
-
         if (hasPost) {
           const tile = document.createElement("button");
           tile.type = "button";
           tile.className = "post-tile";
-          tile.innerHTML = `
-            <span class="post-title">${escapeHtml(post.postTitle)}</span>
-            <span class="post-meta">
-              <span>${escapeHtml(post.platform || "Set platform")}</span>
-              <span>${escapeHtml(post.time || "Set time")}</span>
-            </span>
-          `;
+          tile.innerHTML = `<span class="post-title">${escapeHtml(post.postTitle)}</span><span class="post-meta"><span>${escapeHtml(post.platform || "Set platform")}</span><span>${escapeHtml(post.time || "Set time")}</span></span>`;
           tile.addEventListener("click", () => openEditor(day));
           dayCard.appendChild(tile);
         } else {
@@ -362,231 +354,46 @@
           addButton.addEventListener("click", () => openEditor(day));
           dayCard.appendChild(addButton);
         }
-
         calendar.appendChild(dayCard);
       });
     }
 
-    closeModal.addEventListener("click", () => {
-      editorModal.classList.remove("open");
-      editorModal.setAttribute("aria-hidden", "true");
-    });
-
-    editorModal.addEventListener("click", (event) => {
-      if (event.target === editorModal) {
-        editorModal.classList.remove("open");
-        editorModal.setAttribute("aria-hidden", "true");
-      }
-    });
-
-    async function loadQuarterContext() {
-      try {
-        const response = await fetch("./2026q1/2026-q1.json");
-        if (!response.ok) return;
-        state.quarter = await response.json();
-      } catch {
-        state.quarter = null;
-      }
-    }
-
     function escapeHtml(text) {
-      return String(text || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
+      return String(text || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     }
 
-    function listItems(text) {
-      return String(text || "")
-        .split(/\n+/)
-        .map((line) => line.replace(/^[-•\s]+/, "").trim())
-        .filter(Boolean);
-    }
-
-
-    function scorePriority(message) {
-      const text = `${message.label} ${message.text}`.toLowerCase();
-      if (text.includes("fix") || text.includes("missing") || text.includes("conversion") || text.includes("cta")) return "High";
-      if (text.includes("quarter") || text.includes("cadence") || text.includes("priority")) return "Medium";
-      return "Low";
-    }
-
-    function bestNextAction(openPoints) {
-      if (!openPoints.length) return "All current points are resolved. Add or edit priorities and posts, then refresh for the next recommendation.";
-      const high = openPoints.find((point) => point.priorityTag === "High");
-      const target = high || openPoints[0];
-      return `Focus next on "${target.label}" (${target.priorityTag} impact) to keep this week moving.`;
-    }
-
-    function buildCopilotPoints() {
-      const messages = [];
+    function buildCopilotContext() {
       const priorities = listItems(state.data[state.brand].priorities);
       const notes = listItems(state.data[state.brand].notes);
       const posts = state.data[state.brand].posts || {};
-      const weekPosts = DAYS.map((day) => posts[day] || {});
-      const scheduled = weekPosts.filter((post) => post.postTitle);
+      const scheduled = DAYS.map((day) => posts[day] || {}).filter((post) => post.postTitle);
       const withCTA = scheduled.filter((post) => post.cta);
       const platformCounts = scheduled.reduce((acc, post) => {
         const key = (post.platform || "Unassigned").trim() || "Unassigned";
         acc[key] = (acc[key] || 0) + 1;
         return acc;
       }, {});
-      const topPlannedPlatform = Object.entries(platformCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
-
-      messages.push({
-        id: "team-checkin",
-        label: "Team Check-in",
-        text: `Hey team — I reviewed this week's plan. Right now we have ${scheduled.length} planned post${scheduled.length === 1 ? "" : "s"}. Want me to pressure-test the mix for awareness, engagement, and conversion?`
-      });
-
-      priorities.forEach((item, index) => {
-        messages.push({
-          id: `priority-${index}`,
-          label: `Priority ${index + 1}`,
-          text: `I like this direction: "${item}". If we were in a weekly standup, I'd ask: what's our success metric by Friday, and what is the one post concept most likely to move it?`
-        });
-      });
-
-      notes.forEach((item, index) => {
-        messages.push({
-          id: `note-${index}`,
-          label: `Note ${index + 1}`,
-          text: `Good call capturing this: "${item}". To make it execution-ready, should we assign an owner, a deadline, and a clear outcome so nothing slips?`
-        });
-      });
-
-      if (state.quarter?.overall) {
-        const avgER = state.quarter.overall.avgengagementrate;
-        const topPlatform = (state.quarter.platforms || []).slice().sort((a,b)=>b.engagementRate-a.engagementRate)[0];
-        const topPlatformName = topPlatform?.name || "LinkedIn";
-
-        messages.push({
-          id: "quarter-link",
-          label: "Quarter Strategy Link",
-          text: `Quarter context: average engagement rate was ${avgER}%, with ${topPlatformName} leading. Do we want this week to deliberately lean into ${topPlatformName}${topPlannedPlatform && topPlannedPlatform !== "Unassigned" ? ` (currently most planned: ${topPlannedPlatform})` : ""} and then run one measured test on a secondary platform?`
-        });
-
-        const notWorking = state.quarter.insights?.notWorking;
-        if (notWorking) {
-          messages.push({
-            id: "fix-focus",
-            label: "What We Should Fix",
-            text: `One thing flagged last quarter: ${notWorking} I'd recommend one focused experiment this week tied to that gap, with a single success KPI so we can learn fast.`
-          });
-        }
-      }
-
-      if (scheduled.length < 3) {
-        messages.push({
-          id: "content-cadence",
-          label: "Content Cadence",
-          text: "I'd push us to schedule at least 3 posts this week: one trust-building story, one value/education piece, and one conversion-focused post with a clear next step. Want me to draft that mix?"
-        });
-      }
-
-      if (scheduled.length && withCTA.length < scheduled.length) {
-        messages.push({
-          id: "performance-lens",
-          label: "Performance Lens",
-          text: "Some posts are still missing CTAs. If we tighten those, we can tie weekly execution back to quarterly growth goals much more confidently."
-        });
-      }
-
-      if (!priorities.length && !notes.length && !scheduled.length) {
-        messages.push({
-          id: "kickoff",
-          label: "Kickoff Prompt",
-          text: "Drop your first priority and I'll help shape messaging angles, platform choices, and a practical execution plan like we’re collaborating in a planning meeting."
-        });
-      }
-
-      return messages.slice(0, 10).map((message) => ({ ...message, priorityTag: scorePriority(message) }));
-    }
-
-    function openCopilotPoint(pointId) {
-      const point = state.cachedMessages.find((message) => message.id === pointId);
-      if (!point) return;
-      state.activePointId = pointId;
-      const copilot = brandCopilot();
-      if (!Array.isArray(copilot.chats[pointId]) || !copilot.chats[pointId].length) {
-        copilot.chats[pointId] = [{ role: "ai", text: point.text }];
-      }
-      renderAssistant();
-      persist();
+      const platformMix = Object.entries(platformCounts).map(([k, v]) => `${k} (${v})`).join(", ") || "No platforms selected yet";
+      return `Priorities: ${priorities.join(" • ") || "None yet"}. Notes: ${notes.join(" • ") || "None yet"}. Posts scheduled: ${scheduled.length}. Posts with CTA: ${withCTA.length}. Platform mix: ${platformMix}.`;
     }
 
     function strategicReply(prompt) {
       const lower = prompt.toLowerCase();
-      if (lower.includes("cta") || lower.includes("convert")) return "Great prompt. I’d test one CTA tied to urgency and one tied to clarity. Keep it to a single action and track click-through by platform.";
-      if (lower.includes("linkedin") || lower.includes("facebook") || lower.includes("instagram")) return "I’d keep the core message consistent, then tailor the opening hook per platform. Start with LinkedIn for thought leadership and mirror with lighter creative on Facebook/Instagram.";
-      if (lower.includes("idea") || lower.includes("angle") || lower.includes("brainstorm")) return "Let’s build 3 angles: pain point, proof, and outcome. Pick one hero angle this week, then use the others as follow-up posts for continuity.";
-      return "Solid direction. Next step: define one measurable goal, one primary audience segment, and one clear CTA so we can evaluate impact quickly.";
-    }
-
-    function renderChat(point) {
-      if (!point) {
-        copilotChat.classList.remove("open");
-        chatTopic.textContent = "Open a point to chat with Strategic Copilot";
-        chatLog.innerHTML = "";
-        return;
-      }
-
-      const chat = brandCopilot().chats[point.id] || [];
-      chatTopic.textContent = `Strategic Copilot • ${point.label}`;
-      chatLog.innerHTML = chat.map((message) => `<div class="chat-msg ${message.role}">${escapeHtml(message.text)}</div>`).join("");
-      copilotChat.classList.add("open");
-      chatLog.scrollTop = chatLog.scrollHeight;
+      if (lower.includes("cta") || lower.includes("convert")) return "Great move. I would test one urgency CTA and one clarity CTA, then keep each post focused on a single action.";
+      if (lower.includes("linkedin") || lower.includes("facebook") || lower.includes("instagram")) return "Keep one core message, then customize the opening hook and visual for each platform so it feels native.";
+      if (lower.includes("idea") || lower.includes("angle") || lower.includes("brainstorm")) return "Try three angles: pain point, proof, and transformation. Use one as this week’s hero theme and sequence the others as follow-ups.";
+      return "Strong direction. Let’s anchor today on one measurable outcome, one audience segment, and one next step.";
     }
 
     function renderAssistant() {
-      state.cachedMessages = buildCopilotPoints();
       const copilot = brandCopilot();
-      const dismissed = new Set(copilot.dismissed);
-      const openPoints = state.cachedMessages.filter((message) => !dismissed.has(message.id));
-
-      copilotCount.textContent = `${openPoints.length} open point${openPoints.length === 1 ? "" : "s"}`;
-      nextAction.innerHTML = `<strong>Next best action</strong><p>${escapeHtml(bestNextAction(openPoints))}</p>`;
-
-      if (!openPoints.length) {
-        aiList.innerHTML = `<article class="copilot-empty">All strategy points are resolved. Tap <strong>Refresh</strong> after updating priorities, notes, or the calendar to generate fresh coaching prompts.</article>`;
-      } else {
-        aiList.innerHTML = openPoints.map((message) => `
-          <button type="button" class="ai-item" data-point-id="${escapeHtml(message.id)}">
-            <strong>${escapeHtml(message.label)} · ${escapeHtml(message.priorityTag)} priority</strong>
-            <p>${escapeHtml(message.text)}</p>
-          </button>
-        `).join("");
+      if (!copilot.dailyChat.length) {
+        copilot.dailyChat = [{ role: "ai", text: `Let's run this as an ongoing daily conversation. ${buildCopilotContext()}` }];
+        persist();
       }
-
-      aiList.querySelectorAll("[data-point-id]").forEach((item) => {
-        item.addEventListener("click", () => openCopilotPoint(item.dataset.pointId));
-      });
-
-      const resolvedPoints = state.cachedMessages.filter((message) => dismissed.has(message.id));
-      resolvedList.innerHTML = resolvedPoints.map((message) => `
-        <div class="resolved-item">
-          <span>${escapeHtml(message.label)}</span>
-          <button type="button" class="reopen-btn" data-reopen-id="${escapeHtml(message.id)}">Re-open</button>
-        </div>
-      `).join("");
-      resolvedWrap.classList.toggle("open", state.showResolved);
-      resolvedToggle.textContent = `${state.showResolved ? "Hide" : "Show"} resolved points (${resolvedPoints.length})`;
-      resolvedList.querySelectorAll("[data-reopen-id]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const id = btn.dataset.reopenId;
-          const idx = copilot.dismissed.indexOf(id);
-          if (idx >= 0) copilot.dismissed.splice(idx, 1);
-          state.activePointId = id;
-          persist();
-          renderAssistant();
-        });
-      });
-
-      const activeOpen = openPoints.find((message) => message.id === state.activePointId);
-      if (!activeOpen) state.activePointId = null;
-      renderChat(activeOpen || null);
+      chatTopic.textContent = "Daily planning conversation";
+      chatLog.innerHTML = copilot.dailyChat.map((message) => `<div class="chat-msg ${message.role}">${escapeHtml(message.text)}</div>`).join("");
+      chatLog.scrollTop = chatLog.scrollHeight;
     }
 
     function render() {
@@ -595,29 +402,20 @@
       document.documentElement.style.setProperty("--accent", integrated ? "#0070CA" : "#F0A31A");
       brandSubtitle.textContent = integrated ? "Integrated Staffing" : "Accountant Staffing / Administrative Staffing";
       brandMark.textContent = integrated ? "IS" : "AS";
-
       buttons.forEach((btn) => btn.classList.toggle("active", btn.dataset.brand === state.brand));
 
-      fields.priorities.value = state.data[state.brand].priorities || "";
+      const priorities = state.data[state.brand].priorities || ["", "", ""];
+      fields.priority1.value = priorities[0] || "";
+      fields.priority2.value = priorities[1] || "";
+      fields.priority3.value = priorities[2] || "";
       fields.notes.value = state.data[state.brand].notes || "";
 
       const post = currentPost();
       document.getElementById("editorTitle").textContent = `Post Details • ${state.selectedDay}`;
-      ["postTitle","platform","time","status","caption","cta","asset"].forEach((key) => {
-        fields[key].value = post[key] || "";
-      });
+      ["postTitle","platform","time","status","caption","cta","asset"].forEach((key) => { fields[key].value = post[key] || ""; });
 
       renderCalendar();
       renderAssistant();
-    }
-
-    function bindGlobalInput(input, key) {
-      input.addEventListener("input", () => {
-        setSavedLabel("Saving...");
-        state.data[state.brand][key] = input.value;
-        persist();
-        renderAssistant();
-      });
     }
 
     function bindPostInput(input, key) {
@@ -630,18 +428,20 @@
       });
     }
 
-    buttons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        state.brand = btn.dataset.brand;
-        state.activePointId = null;
-        render();
+    buttons.forEach((btn) => btn.addEventListener("click", () => { state.brand = btn.dataset.brand; render(); }));
+
+    [fields.priority1, fields.priority2, fields.priority3].forEach((input, index) => {
+      input.addEventListener("input", () => {
+        setSavedLabel("Saving...");
+        state.data[state.brand].priorities[index] = input.value;
+        persist();
+        renderAssistant();
       });
     });
 
-    aiRefresh.addEventListener("click", () => {
-      state.data[state.brand].copilot.dismissed = [];
-      state.activePointId = null;
+    fields.notes.addEventListener("input", () => {
       setSavedLabel("Saving...");
+      state.data[state.brand].notes = fields.notes.value;
       persist();
       renderAssistant();
     });
@@ -649,70 +449,54 @@
     chatForm.addEventListener("submit", (event) => {
       event.preventDefault();
       const text = chatInput.value.trim();
-      if (!text || !state.activePointId) return;
+      if (!text) return;
       const copilot = brandCopilot();
-      const chat = copilot.chats[state.activePointId] || [];
-      chat.push({ role: "user", text });
-      chat.push({ role: "ai", text: strategicReply(text) });
-      copilot.chats[state.activePointId] = chat;
+      copilot.dailyChat.push({ role: "user", text });
+      copilot.dailyChat.push({ role: "ai", text: `${strategicReply(text)} ${buildCopilotContext()}` });
       chatInput.value = "";
-      setSavedLabel("Saving...");
       persist();
       renderAssistant();
       chatInput.focus();
     });
 
-    resolvePoint.addEventListener("click", () => {
-      if (!state.activePointId) return;
-      const copilot = brandCopilot();
-      if (!copilot.dismissed.includes(state.activePointId)) {
-        copilot.dismissed.push(state.activePointId);
-      }
-      state.activePointId = null;
-      setSavedLabel("Saving...");
+    clearChat.addEventListener("click", () => {
+      brandCopilot().dailyChat = [];
       persist();
       renderAssistant();
     });
 
-
-    resolvedToggle.addEventListener("click", () => {
-      state.showResolved = !state.showResolved;
-      renderAssistant();
-    });
-
-    quickChipRow.querySelectorAll("[data-chip]").forEach((chip) => {
-      chip.addEventListener("click", () => {
-        if (!state.activePointId) return;
-        chatInput.value = chip.dataset.chip;
-        chatInput.focus();
-      });
-    });
+    quickChipRow.querySelectorAll("[data-chip]").forEach((chip) => chip.addEventListener("click", () => {
+      chatInput.value = chip.dataset.chip;
+      aiPartner.open = true;
+      chatInput.focus();
+    }));
 
     postAssist.addEventListener("click", () => {
       editorModal.classList.remove("open");
       editorModal.setAttribute("aria-hidden", "true");
-      const post = currentPost();
-      let targetId = "content-cadence";
-      if (!post.cta) targetId = "performance-lens";
-      else if (!post.platform) targetId = "quarter-link";
-      if (!state.cachedMessages.some((msg) => msg.id === targetId)) targetId = "team-checkin";
-      const copilot = brandCopilot();
-      const idx = copilot.dismissed.indexOf(targetId);
-      if (idx >= 0) copilot.dismissed.splice(idx, 1);
-      openCopilotPoint(targetId);
+      aiPartner.open = true;
+      chatInput.value = `Help me improve the ${state.selectedDay} post.`;
+      chatInput.focus();
     });
 
     document.getElementById("clearWeek").addEventListener("click", () => {
       state.data[state.brand] = emptyBrandState();
       state.selectedDay = "Monday";
-      state.activePointId = null;
-      state.showResolved = false;
       persist();
       render();
     });
 
-    bindGlobalInput(fields.priorities, "priorities");
-    bindGlobalInput(fields.notes, "notes");
+    closeModal.addEventListener("click", () => {
+      editorModal.classList.remove("open");
+      editorModal.setAttribute("aria-hidden", "true");
+    });
+    editorModal.addEventListener("click", (event) => {
+      if (event.target === editorModal) {
+        editorModal.classList.remove("open");
+        editorModal.setAttribute("aria-hidden", "true");
+      }
+    });
+
     bindPostInput(fields.postTitle, "postTitle");
     bindPostInput(fields.platform, "platform");
     bindPostInput(fields.time, "time");
@@ -723,7 +507,7 @@
 
     weekBadge.textContent = `Week of ${formatWeekOf()}`;
     load();
-    loadQuarterContext().finally(() => render());
+    render();
   </script>
 
 </body>
