@@ -462,10 +462,12 @@
 
   /* ============= KPI/CHANNEL TOOLTIPS (matches report style) ============= */
   .section#quarter-totals,
-  .section#traffic-channels{ overflow:visible !important; }
+  .section#traffic-channels,
+  .section#top-pages{ overflow:visible !important; }
 
   .kpi-card,
-  .channel{
+  .channel,
+  .mini-tip{
     position:relative;
     overflow:visible;
     isolation:isolate;
@@ -473,7 +475,8 @@
   }
 
   .kpi-card::after,
-  .channel::after{
+  .channel::after,
+  .mini-tip::after{
     content:attr(data-tip);
     position:absolute;
     left:50%;
@@ -503,7 +506,8 @@
   }
 
   .kpi-card::before,
-  .channel::before{
+  .channel::before,
+  .mini-tip::before{
     content:"";
     position:absolute;
     left:50%;
@@ -527,14 +531,20 @@
   .channel:hover::after,
   .channel:hover::before,
   .channel:focus::after,
-  .channel:focus::before{
+  .channel:focus::before,
+  .mini-tip:hover::after,
+  .mini-tip:hover::before,
+  .mini-tip:focus::after,
+  .mini-tip:focus::before{
     opacity:1;
   }
 
   .kpi-card:hover::after,
   .kpi-card:focus::after,
   .channel:hover::after,
-  .channel:focus::after{
+  .channel:focus::after,
+  .mini-tip:hover::after,
+  .mini-tip:focus::after{
     transform:translate(-50%, 0);
   }
 
@@ -542,6 +552,47 @@
   .channel:focus{
     box-shadow:0 0 0 4px rgba(0,112,202,.16), 0 12px 24px rgba(0,0,0,.10);
     border-color:rgba(0,112,202,.22);
+  }
+
+  .mini-tip{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:16px;
+    height:16px;
+    border-radius:999px;
+    border:1px solid rgba(107,122,144,.55);
+    color:#6B7A90;
+    font-size:11px;
+    line-height:1;
+    cursor:help;
+  }
+
+  .mini-tip:focus{
+    box-shadow:0 0 0 3px rgba(0,112,202,.16);
+    border-color:rgba(0,112,202,.35);
+  }
+
+
+  .mini-tip::after{
+    left:auto;
+    right:0;
+    transform:translate(0, 6px);
+    max-width:min(320px, calc(100vw - 48px));
+    min-width:200px;
+    text-transform:none;
+    letter-spacing:normal;
+  }
+
+  .mini-tip::before{
+    left:auto;
+    right:6px;
+    transform:rotate(45deg);
+  }
+
+  .mini-tip:hover::after,
+  .mini-tip:focus::after{
+    transform:translate(0, 0);
   }
 
   .kpi-label{
@@ -727,6 +778,11 @@
     overflow:auto;
   }
 
+  #top-pages .table-shell,
+  #top-pages .table-wrap{
+    overflow:visible;
+  }
+
   .post-table{
     width:100%;
     border-collapse:separate;
@@ -765,6 +821,13 @@
   }
 
   .sort-btn.align-right{ justify-content:flex-end; width:100%; }
+
+  .sort-head{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    gap:6px;
+  }
 
   .sort-arrow{
     font-size:10px;
@@ -998,7 +1061,9 @@
     .kpi-card::after,
     .kpi-card::before,
     .channel::after,
-    .channel::before{
+    .channel::before,
+    .mini-tip::after,
+    .mini-tip::before{
       display:none;
     }
   }
@@ -1876,9 +1941,18 @@ function renderTopPages(){
           </button>
         </th>
         <th>
-          <button type="button" class="sort-btn align-right" data-sort-key="bounce" aria-label="Sort by bounce rate">
-            Bounce Rate <span class="sort-arrow">${getSortArrow("bounce")}</span>
-          </button>
+          <div class="sort-head">
+            <button type="button" class="sort-btn align-right" data-sort-key="bounce" aria-label="Sort by bounce rate">
+              Bounce Rate <span class="sort-arrow">${getSortArrow("bounce")}</span>
+            </button>
+            <span
+              class="mini-tip"
+              tabindex="0"
+              role="img"
+              aria-label="Bounce rate tooltip"
+              data-tip="Bounce rate is the percentage of visits where users leave after viewing just one page, without any additional interaction."
+            >?</span>
+          </div>
         </th>
         <th>
           <button type="button" class="sort-btn align-right" data-sort-key="timeSec" aria-label="Sort by average time on page">
