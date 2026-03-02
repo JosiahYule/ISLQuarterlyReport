@@ -62,7 +62,6 @@
     .hero{padding:22px 22px 18px;margin-bottom:16px}
     .hero-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:16px;align-items:stretch}
     .hero-copy h1{margin:0;font-size:clamp(1.25rem,2.8vw,2rem);letter-spacing:-.03em}
-    .hero-copy p{margin:9px 0 0;color:#475569;font-size:.96rem;max-width:58ch}
     .meta-row{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:16px}
     .week-badge{font-size:.82rem;font-weight:600;color:#1e293b;background:rgba(148,163,184,.16);padding:7px 12px;border-radius:999px}
     .meta-actions{display:flex;gap:8px;align-items:center}
@@ -207,9 +206,9 @@
     <section class="panel glass">
       <div class="panel-head">
         <h2>Priorities</h2>
-        <button type="button" class="section-add" id="prioritiesToggle" aria-expanded="true" aria-label="Toggle priorities section">−</button>
+        <button type="button" class="section-add" id="prioritiesToggle" aria-expanded="false" aria-label="Toggle priorities section">+</button>
       </div>
-      <div class="panel-content" id="prioritiesContent">
+      <div class="panel-content collapsed" id="prioritiesContent">
         <ul class="priority-list">
           <li><input id="priority1" type="text" placeholder="Priority 1" /></li>
           <li id="priorityItem2" class="hidden"><input id="priority2" type="text" placeholder="Priority 2" /></li>
@@ -229,18 +228,18 @@
       <section class="panel glass">
         <div class="panel-head">
           <h2>Notes</h2>
-          <button type="button" class="section-add" id="notesToggle" aria-expanded="true" aria-label="Toggle notes section">−</button>
+          <button type="button" class="section-add" id="notesToggle" aria-expanded="false" aria-label="Toggle notes section">+</button>
         </div>
-        <div class="panel-content" id="notesContent">
+        <div class="panel-content collapsed" id="notesContent">
           <textarea id="notes" rows="7" placeholder="Notes"></textarea>
         </div>
       </section>
       <section class="panel glass">
         <div class="panel-head">
           <h2>To Do List</h2>
-          <button type="button" class="section-add" id="todosToggle" aria-expanded="true" aria-label="Toggle to do section">−</button>
+          <button type="button" class="section-add" id="todosToggle" aria-expanded="false" aria-label="Toggle to do section">+</button>
         </div>
-        <div class="panel-content" id="todosContent">
+        <div class="panel-content collapsed" id="todosContent">
           <div class="todo-list" id="todoList"></div>
           <button type="button" class="new-task-btn" id="newTaskBtn">New task</button>
         </div>
