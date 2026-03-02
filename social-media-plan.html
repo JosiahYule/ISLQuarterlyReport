@@ -11,7 +11,7 @@
     :root{
       --primary:#00549A;
       --accent:#0070CA;
-      --bg:#EAF1FB;
+      --bg:#F9F9F7;
       --surface:rgba(255,255,255,.68);
       --border:rgba(148,163,184,.34);
       --text:#0F172A;
@@ -23,7 +23,7 @@
     }
 
     *{box-sizing:border-box}
-    body{margin:0;background:radial-gradient(circle at 10% 0%,#f7fbff 0,#eaf2fd 40%,#e7edf7 100%);font-family:var(--font);color:var(--text);font-weight:400;line-height:1.55;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+    body{margin:0;background:var(--bg);font-family:var(--font);color:var(--text);font-weight:400;line-height:1.55;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
     .container{max-width:1220px;margin:0 auto;padding:28px 20px 42px}
 
     .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:18px}
@@ -77,6 +77,8 @@
     .todo-item input[type="text"]{border:0;background:transparent;padding:4px 0;min-width:0}
     .todo-item input[type="text"]:focus{outline:none}
     .todo-item.done input[type="text"]{text-decoration:line-through;color:var(--muted)}
+    .new-task-btn{margin-top:4px;border:1px dashed rgba(100,116,139,.45);background:rgba(255,255,255,.74);border-radius:10px;padding:9px 12px;color:#334155;font:inherit;font-size:.84rem;font-weight:500;cursor:pointer;text-align:center}
+    .new-task-btn:hover{border-color:rgba(0,112,202,.45);color:#1e3a5f}
 
 
     .main-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px}
@@ -161,13 +163,8 @@
       </section>
       <section class="panel">
         <h2>To Do List</h2>
-        <div class="todo-list" id="todoList">
-          <label class="todo-item"><input type="checkbox" id="todoCheck1" /><input type="text" id="todoText1" placeholder="Task 1" /></label>
-          <label class="todo-item"><input type="checkbox" id="todoCheck2" /><input type="text" id="todoText2" placeholder="Task 2" /></label>
-          <label class="todo-item"><input type="checkbox" id="todoCheck3" /><input type="text" id="todoText3" placeholder="Task 3" /></label>
-          <label class="todo-item"><input type="checkbox" id="todoCheck4" /><input type="text" id="todoText4" placeholder="Task 4" /></label>
-          <label class="todo-item"><input type="checkbox" id="todoCheck5" /><input type="text" id="todoText5" placeholder="Task 5" /></label>
-        </div>
+        <div class="todo-list" id="todoList"></div>
+        <button type="button" class="new-task-btn" id="newTaskBtn">New task</button>
       </section>
     </section>
 
@@ -216,6 +213,7 @@
     const priorityItem3 = document.getElementById("priorityItem3");
     const platformPicker = document.getElementById("platformPicker");
     const todoList = document.getElementById("todoList");
+    const newTaskBtn = document.getElementById("newTaskBtn");
 
     const fields = {
       priority1: document.getElementById("priority1"),
@@ -230,13 +228,8 @@
       asset: document.getElementById("asset")
     };
 
-    const todoFields = Array.from({ length: 5 }, (_, index) => ({
-      check: document.getElementById(`todoCheck${index + 1}`),
-      text: document.getElementById(`todoText${index + 1}`)
-    }));
-
     function emptyBrandState() {
-      return { priorities: ["", "", ""], notes: "", todos: Array.from({ length: 5 }, () => ({ text: "", done: false })), posts: {} };
+      return { priorities: ["", "", ""], notes: "", todos: [{ text: "", done: false }], posts: {} };
     }
 
     const state = {
@@ -281,8 +274,8 @@
           const source = parsed[brand] || {};
           const priorities = Array.isArray(source.priorities) ? source.priorities.slice(0, 3) : listItems(source.priorities).slice(0, 3);
           while (priorities.length < 3) priorities.push("");
-          const todos = Array.isArray(source.todos) ? source.todos.slice(0,5) : [];
-          while (todos.length < 5) todos.push({ text: "", done: false });
+          const todos = Array.isArray(source.todos) ? source.todos : [];
+          if (todos.length === 0) todos.push({ text: "", done: false });
           state.data[brand] = {
             ...emptyBrandState(),
             ...source,
@@ -355,11 +348,22 @@
       priorityItem3.classList.toggle("hidden", !showThird);
     }
 
+    function renderTodos() {
+      const todos = state.data[state.brand].todos || [];
+      todoList.innerHTML = "";
+      todos.forEach((todo, index) => {
+        const row = document.createElement("label");
+        row.className = "todo-item" + (todo.done ? " done" : "");
+        row.innerHTML = `<input type="checkbox" data-todo-check="${index}" ${todo.done ? "checked" : ""} /><input type="text" data-todo-text="${index}" placeholder="Task ${index + 1}" value="${escapeHtml(todo.text || "")}" />`;
+        todoList.appendChild(row);
+      });
+    }
+
     function render() {
       const brandConfig = {
         is: { primary: "#00549A", accent: "#0070CA", subtitle: "Integrated Staffing", mark: "IS" },
         as: { primary: "#C77800", accent: "#F0A31A", subtitle: "Accountant Staffing", mark: "AS" },
-        ad: { primary: "#5B4DB1", accent: "#8D7CF4", subtitle: "Administrative Staffing", mark: "AD" }
+        ad: { primary: "#21356e", accent: "#21356e", subtitle: "Administrative Staffing", mark: "AD" }
       };
       const currentBrand = brandConfig[state.brand] || brandConfig.is;
       document.documentElement.style.setProperty("--primary", currentBrand.primary);
@@ -375,13 +379,7 @@
       fields.notes.value = state.data[state.brand].notes || "";
       syncPriorityVisibility();
 
-      const todos = state.data[state.brand].todos || [];
-      todoFields.forEach((todo, index) => {
-        const item = todos[index] || { text: "", done: false };
-        todo.text.value = item.text;
-        todo.check.checked = item.done;
-        todo.check.closest(".todo-item").classList.toggle("done", item.done);
-      });
+      renderTodos();
 
       const post = currentPost();
       document.getElementById("editorTitle").textContent = `Post Details • ${state.selectedDay}`;
@@ -437,20 +435,32 @@
       render();
     }));
 
-    todoFields.forEach((todo, index) => {
-      todo.text.addEventListener("input", () => {
-        setSavedLabel("Saving...");
-        const todos = state.data[state.brand].todos;
-        todos[index].text = todo.text.value;
-        persist();
-      });
-      todo.check.addEventListener("change", () => {
-        setSavedLabel("Saving...");
-        const todos = state.data[state.brand].todos;
-        todos[index].done = todo.check.checked;
-        todo.check.closest(".todo-item").classList.toggle("done", todo.check.checked);
-        persist();
-      });
+    todoList.addEventListener("input", (event) => {
+      const input = event.target.closest("[data-todo-text]");
+      if (!input) return;
+      const index = Number(input.dataset.todoText);
+      if (Number.isNaN(index) || !state.data[state.brand].todos[index]) return;
+      setSavedLabel("Saving...");
+      state.data[state.brand].todos[index].text = input.value;
+      persist();
+    });
+
+    todoList.addEventListener("change", (event) => {
+      const check = event.target.closest("[data-todo-check]");
+      if (!check) return;
+      const index = Number(check.dataset.todoCheck);
+      if (Number.isNaN(index) || !state.data[state.brand].todos[index]) return;
+      setSavedLabel("Saving...");
+      state.data[state.brand].todos[index].done = check.checked;
+      renderTodos();
+      persist();
+    });
+
+    newTaskBtn.addEventListener("click", () => {
+      setSavedLabel("Saving...");
+      state.data[state.brand].todos.push({ text: "", done: false });
+      renderTodos();
+      persist();
     });
 
     statusPicker.querySelectorAll(".status-tag").forEach((tag) => tag.addEventListener("click", () => {
