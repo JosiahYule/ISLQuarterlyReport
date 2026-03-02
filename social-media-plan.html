@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Weekly Social Media Plan</title>
+  <title>Social Strategy & Project Tracker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -17,112 +17,88 @@
       --text:#0F172A;
       --muted:#64748B;
       --shadow:0 24px 55px rgba(15,23,42,.14);
-      --radius:18px;
+      --radius:16px;
       --font:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;
-      --trans:all .22s ease;
     }
-
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);font-family:var(--font);color:var(--text);font-weight:400;line-height:1.55;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-    .container{max-width:1220px;margin:0 auto;padding:28px 20px 42px}
-
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+    body{margin:0;background:var(--bg);font-family:var(--font);color:var(--text);line-height:1.5}
+    .container{max-width:1280px;margin:0 auto;padding:24px 18px 40px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
     .brand{display:flex;align-items:center;gap:12px}
-    .brand-mark{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;font-size:20px;font-weight:600;line-height:1;box-shadow:0 8px 18px rgba(0,84,154,.22)}
-    .brand-text{display:flex;flex-direction:column;line-height:1.3;min-width:0}
-    .brand-text strong{font-size:15px;letter-spacing:.05em;text-transform:uppercase;font-weight:400;color:var(--text)}
-    .brand-text span{font-size:13px;color:var(--muted);font-weight:400}
+    .brand-mark{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;font-weight:600}
+    .brand-text strong{display:block;font-size:15px}
+    .brand-text span{font-size:13px;color:var(--muted)}
+    .toggle{display:flex;gap:8px;padding:6px;background:var(--surface);border:1px solid var(--border);border-radius:999px}
+    .toggle button{border:0;background:transparent;border-radius:999px;padding:9px 14px;font:inherit;color:var(--muted);cursor:pointer}
+    .toggle button.active{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff}
 
-    .toggle{display:flex;gap:8px;padding:6px;background:var(--surface);border:1px solid var(--border);border-radius:999px;box-shadow:0 4px 12px rgba(15,23,42,.05)}
-    .toggle button{border:0;background:transparent;border-radius:999px;padding:10px 16px;font:inherit;font-weight:500;color:var(--muted);cursor:pointer;transition:var(--trans)}
-    .toggle button.active{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;box-shadow:0 7px 14px rgba(0,84,154,.22)}
+    .panel{background:linear-gradient(145deg,rgba(255,255,255,.82),rgba(255,255,255,.54));backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+    .panel h2{margin:0 0 10px;font-size:1rem}
+    .panel h3{margin:0 0 8px;font-size:.9rem;color:#334155}
+    input,textarea,select{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:10px;font:inherit;background:#fff}
 
-    .panel{background:linear-gradient(145deg,rgba(255,255,255,.66),rgba(255,255,255,.36));backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:var(--radius);padding:20px}
-    .panel h2{margin:0 0 12px;font-size:1.02rem;font-weight:600;letter-spacing:-.01em}
+    .global-grid,.strategy-grid,.metrics-grid,.notes-grid{display:grid;gap:12px;margin-top:14px}
+    .global-grid{grid-template-columns:repeat(5,minmax(120px,1fr))}
+    .strategy-grid{grid-template-columns:repeat(4,minmax(140px,1fr))}
+    .metrics-grid{grid-template-columns:repeat(4,minmax(120px,1fr))}
+    .notes-grid{grid-template-columns:1fr 1fr}
 
-    textarea,input,select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.78);font:inherit;color:var(--text);backdrop-filter:blur(8px)}
-    textarea:focus,input:focus,select:focus{outline:2px solid rgba(0,112,202,.26);border-color:transparent}
-
-    .meta-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-    .week-badge{font-size:.85rem;font-weight:500;color:#334155;background:rgba(148,163,184,.12);padding:6px 10px;border-radius:999px}
+    .main-grid{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-top:14px}
+    .meta-row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
     .meta-actions{display:flex;gap:8px;align-items:center}
-    .subtle-btn{border:1px solid var(--border);background:#fff;padding:8px 12px;border-radius:10px;font:inherit;font-weight:500;cursor:pointer;color:#334155}
+    .week-badge{font-size:.82rem;background:rgba(148,163,184,.15);padding:5px 9px;border-radius:999px}
+    .subtle-btn{border:1px solid var(--border);background:#fff;padding:7px 10px;border-radius:10px;cursor:pointer;font:inherit}
     .saved-text{font-size:.82rem;color:var(--muted)}
 
     .priority-list{margin:0;padding-left:20px;display:grid;gap:8px}
-    .priority-list li{padding-left:2px}
-    .priority-list li.hidden{display:none}
+    .hidden{display:none}
+    .calendar-board{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:10px}
+    .day{border:1px solid rgba(148,163,184,.28);background:#fff;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:150px}
+    .day.active{outline:2px solid rgba(0,112,202,.25)}
+    .day-name{font-weight:600;font-size:.84rem}
+    .post-tile{border:1px solid rgba(148,163,184,.3);background:#f8fafc;border-radius:10px;padding:8px;display:grid;gap:6px;text-align:left;cursor:pointer}
+    .post-title{font-size:.83rem;font-weight:600}
+    .post-meta{display:flex;justify-content:space-between;font-size:.72rem;color:#475569}
+    .post-status{text-transform:capitalize;font-size:.68rem;font-weight:600;letter-spacing:.04em}
+    .status-planned{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
+    .status-in-progress{background:#fff7ed;border-color:#fed7aa;color:#c2410c}
+    .status-posted{background:#ecfdf5;border-color:#bbf7d0;color:#166534}
+    .add-post{margin-top:auto;border:1px dashed rgba(100,116,139,.45);background:#f8fafc;border-radius:10px;padding:8px;font-size:.8rem;cursor:pointer}
 
-    .resolved-toggle{border:0;background:transparent;color:#334155;font:inherit;font-size:.8rem;font-weight:600;cursor:pointer;padding:0}
-    .resolved-list{display:none;gap:8px;margin-top:8px}
-    .resolved-wrap.open .resolved-list{display:grid}
-    .resolved-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border:1px solid rgba(148,163,184,.28);background:#fff;border-radius:10px;font-size:.82rem}
-    .reopen-btn{border:1px solid rgba(0,112,202,.25);background:#f8fbff;color:#0f4d80;border-radius:999px;padding:4px 9px;font:inherit;font-size:.73rem;font-weight:600;cursor:pointer}
-    .next-action{margin-top:10px;padding:11px;border:1px solid rgba(34,197,94,.28);background:linear-gradient(180deg,#f5fff7,#effcf2);border-radius:12px}
-    .next-action strong{display:block;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:#166534;margin-bottom:4px}
-    .next-action p{margin:0;font-size:.88rem;color:#14532d}
-    .status-picker{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:8px}
-    .status-tag{border:1px solid transparent;border-radius:999px;padding:6px 10px;font:inherit;font-size:.75rem;font-weight:600;text-transform:capitalize;cursor:pointer;transition:var(--trans)}
-    .status-tag[data-status="planned"],.post-tile.status-planned{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
-    .status-tag[data-status="in progress"],.post-tile.status-in-progress{background:#fff7ed;border-color:#fed7aa;color:#c2410c}
-    .status-tag[data-status="posted"],.post-tile.status-posted{background:#ecfdf5;border-color:#bbf7d0;color:#166534}
-    .status-tag.active{box-shadow:inset 0 0 0 1px rgba(15,23,42,.2)}
-    .tag-picker{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:8px}
-    .tag-chip{border:1px solid rgba(148,163,184,.45);background:rgba(255,255,255,.72);border-radius:999px;padding:7px 11px;font:inherit;font-size:.78rem;font-weight:600;color:#334155;cursor:pointer;transition:var(--trans)}
-    .tag-chip.active{background:linear-gradient(135deg,var(--primary),var(--accent));border-color:transparent;color:#fff;box-shadow:0 7px 14px rgba(0,84,154,.2)}
-    .notes-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
-    .todo-list{display:grid;gap:10px}
-    .todo-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.62);border:1px solid rgba(148,163,184,.25)}
-    .todo-item input[type="checkbox"]{width:18px;height:18px;accent-color:var(--accent);cursor:pointer}
-    .todo-item input[type="text"]{border:0;background:transparent;padding:4px 0;min-width:0}
-    .todo-item input[type="text"]:focus{outline:none}
-    .todo-item.done input[type="text"]{text-decoration:line-through;color:var(--muted)}
-    .new-task-btn{margin-top:4px;border:1px dashed rgba(100,116,139,.45);background:rgba(255,255,255,.74);border-radius:10px;padding:9px 12px;color:#334155;font:inherit;font-size:.84rem;font-weight:500;cursor:pointer;text-align:center}
-    .new-task-btn:hover{border-color:rgba(0,112,202,.45);color:#1e3a5f}
+    .task-list{display:grid;gap:8px}
+    .task-item{display:grid;grid-template-columns:22px 1fr 100px 115px;gap:8px;align-items:center}
+    .task-item.done input[type="text"]{text-decoration:line-through;color:#64748B}
 
+    .metric-card{background:#fff;border:1px solid rgba(148,163,184,.3);border-radius:10px;padding:10px}
+    .metric-card span{font-size:.72rem;color:#64748b;text-transform:uppercase;letter-spacing:.04em}
+    .metric-card strong{display:block;font-size:1.1rem;margin-top:4px}
 
-    .main-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px}
-    .calendar-board{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:12px;background:linear-gradient(180deg,#f9fcff,#f2f7fd);padding:12px;border-radius:14px;border:1px solid rgba(148,163,184,.24)}
-    .day{border:1px solid rgba(148,163,184,.25);background:#fff;border-radius:12px;padding:14px;min-height:168px;text-align:left;transition:var(--trans);display:flex;flex-direction:column;gap:10px}
-    .day:hover{transform:translateY(-2px);box-shadow:0 10px 18px rgba(15,23,42,.11)}
-    .day.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,112,202,.16),0 14px 24px rgba(15,23,42,.08)}
-    .day-name{display:block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-    .post-tile{border:1px solid rgba(0,112,202,.2);background:linear-gradient(180deg,#ffffff,#f6fbff);border-radius:10px;padding:10px 11px;cursor:pointer;display:grid;gap:6px;text-align:left}
-    .post-tile:hover{border-color:rgba(0,112,202,.45)}
-    .post-title{display:block;color:#1e293b;font-size:.84rem;line-height:1.35;font-weight:500}
-    .post-meta{display:flex;justify-content:space-between;gap:8px;font-size:.74rem;font-weight:500;letter-spacing:.02em;text-transform:uppercase;color:#64748b}
-    .post-status{display:inline-flex;align-items:center;border:1px solid currentColor;border-radius:999px;padding:2px 8px;font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
-    .add-post{margin-top:auto;border:1px dashed rgba(100,116,139,.45);background:rgba(248,250,252,.85);border-radius:10px;padding:9px 10px;color:#475569;font:inherit;font-size:.8rem;cursor:pointer;text-align:left}
-    .add-post:hover{border-color:rgba(0,112,202,.45);color:#1e3a5f}
-    
+    .compact .day{min-height:120px;padding:8px}
+    .compact .post-title{font-size:.75rem}
+    .compact .task-item{grid-template-columns:18px 1fr 90px 95px}
+
     .modal{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}
     .modal.open{display:flex}
-    .modal-card{width:min(620px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:16px;padding:20px;border:1px solid var(--border);box-shadow:0 24px 45px rgba(15,23,42,.28)}
-    .modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
-    .close-btn{border:0;background:#e2e8f0;border-radius:10px;width:34px;height:34px;font-size:1.1rem;cursor:pointer;color:#334155}
-
-    .fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .modal-card{width:min(680px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:16px;padding:20px;border:1px solid var(--border)}
+    .modal-head{display:flex;justify-content:space-between;align-items:center}
+    .close-btn{border:0;background:#e2e8f0;border-radius:10px;width:34px;height:34px;cursor:pointer}
+    .fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
     .full{grid-column:1 / -1}
+    .status-picker,.tag-picker{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:8px}
+    .status-tag,.tag-chip{border:1px solid var(--border);background:#fff;border-radius:999px;padding:6px 10px;cursor:pointer;font:inherit;font-size:.78rem}
+    .status-tag.active,.tag-chip.active{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;border-color:transparent}
 
-    @media (max-width:1000px){
-      .calendar-board{grid-template-columns:repeat(2,minmax(130px,1fr))}
-    }
-
-    @media (max-width:720px){
-      .container{padding:20px 14px 110px}
-      .toggle{width:100%}
-      .toggle button{flex:1}
-      .notes-grid{grid-template-columns:1fr}
-    }
+    @media (max-width:1024px){.global-grid,.strategy-grid,.metrics-grid{grid-template-columns:repeat(2,minmax(130px,1fr))}.calendar-board{grid-template-columns:repeat(2,minmax(130px,1fr))}.main-grid,.notes-grid{grid-template-columns:1fr}}
+    @media (max-width:680px){.global-grid,.strategy-grid,.metrics-grid{grid-template-columns:1fr}.task-item{grid-template-columns:22px 1fr}}
   </style>
 </head>
 <body>
-  <main class="container">
+  <main class="container" id="pageRoot">
     <header class="topbar">
       <div class="brand">
         <div class="brand-mark" id="brandMark">IS</div>
         <div class="brand-text">
-          <strong>Weekly Social Media Plan</strong>
+          <strong>Social Strategy & Project Tracker</strong>
           <span id="brandSubtitle">Integrated Staffing</span>
         </div>
       </div>
@@ -132,6 +108,36 @@
         <button type="button" data-brand="ad">AD</button>
       </div>
     </header>
+
+    <section class="panel">
+      <h2>Global View</h2>
+      <div class="global-grid">
+        <label>Campaign<select id="campaignFilter"><option>All campaigns</option><option>Q1 Hiring Push</option><option>Employer Branding</option><option>Lead Gen</option></select></label>
+        <label>Owner<select id="ownerFilter"><option>All owners</option><option>Marketing</option><option>Design</option><option>Sales</option></select></label>
+        <label>Date range<input id="dateRange" type="week" /></label>
+        <label>Search<input id="quickSearch" placeholder="/ to search posts and tasks" /></label>
+        <label>View mode<select id="viewMode"><option value="normal">Comfortable</option><option value="compact">Compact</option></select></label>
+      </div>
+    </section>
+
+    <section class="panel strategy-grid">
+      <div>
+        <h3>Goal</h3>
+        <input id="goal" placeholder="e.g., Increase qualified applicants by 20%" />
+      </div>
+      <div>
+        <h3>Audience</h3>
+        <input id="audience" placeholder="e.g., Mid-level finance professionals" />
+      </div>
+      <div>
+        <h3>Theme</h3>
+        <input id="theme" placeholder="e.g., Career growth stories" />
+      </div>
+      <div>
+        <h3>KPI Target</h3>
+        <input id="kpiTarget" placeholder="e.g., 4.5% engagement rate" />
+      </div>
+    </section>
 
     <section class="panel">
       <div class="meta-row">
@@ -151,20 +157,29 @@
 
     <section class="main-grid">
       <section class="panel">
-        <h2>Calendar</h2>
+        <h2>Execution Calendar</h2>
         <div class="calendar-board" id="calendar"></div>
+      </section>
+      <section class="panel">
+        <h2>Performance Snapshot</h2>
+        <div class="metrics-grid">
+          <div class="metric-card"><span>Planned</span><strong id="metricPlanned">0</strong></div>
+          <div class="metric-card"><span>In Progress</span><strong id="metricInProgress">0</strong></div>
+          <div class="metric-card"><span>Posted</span><strong id="metricPosted">0</strong></div>
+          <div class="metric-card"><span>Tasks Done</span><strong id="metricTasks">0%</strong></div>
+        </div>
       </section>
     </section>
 
     <section class="notes-grid">
       <section class="panel">
-        <h2>Notes</h2>
-        <textarea id="notes" rows="7" placeholder="Notes"></textarea>
+        <h2>Insights & Notes</h2>
+        <textarea id="notes" rows="7" placeholder="Wins, blockers, experiments, and next actions"></textarea>
       </section>
       <section class="panel">
-        <h2>To Do List</h2>
-        <div class="todo-list" id="todoList"></div>
-        <button type="button" class="new-task-btn" id="newTaskBtn">New task</button>
+        <h2>Task Tracking</h2>
+        <div class="task-list" id="todoList"></div>
+        <button type="button" class="subtle-btn" id="newTaskBtn">New task</button>
       </section>
     </section>
 
@@ -182,13 +197,14 @@
             <button type="button" class="tag-chip" data-platform="Instagram">Instagram</button>
           </div>
           <input id="time" type="time" />
+          <input id="contentPillar" placeholder="Content pillar" />
           <input id="status" class="full" type="hidden" />
           <div class="status-picker" id="statusPicker" aria-label="Post status">
             <button type="button" class="status-tag" data-status="planned">Planned</button>
             <button type="button" class="status-tag" data-status="in progress">In Progress</button>
             <button type="button" class="status-tag" data-status="posted">Posted</button>
           </div>
-          <textarea id="caption" class="full" rows="4" placeholder="Caption"></textarea>
+          <textarea id="caption" class="full" rows="3" placeholder="Caption"></textarea>
           <input id="cta" class="full" placeholder="CTA" />
           <input id="asset" class="full" placeholder="Asset link" />
         </div>
@@ -198,7 +214,7 @@
 
   <script>
     const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday"];
-    const STORAGE_KEY = "weekly-social-plan-v2";
+    const STORAGE_KEY = "weekly-social-plan-v3";
 
     const calendar = document.getElementById("calendar");
     const weekBadge = document.getElementById("weekBadge");
@@ -214,6 +230,7 @@
     const platformPicker = document.getElementById("platformPicker");
     const todoList = document.getElementById("todoList");
     const newTaskBtn = document.getElementById("newTaskBtn");
+    const pageRoot = document.getElementById("pageRoot");
 
     const fields = {
       priority1: document.getElementById("priority1"),
@@ -225,19 +242,22 @@
       status: document.getElementById("status"),
       caption: document.getElementById("caption"),
       cta: document.getElementById("cta"),
-      asset: document.getElementById("asset")
+      asset: document.getElementById("asset"),
+      contentPillar: document.getElementById("contentPillar"),
+      goal: document.getElementById("goal"),
+      audience: document.getElementById("audience"),
+      theme: document.getElementById("theme"),
+      kpiTarget: document.getElementById("kpiTarget"),
+      dateRange: document.getElementById("dateRange"),
+      quickSearch: document.getElementById("quickSearch"),
+      viewMode: document.getElementById("viewMode")
     };
 
     function emptyBrandState() {
-      return { priorities: ["", "", ""], notes: "", todos: [{ text: "", done: false }], posts: {} };
+      return { priorities: ["", "", ""], notes: "", strategy: { goal:"", audience:"", theme:"", kpiTarget:"" }, todos: [{ text: "", done: false, owner: "Marketing", due: "" }], posts: {} };
     }
 
-    const state = {
-      brand: "is",
-      selectedDay: "Monday",
-      data: { is: emptyBrandState(), as: emptyBrandState(), ad: emptyBrandState() },
-      quarter: null
-    };
+    const state = { brand: "is", selectedDay: "Monday", data: { is: emptyBrandState(), as: emptyBrandState(), ad: emptyBrandState() }, filters: { search: "", compact: false } };
 
     function formatWeekOf(date = new Date()) {
       const day = date.getDay();
@@ -248,22 +268,9 @@
     }
 
     function setSavedLabel(text) { saveState.textContent = text; }
-
-    function currentPost() {
-      const posts = state.data[state.brand].posts;
-      if (!posts[state.selectedDay]) posts[state.selectedDay] = {};
-      return posts[state.selectedDay];
-    }
-
-    function persist() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
-      setSavedLabel("Saved");
-    }
-
-    function listItems(textOrArray) {
-      if (Array.isArray(textOrArray)) return textOrArray.map((line) => String(line || "").trim()).filter(Boolean);
-      return String(textOrArray || "").split(/\n+/).map((line) => line.replace(/^[-•\s]+/, "").trim()).filter(Boolean);
-    }
+    function escapeHtml(text) { return String(text || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;"); }
+    function currentPost() { const posts = state.data[state.brand].posts; if (!posts[state.selectedDay]) posts[state.selectedDay] = {}; return posts[state.selectedDay]; }
+    function persist() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data)); setSavedLabel("Saved"); }
 
     function load() {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -272,27 +279,20 @@
         const parsed = JSON.parse(saved);
         ["is", "as", "ad"].forEach((brand) => {
           const source = parsed[brand] || {};
-          const priorities = Array.isArray(source.priorities) ? source.priorities.slice(0, 3) : listItems(source.priorities).slice(0, 3);
-          while (priorities.length < 3) priorities.push("");
           const todos = Array.isArray(source.todos) ? source.todos : [];
-          if (todos.length === 0) todos.push({ text: "", done: false });
           state.data[brand] = {
             ...emptyBrandState(),
             ...source,
-            priorities,
-            todos: todos.map((todo) => ({ text: String((todo && todo.text) || ""), done: Boolean(todo && todo.done) }))
+            strategy: { ...emptyBrandState().strategy, ...(source.strategy || {}) },
+            todos: (todos.length ? todos : [{ text:"", done:false, owner:"Marketing", due:"" }]).map((todo) => ({
+              text: String((todo && todo.text) || ""),
+              done: Boolean(todo && todo.done),
+              owner: String((todo && todo.owner) || "Marketing"),
+              due: String((todo && todo.due) || "")
+            }))
           };
         });
-      } catch {
-        console.warn("Unable to parse saved social plan data.");
-      }
-    }
-
-    function openEditor(day) {
-      state.selectedDay = day;
-      editorModal.classList.add("open");
-      editorModal.setAttribute("aria-hidden", "false");
-      render();
+      } catch { console.warn("Unable to parse saved social plan data."); }
     }
 
     function statusClass(status) {
@@ -303,60 +303,76 @@
       return "";
     }
 
-    function formatPlatforms(platforms) {
-      if (Array.isArray(platforms)) return platforms.join(", ");
-      return String(platforms || "").trim();
-    }
-
     function renderCalendar() {
       calendar.innerHTML = "";
+      const query = state.filters.search.toLowerCase().trim();
       DAYS.forEach((day) => {
         const dayCard = document.createElement("article");
         dayCard.className = "day" + (day === state.selectedDay ? " active" : "");
         const post = state.data[state.brand].posts[day] || {};
-        const hasPost = Boolean(post.postTitle);
+        const haystack = `${post.postTitle || ""} ${post.caption || ""} ${post.cta || ""}`.toLowerCase();
+        const visible = !query || haystack.includes(query) || day.toLowerCase().includes(query);
+        if (!visible) {
+          dayCard.style.display = "none";
+        }
         dayCard.innerHTML = `<span class="day-name">${day}</span>`;
-        if (hasPost) {
+        if (post.postTitle) {
           const tile = document.createElement("button");
           tile.type = "button";
           tile.className = `post-tile ${statusClass(post.status)}`.trim();
-          const statusLabel = String(post.status || "planned").trim() || "planned";
-          tile.innerHTML = `<span class="post-title">${escapeHtml(post.postTitle)}</span><span class="post-meta"><span>${escapeHtml(formatPlatforms(post.platforms || post.platform) || "Set platform")}</span><span>${escapeHtml(post.time || "Set time")}</span></span><span class="post-status">${escapeHtml(statusLabel)}</span>`;
+          tile.innerHTML = `<span class="post-title">${escapeHtml(post.postTitle)}</span><span class="post-meta"><span>${escapeHtml((post.platforms || []).join(", ") || "Set platform")}</span><span>${escapeHtml(post.time || "Set time")}</span></span><span class="post-status">${escapeHtml(post.status || "planned")}</span>`;
           tile.addEventListener("click", () => openEditor(day));
           dayCard.appendChild(tile);
         } else {
-          const addButton = document.createElement("button");
-          addButton.type = "button";
-          addButton.className = "add-post";
-          addButton.textContent = "Add post";
-          addButton.addEventListener("click", () => openEditor(day));
-          dayCard.appendChild(addButton);
+          const add = document.createElement("button");
+          add.type = "button";
+          add.className = "add-post";
+          add.textContent = "Add post";
+          add.addEventListener("click", () => openEditor(day));
+          dayCard.appendChild(add);
         }
         calendar.appendChild(dayCard);
       });
     }
 
-    function escapeHtml(text) {
-      return String(text || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    function renderTodos() {
+      const query = state.filters.search.toLowerCase().trim();
+      todoList.innerHTML = "";
+      state.data[state.brand].todos.forEach((todo, index) => {
+        const searchable = `${todo.text} ${todo.owner}`.toLowerCase();
+        if (query && !searchable.includes(query)) return;
+        const row = document.createElement("div");
+        row.className = "task-item" + (todo.done ? " done" : "");
+        row.innerHTML = `
+          <input type="checkbox" data-todo-check="${index}" ${todo.done ? "checked" : ""} />
+          <input type="text" data-todo-text="${index}" placeholder="Task" value="${escapeHtml(todo.text)}" />
+          <select data-todo-owner="${index}"><option ${todo.owner === "Marketing" ? "selected" : ""}>Marketing</option><option ${todo.owner === "Design" ? "selected" : ""}>Design</option><option ${todo.owner === "Sales" ? "selected" : ""}>Sales</option></select>
+          <input type="date" data-todo-due="${index}" value="${escapeHtml(todo.due)}" />`;
+        todoList.appendChild(row);
+      });
+    }
+
+    function updateMetrics() {
+      const posts = Object.values(state.data[state.brand].posts || {});
+      const total = state.data[state.brand].todos.length || 1;
+      const done = state.data[state.brand].todos.filter((item) => item.done).length;
+      document.getElementById("metricPlanned").textContent = posts.filter((p) => (p.status || "planned") === "planned").length;
+      document.getElementById("metricInProgress").textContent = posts.filter((p) => (p.status || "") === "in progress").length;
+      document.getElementById("metricPosted").textContent = posts.filter((p) => (p.status || "") === "posted").length;
+      document.getElementById("metricTasks").textContent = `${Math.round((done / total) * 100)}%`;
     }
 
     function syncPriorityVisibility() {
       const [p1, p2, p3] = state.data[state.brand].priorities.map((item) => String(item || "").trim());
-      const showSecond = Boolean(p1 || p2 || p3);
-      const showThird = Boolean(p2 || p3);
-      priorityItem2.classList.toggle("hidden", !showSecond);
-      priorityItem3.classList.toggle("hidden", !showThird);
+      priorityItem2.classList.toggle("hidden", !(p1 || p2 || p3));
+      priorityItem3.classList.toggle("hidden", !(p2 || p3));
     }
 
-    function renderTodos() {
-      const todos = state.data[state.brand].todos || [];
-      todoList.innerHTML = "";
-      todos.forEach((todo, index) => {
-        const row = document.createElement("label");
-        row.className = "todo-item" + (todo.done ? " done" : "");
-        row.innerHTML = `<input type="checkbox" data-todo-check="${index}" ${todo.done ? "checked" : ""} /><input type="text" data-todo-text="${index}" placeholder="Task ${index + 1}" value="${escapeHtml(todo.text || "")}" />`;
-        todoList.appendChild(row);
-      });
+    function openEditor(day) {
+      state.selectedDay = day;
+      editorModal.classList.add("open");
+      editorModal.setAttribute("aria-hidden", "false");
+      render();
     }
 
     function render() {
@@ -372,27 +388,30 @@
       brandMark.textContent = currentBrand.mark;
       buttons.forEach((btn) => btn.classList.toggle("active", btn.dataset.brand === state.brand));
 
+      pageRoot.classList.toggle("compact", state.filters.compact);
       const priorities = state.data[state.brand].priorities || ["", "", ""];
       fields.priority1.value = priorities[0] || "";
       fields.priority2.value = priorities[1] || "";
       fields.priority3.value = priorities[2] || "";
       fields.notes.value = state.data[state.brand].notes || "";
-      syncPriorityVisibility();
 
-      renderTodos();
+      const strategy = state.data[state.brand].strategy || {};
+      fields.goal.value = strategy.goal || "";
+      fields.audience.value = strategy.audience || "";
+      fields.theme.value = strategy.theme || "";
+      fields.kpiTarget.value = strategy.kpiTarget || "";
 
       const post = currentPost();
       document.getElementById("editorTitle").textContent = `Post Details • ${state.selectedDay}`;
-      ["postTitle","time","status","caption","cta","asset"].forEach((key) => { fields[key].value = post[key] || ""; });
-      const selectedPlatforms = Array.isArray(post.platforms) ? post.platforms : (post.platform ? [post.platform] : []);
-      platformPicker.querySelectorAll(".tag-chip").forEach((chip) => {
-        chip.classList.toggle("active", selectedPlatforms.includes(chip.dataset.platform));
-      });
-      statusPicker.querySelectorAll(".status-tag").forEach((tag) => {
-        tag.classList.toggle("active", tag.dataset.status === (post.status || "").toLowerCase());
-      });
+      ["postTitle","time","status","caption","cta","asset","contentPillar"].forEach((key) => { fields[key].value = post[key] || ""; });
+      const selectedPlatforms = Array.isArray(post.platforms) ? post.platforms : [];
+      platformPicker.querySelectorAll(".tag-chip").forEach((chip) => chip.classList.toggle("active", selectedPlatforms.includes(chip.dataset.platform)));
+      statusPicker.querySelectorAll(".status-tag").forEach((tag) => tag.classList.toggle("active", tag.dataset.status === (post.status || "").toLowerCase()));
 
+      syncPriorityVisibility();
       renderCalendar();
+      renderTodos();
+      updateMetrics();
     }
 
     function bindPostInput(input, key) {
@@ -400,73 +419,71 @@
         setSavedLabel("Saving...");
         currentPost()[key] = input.value;
         persist();
-        renderCalendar();
+        render();
       });
     }
 
     buttons.forEach((btn) => btn.addEventListener("click", () => { state.brand = btn.dataset.brand; render(); }));
 
-    [fields.priority1, fields.priority2, fields.priority3].forEach((input, index) => {
-      input.addEventListener("input", () => {
-        setSavedLabel("Saving...");
-        state.data[state.brand].priorities[index] = input.value;
-        persist();
-        syncPriorityVisibility();
-      });
-    });
-
-    fields.notes.addEventListener("input", () => {
+    [fields.priority1, fields.priority2, fields.priority3].forEach((input, index) => input.addEventListener("input", () => {
       setSavedLabel("Saving...");
-      state.data[state.brand].notes = fields.notes.value;
+      state.data[state.brand].priorities[index] = input.value;
       persist();
-    });
+      syncPriorityVisibility();
+    }));
 
+    fields.notes.addEventListener("input", () => { setSavedLabel("Saving..."); state.data[state.brand].notes = fields.notes.value; persist(); });
+    ["goal","audience","theme","kpiTarget"].forEach((key) => fields[key].addEventListener("input", () => {
+      setSavedLabel("Saving...");
+      state.data[state.brand].strategy[key] = fields[key].value;
+      persist();
+    }));
+
+    fields.quickSearch.addEventListener("input", () => { state.filters.search = fields.quickSearch.value; render(); });
+    fields.viewMode.addEventListener("change", () => { state.filters.compact = fields.viewMode.value === "compact"; render(); });
 
     platformPicker.querySelectorAll(".tag-chip").forEach((chip) => chip.addEventListener("click", () => {
       setSavedLabel("Saving...");
       const post = currentPost();
-      const selectedPlatforms = Array.isArray(post.platforms) ? [...post.platforms] : (post.platform ? [post.platform] : []);
-      const index = selectedPlatforms.indexOf(chip.dataset.platform);
-      if (index >= 0) selectedPlatforms.splice(index, 1);
-      else selectedPlatforms.push(chip.dataset.platform);
-      post.platforms = selectedPlatforms;
-      post.platform = selectedPlatforms.join(", ");
+      const selected = Array.isArray(post.platforms) ? [...post.platforms] : [];
+      const index = selected.indexOf(chip.dataset.platform);
+      if (index >= 0) selected.splice(index, 1); else selected.push(chip.dataset.platform);
+      post.platforms = selected;
       persist();
       render();
     }));
 
     todoList.addEventListener("input", (event) => {
-      const input = event.target.closest("[data-todo-text]");
-      if (!input) return;
-      const index = Number(input.dataset.todoText);
-      if (Number.isNaN(index) || !state.data[state.brand].todos[index]) return;
+      const text = event.target.closest("[data-todo-text]");
+      const due = event.target.closest("[data-todo-due]");
+      if (text) { const i = Number(text.dataset.todoText); state.data[state.brand].todos[i].text = text.value; }
+      if (due) { const i = Number(due.dataset.todoDue); state.data[state.brand].todos[i].due = due.value; }
       setSavedLabel("Saving...");
-      state.data[state.brand].todos[index].text = input.value;
       persist();
+      updateMetrics();
     });
 
     todoList.addEventListener("change", (event) => {
       const check = event.target.closest("[data-todo-check]");
-      if (!check) return;
-      const index = Number(check.dataset.todoCheck);
-      if (Number.isNaN(index) || !state.data[state.brand].todos[index]) return;
+      const owner = event.target.closest("[data-todo-owner]");
+      if (check) { const i = Number(check.dataset.todoCheck); state.data[state.brand].todos[i].done = check.checked; }
+      if (owner) { const i = Number(owner.dataset.todoOwner); state.data[state.brand].todos[i].owner = owner.value; }
       setSavedLabel("Saving...");
-      state.data[state.brand].todos[index].done = check.checked;
-      renderTodos();
       persist();
+      render();
     });
 
     newTaskBtn.addEventListener("click", () => {
+      state.data[state.brand].todos.push({ text: "", done: false, owner: "Marketing", due: "" });
       setSavedLabel("Saving...");
-      state.data[state.brand].todos.push({ text: "", done: false });
-      renderTodos();
       persist();
+      renderTodos();
     });
 
     statusPicker.querySelectorAll(".status-tag").forEach((tag) => tag.addEventListener("click", () => {
-      setSavedLabel("Saving...");
       currentPost().status = tag.dataset.status;
       fields.status.value = tag.dataset.status;
+      setSavedLabel("Saving...");
       persist();
       render();
     }));
@@ -474,20 +491,13 @@
     document.getElementById("clearWeek").addEventListener("click", () => {
       state.data[state.brand] = emptyBrandState();
       state.selectedDay = "Monday";
+      setSavedLabel("Saving...");
       persist();
       render();
     });
 
-    closeModal.addEventListener("click", () => {
-      editorModal.classList.remove("open");
-      editorModal.setAttribute("aria-hidden", "true");
-    });
-    editorModal.addEventListener("click", (event) => {
-      if (event.target === editorModal) {
-        editorModal.classList.remove("open");
-        editorModal.setAttribute("aria-hidden", "true");
-      }
-    });
+    closeModal.addEventListener("click", () => { editorModal.classList.remove("open"); editorModal.setAttribute("aria-hidden", "true"); });
+    editorModal.addEventListener("click", (event) => { if (event.target === editorModal) { editorModal.classList.remove("open"); editorModal.setAttribute("aria-hidden", "true"); } });
 
     bindPostInput(fields.postTitle, "postTitle");
     bindPostInput(fields.time, "time");
@@ -495,11 +505,17 @@
     bindPostInput(fields.caption, "caption");
     bindPostInput(fields.cta, "cta");
     bindPostInput(fields.asset, "asset");
+    bindPostInput(fields.contentPillar, "contentPillar");
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "/") { event.preventDefault(); fields.quickSearch.focus(); }
+      if (event.key.toLowerCase() === "n") { openEditor(state.selectedDay); }
+      if (event.key.toLowerCase() === "t") { newTaskBtn.click(); }
+    });
 
     weekBadge.textContent = `Week of ${formatWeekOf()}`;
     load();
     render();
   </script>
-
 </body>
 </html>
