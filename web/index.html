@@ -822,6 +822,13 @@
 
   .sort-btn.align-right{ justify-content:flex-end; width:100%; }
 
+  .sort-head{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    gap:6px;
+  }
+
   .sort-arrow{
     font-size:10px;
     color:#97a0ad;
@@ -1934,8 +1941,10 @@ function renderTopPages(){
           </button>
         </th>
         <th>
-          <button type="button" class="sort-btn align-right" data-sort-key="bounce" aria-label="Sort by bounce rate">
-            Bounce Rate
+          <div class="sort-head">
+            <button type="button" class="sort-btn align-right" data-sort-key="bounce" aria-label="Sort by bounce rate">
+              Bounce Rate <span class="sort-arrow">${getSortArrow("bounce")}</span>
+            </button>
             <span
               class="mini-tip"
               tabindex="0"
@@ -1943,8 +1952,7 @@ function renderTopPages(){
               aria-label="Bounce rate tooltip"
               data-tip="Bounce rate is the percentage of visits where users leave after viewing just one page, without any additional interaction."
             >?</span>
-            <span class="sort-arrow">${getSortArrow("bounce")}</span>
-          </button>
+          </div>
         </th>
         <th>
           <button type="button" class="sort-btn align-right" data-sort-key="timeSec" aria-label="Sort by average time on page">
