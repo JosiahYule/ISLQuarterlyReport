@@ -51,8 +51,9 @@
 
     .priority-list{margin:0;padding-left:20px;display:grid;gap:8px}
     .priority-list li{padding-left:2px}
+    .priority-list li.hidden{display:none}
 
-    .ai-partner{position:fixed;left:16px;bottom:16px;z-index:50;width:min(420px,calc(100vw - 32px));background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.9));border:1px solid var(--border);box-shadow:var(--shadow);border-radius:16px;overflow:hidden}
+    .ai-partner{position:fixed;left:16px;bottom:16px;z-index:50;width:min(320px,calc(100vw - 32px));max-height:min(56vh,460px);background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.9));border:1px solid var(--border);box-shadow:var(--shadow);border-radius:16px;overflow:hidden}
     .ai-partner summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;background:rgba(0,84,154,.06)}
     .ai-partner summary::-webkit-details-marker{display:none}
     .ai-partner summary strong{font-size:.88rem}
@@ -66,7 +67,7 @@
     .chat-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
     .chat-head strong{font-size:.85rem;color:#1e293b}
     .clear-chat{border:1px solid rgba(148,163,184,.45);background:#fff;color:#334155;border-radius:999px;padding:6px 11px;font:inherit;font-size:.75rem;font-weight:600;cursor:pointer}
-    .chat-log{display:grid;gap:8px;max-height:240px;overflow:auto;padding-right:4px}
+    .chat-log{display:grid;gap:8px;max-height:165px;overflow:auto;padding-right:4px}
     .chat-msg{padding:8px 10px;border-radius:10px;font-size:.85rem;line-height:1.4}
     .chat-msg.user{background:#e0f2fe;justify-self:end;max-width:92%}
     .chat-msg.ai{background:#f1f5f9;max-width:92%}
@@ -144,11 +145,11 @@
           <button id="clearWeek" type="button" class="subtle-btn">Reset week</button>
         </div>
       </div>
-      <h2>Priorities (max 3)</h2>
+      <h2>Priorities</h2>
       <ul class="priority-list">
         <li><input id="priority1" type="text" placeholder="Priority 1" /></li>
-        <li><input id="priority2" type="text" placeholder="Priority 2" /></li>
-        <li><input id="priority3" type="text" placeholder="Priority 3" /></li>
+        <li id="priorityItem2" class="hidden"><input id="priority2" type="text" placeholder="Priority 2" /></li>
+        <li id="priorityItem3" class="hidden"><input id="priority3" type="text" placeholder="Priority 3" /></li>
       </ul>
     </section>
 
@@ -244,6 +245,8 @@
     const chatForm = document.getElementById("chatForm");
     const chatInput = document.getElementById("chatInput");
     const clearChat = document.getElementById("clearChat");
+    const priorityItem2 = document.getElementById("priorityItem2");
+    const priorityItem3 = document.getElementById("priorityItem3");
 
     const fields = {
       priority1: document.getElementById("priority1"),
@@ -396,6 +399,14 @@
       chatLog.scrollTop = chatLog.scrollHeight;
     }
 
+    function syncPriorityVisibility() {
+      const [p1, p2, p3] = state.data[state.brand].priorities.map((item) => String(item || "").trim());
+      const showSecond = Boolean(p1 || p2 || p3);
+      const showThird = Boolean(p2 || p3);
+      priorityItem2.classList.toggle("hidden", !showSecond);
+      priorityItem3.classList.toggle("hidden", !showThird);
+    }
+
     function render() {
       const integrated = state.brand === "is";
       document.documentElement.style.setProperty("--primary", integrated ? "#00549A" : "#C77800");
@@ -409,6 +420,7 @@
       fields.priority2.value = priorities[1] || "";
       fields.priority3.value = priorities[2] || "";
       fields.notes.value = state.data[state.brand].notes || "";
+      syncPriorityVisibility();
 
       const post = currentPost();
       document.getElementById("editorTitle").textContent = `Post Details • ${state.selectedDay}`;
@@ -435,6 +447,7 @@
         setSavedLabel("Saving...");
         state.data[state.brand].priorities[index] = input.value;
         persist();
+        syncPriorityVisibility();
         renderAssistant();
       });
     });
