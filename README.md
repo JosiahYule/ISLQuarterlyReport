@@ -17,6 +17,8 @@ This project currently includes multiple report views:
 - **Additional report shells**:
   - `as/as.html`
   - `ads/ads.html`
+- **Weekly social planning workspace**: `social-media-plan.html`
+  - Interactive weekly planner with staffing-brand toggle, daily post editor, priorities, and notes.
 
 ## Project structure
 
@@ -33,8 +35,9 @@ This project currently includes multiple report views:
 │   └── q2.html               # Q2 page (endpoint-driven)
 ├── as/
 │   └── as.html               # Additional report page
-└── ads/
-    └── ads.html              # Additional report page
+├── ads/
+│   └── ads.html              # Additional report page
+└── social-media-plan.html    # Weekly social media planning page
 ```
 
 ## How data is loaded
