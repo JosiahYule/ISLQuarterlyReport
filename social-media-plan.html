@@ -51,12 +51,40 @@
 
     .ai-panel{margin-top:16px}
     .ai-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+    .ai-tools{display:flex;align-items:center;gap:8px}
     .ai-kicker{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
     .ai-refresh{border:1px solid var(--border);background:#fff;color:#334155;border-radius:999px;padding:6px 12px;font:inherit;font-size:.8rem;font-weight:500;cursor:pointer}
+    .copilot-count{font-size:.76rem;color:#334155;background:#eef2ff;border:1px solid rgba(99,102,241,.2);padding:5px 9px;border-radius:999px;font-weight:600}
     .ai-list{display:grid;gap:10px}
-    .ai-item{background:rgba(255,255,255,.8);border:1px solid rgba(148,163,184,.2);border-radius:12px;padding:12px 13px}
+    .ai-item{width:100%;background:rgba(255,255,255,.8);border:1px solid rgba(148,163,184,.2);border-radius:12px;padding:12px 13px;text-align:left;cursor:pointer;transition:var(--trans)}
+    .ai-item:hover{border-color:rgba(0,112,202,.35);transform:translateY(-1px)}
     .ai-item strong{display:block;font-size:.78rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:6px}
     .ai-item p{margin:0;font-size:.9rem;color:#1e293b;line-height:1.45}
+    .copilot-empty{border:1px dashed rgba(100,116,139,.45);border-radius:12px;padding:12px;color:#475569;background:rgba(248,250,252,.8);font-size:.9rem}
+    .copilot-chat{margin-top:12px;border:1px solid rgba(148,163,184,.28);border-radius:14px;background:#fff;padding:12px;display:none;gap:10px}
+    .copilot-chat.open{display:grid}
+    .chat-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .chat-head strong{font-size:.85rem;color:#1e293b}
+    .resolve-btn{border:1px solid #198754;background:#22c55e;color:#fff;border-radius:999px;padding:6px 11px;font:inherit;font-size:.75rem;font-weight:600;cursor:pointer}
+    .chat-log{display:grid;gap:8px;max-height:240px;overflow:auto;padding-right:4px}
+    .chat-msg{padding:8px 10px;border-radius:10px;font-size:.85rem;line-height:1.4}
+    .chat-msg.user{background:#e0f2fe;justify-self:end;max-width:92%}
+    .chat-msg.ai{background:#f1f5f9;max-width:92%}
+    .chat-compose{display:flex;gap:8px}
+    .chat-compose input{flex:1}
+    .send-btn{border:0;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;padding:9px 13px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer}
+    .chip-row{display:flex;flex-wrap:wrap;gap:8px}
+    .quick-chip{border:1px solid rgba(0,112,202,.25);background:#f8fbff;color:#1e3a5f;border-radius:999px;padding:6px 10px;font:inherit;font-size:.75rem;font-weight:600;cursor:pointer}
+    .resolved-wrap{margin-top:10px}
+    .resolved-toggle{border:0;background:transparent;color:#334155;font:inherit;font-size:.8rem;font-weight:600;cursor:pointer;padding:0}
+    .resolved-list{display:none;gap:8px;margin-top:8px}
+    .resolved-wrap.open .resolved-list{display:grid}
+    .resolved-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border:1px solid rgba(148,163,184,.28);background:#fff;border-radius:10px;font-size:.82rem}
+    .reopen-btn{border:1px solid rgba(0,112,202,.25);background:#f8fbff;color:#0f4d80;border-radius:999px;padding:4px 9px;font:inherit;font-size:.73rem;font-weight:600;cursor:pointer}
+    .next-action{margin-top:10px;padding:11px;border:1px solid rgba(34,197,94,.28);background:linear-gradient(180deg,#f5fff7,#effcf2);border-radius:12px}
+    .next-action strong{display:block;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:#166534;margin-bottom:4px}
+    .next-action p{margin:0;font-size:.88rem;color:#14532d}
+    .post-assist{margin-top:8px;border:1px solid rgba(0,112,202,.28);background:#f8fbff;color:#0f4d80;border-radius:10px;padding:8px 10px;font:inherit;font-size:.78rem;font-weight:600;cursor:pointer}
 
     .main-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px}
     .calendar-board{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:12px;background:linear-gradient(180deg,#f9fcff,#f2f7fd);padding:12px;border-radius:14px;border:1px solid rgba(148,163,184,.24)}
@@ -133,9 +161,33 @@
           <div class="ai-kicker">Your Strategy Partner</div>
           <h2>Marketing Team Copilot</h2>
         </div>
-        <button type="button" id="aiRefresh" class="ai-refresh">Refresh</button>
+        <div class="ai-tools">
+          <span class="copilot-count" id="copilotCount">0 open points</span>
+          <button type="button" id="aiRefresh" class="ai-refresh">Refresh</button>
+        </div>
       </div>
+      <div id="nextAction" class="next-action"></div>
       <div id="aiList" class="ai-list"></div>
+      <div class="resolved-wrap" id="resolvedWrap">
+        <button type="button" class="resolved-toggle" id="resolvedToggle">Show resolved points</button>
+        <div class="resolved-list" id="resolvedList"></div>
+      </div>
+      <section id="copilotChat" class="copilot-chat" aria-live="polite">
+        <div class="chat-head">
+          <strong id="chatTopic">Open a point to chat with Strategic Copilot</strong>
+          <button type="button" id="resolvePoint" class="resolve-btn">Resolve</button>
+        </div>
+        <div id="chatLog" class="chat-log"></div>
+        <form id="chatForm" class="chat-compose">
+          <input id="chatInput" type="text" placeholder="Ask for ideas, copy angles, or next steps..." autocomplete="off" />
+          <button type="submit" class="send-btn">Send</button>
+        </form>
+        <div class="chip-row" id="quickChipRow">
+          <button type="button" class="quick-chip" data-chip="Give me 3 hook ideas for this.">3 hooks</button>
+          <button type="button" class="quick-chip" data-chip="Write two CTA options for this point.">CTA options</button>
+          <button type="button" class="quick-chip" data-chip="Repurpose this for LinkedIn and Facebook.">Repurpose</button>
+        </div>
+      </section>
     </section>
 
     <div class="modal" id="editorModal" aria-hidden="true">
@@ -157,6 +209,7 @@
           <textarea id="caption" class="full" rows="4" placeholder="Caption"></textarea>
           <input id="cta" class="full" placeholder="CTA" />
           <input id="asset" class="full" placeholder="Asset link" />
+          <button type="button" id="postAssist" class="post-assist full">Ask Copilot for this post</button>
         </div>
       </section>
     </div>
@@ -176,6 +229,19 @@
     const buttons = document.querySelectorAll(".toggle button");
     const aiList = document.getElementById("aiList");
     const aiRefresh = document.getElementById("aiRefresh");
+    const nextAction = document.getElementById("nextAction");
+    const resolvedWrap = document.getElementById("resolvedWrap");
+    const resolvedToggle = document.getElementById("resolvedToggle");
+    const resolvedList = document.getElementById("resolvedList");
+    const quickChipRow = document.getElementById("quickChipRow");
+    const postAssist = document.getElementById("postAssist");
+    const copilotCount = document.getElementById("copilotCount");
+    const copilotChat = document.getElementById("copilotChat");
+    const chatTopic = document.getElementById("chatTopic");
+    const chatLog = document.getElementById("chatLog");
+    const chatForm = document.getElementById("chatForm");
+    const chatInput = document.getElementById("chatInput");
+    const resolvePoint = document.getElementById("resolvePoint");
 
     const fields = {
       priorities: document.getElementById("priorities"),
@@ -189,14 +255,21 @@
       asset: document.getElementById("asset")
     };
 
+    function emptyBrandState() {
+      return { priorities: "", notes: "", posts: {}, copilot: { dismissed: [], chats: {} } };
+    }
+
     const state = {
       brand: "is",
       selectedDay: "Monday",
       data: {
-        is: { priorities: "", notes: "", posts: {} },
-        as: { priorities: "", notes: "", posts: {} }
+        is: emptyBrandState(),
+        as: emptyBrandState()
       },
-      quarter: null
+      quarter: null,
+      activePointId: null,
+      showResolved: false,
+      cachedMessages: []
     };
 
     function formatWeekOf(date = new Date()) {
@@ -217,6 +290,14 @@
       return posts[state.selectedDay];
     }
 
+    function brandCopilot() {
+      const data = state.data[state.brand];
+      if (!data.copilot) data.copilot = { dismissed: [], chats: {} };
+      if (!Array.isArray(data.copilot.dismissed)) data.copilot.dismissed = [];
+      if (!data.copilot.chats || typeof data.copilot.chats !== "object") data.copilot.chats = {};
+      return data.copilot;
+    }
+
     function persist() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
       setSavedLabel("Saved");
@@ -227,10 +308,17 @@
       if (!saved) return;
       try {
         const parsed = JSON.parse(saved);
-        state.data = {
-          is: { ...state.data.is, ...(parsed.is || {}) },
-          as: { ...state.data.as, ...(parsed.as || {}) }
-        };
+        ["is", "as"].forEach((brand) => {
+          const source = parsed[brand] || {};
+          state.data[brand] = {
+            ...emptyBrandState(),
+            ...source,
+            copilot: {
+              dismissed: source?.copilot?.dismissed || [],
+              chats: source?.copilot?.chats || {}
+            }
+          };
+        });
       } catch {
         console.warn("Unable to parse saved social plan data.");
       }
@@ -291,8 +379,6 @@
       }
     });
 
-
-
     async function loadQuarterContext() {
       try {
         const response = await fetch("./2026q1/2026-q1.json");
@@ -319,7 +405,22 @@
         .filter(Boolean);
     }
 
-    function renderAssistant() {
+
+    function scorePriority(message) {
+      const text = `${message.label} ${message.text}`.toLowerCase();
+      if (text.includes("fix") || text.includes("missing") || text.includes("conversion") || text.includes("cta")) return "High";
+      if (text.includes("quarter") || text.includes("cadence") || text.includes("priority")) return "Medium";
+      return "Low";
+    }
+
+    function bestNextAction(openPoints) {
+      if (!openPoints.length) return "All current points are resolved. Add or edit priorities and posts, then refresh for the next recommendation.";
+      const high = openPoints.find((point) => point.priorityTag === "High");
+      const target = high || openPoints[0];
+      return `Focus next on "${target.label}" (${target.priorityTag} impact) to keep this week moving.`;
+    }
+
+    function buildCopilotPoints() {
       const messages = [];
       const priorities = listItems(state.data[state.brand].priorities);
       const notes = listItems(state.data[state.brand].notes);
@@ -335,12 +436,14 @@
       const topPlannedPlatform = Object.entries(platformCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
 
       messages.push({
+        id: "team-checkin",
         label: "Team Check-in",
         text: `Hey team — I reviewed this week's plan. Right now we have ${scheduled.length} planned post${scheduled.length === 1 ? "" : "s"}. Want me to pressure-test the mix for awareness, engagement, and conversion?`
       });
 
       priorities.forEach((item, index) => {
         messages.push({
+          id: `priority-${index}`,
           label: `Priority ${index + 1}`,
           text: `I like this direction: "${item}". If we were in a weekly standup, I'd ask: what's our success metric by Friday, and what is the one post concept most likely to move it?`
         });
@@ -348,6 +451,7 @@
 
       notes.forEach((item, index) => {
         messages.push({
+          id: `note-${index}`,
           label: `Note ${index + 1}`,
           text: `Good call capturing this: "${item}". To make it execution-ready, should we assign an owner, a deadline, and a clear outcome so nothing slips?`
         });
@@ -359,6 +463,7 @@
         const topPlatformName = topPlatform?.name || "LinkedIn";
 
         messages.push({
+          id: "quarter-link",
           label: "Quarter Strategy Link",
           text: `Quarter context: average engagement rate was ${avgER}%, with ${topPlatformName} leading. Do we want this week to deliberately lean into ${topPlatformName}${topPlannedPlatform && topPlannedPlatform !== "Unassigned" ? ` (currently most planned: ${topPlannedPlatform})` : ""} and then run one measured test on a secondary platform?`
         });
@@ -366,6 +471,7 @@
         const notWorking = state.quarter.insights?.notWorking;
         if (notWorking) {
           messages.push({
+            id: "fix-focus",
             label: "What We Should Fix",
             text: `One thing flagged last quarter: ${notWorking} I'd recommend one focused experiment this week tied to that gap, with a single success KPI so we can learn fast.`
           });
@@ -374,6 +480,7 @@
 
       if (scheduled.length < 3) {
         messages.push({
+          id: "content-cadence",
           label: "Content Cadence",
           text: "I'd push us to schedule at least 3 posts this week: one trust-building story, one value/education piece, and one conversion-focused post with a clear next step. Want me to draft that mix?"
         });
@@ -381,6 +488,7 @@
 
       if (scheduled.length && withCTA.length < scheduled.length) {
         messages.push({
+          id: "performance-lens",
           label: "Performance Lens",
           text: "Some posts are still missing CTAs. If we tighten those, we can tie weekly execution back to quarterly growth goals much more confidently."
         });
@@ -388,17 +496,97 @@
 
       if (!priorities.length && !notes.length && !scheduled.length) {
         messages.push({
+          id: "kickoff",
           label: "Kickoff Prompt",
           text: "Drop your first priority and I'll help shape messaging angles, platform choices, and a practical execution plan like we’re collaborating in a planning meeting."
         });
       }
 
-      aiList.innerHTML = messages.slice(0, 10).map((message) => `
-        <article class="ai-item">
-          <strong>${escapeHtml(message.label)}</strong>
-          <p>${escapeHtml(message.text)}</p>
-        </article>
+      return messages.slice(0, 10).map((message) => ({ ...message, priorityTag: scorePriority(message) }));
+    }
+
+    function openCopilotPoint(pointId) {
+      const point = state.cachedMessages.find((message) => message.id === pointId);
+      if (!point) return;
+      state.activePointId = pointId;
+      const copilot = brandCopilot();
+      if (!Array.isArray(copilot.chats[pointId]) || !copilot.chats[pointId].length) {
+        copilot.chats[pointId] = [{ role: "ai", text: point.text }];
+      }
+      renderAssistant();
+      persist();
+    }
+
+    function strategicReply(prompt) {
+      const lower = prompt.toLowerCase();
+      if (lower.includes("cta") || lower.includes("convert")) return "Great prompt. I’d test one CTA tied to urgency and one tied to clarity. Keep it to a single action and track click-through by platform.";
+      if (lower.includes("linkedin") || lower.includes("facebook") || lower.includes("instagram")) return "I’d keep the core message consistent, then tailor the opening hook per platform. Start with LinkedIn for thought leadership and mirror with lighter creative on Facebook/Instagram.";
+      if (lower.includes("idea") || lower.includes("angle") || lower.includes("brainstorm")) return "Let’s build 3 angles: pain point, proof, and outcome. Pick one hero angle this week, then use the others as follow-up posts for continuity.";
+      return "Solid direction. Next step: define one measurable goal, one primary audience segment, and one clear CTA so we can evaluate impact quickly.";
+    }
+
+    function renderChat(point) {
+      if (!point) {
+        copilotChat.classList.remove("open");
+        chatTopic.textContent = "Open a point to chat with Strategic Copilot";
+        chatLog.innerHTML = "";
+        return;
+      }
+
+      const chat = brandCopilot().chats[point.id] || [];
+      chatTopic.textContent = `Strategic Copilot • ${point.label}`;
+      chatLog.innerHTML = chat.map((message) => `<div class="chat-msg ${message.role}">${escapeHtml(message.text)}</div>`).join("");
+      copilotChat.classList.add("open");
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function renderAssistant() {
+      state.cachedMessages = buildCopilotPoints();
+      const copilot = brandCopilot();
+      const dismissed = new Set(copilot.dismissed);
+      const openPoints = state.cachedMessages.filter((message) => !dismissed.has(message.id));
+
+      copilotCount.textContent = `${openPoints.length} open point${openPoints.length === 1 ? "" : "s"}`;
+      nextAction.innerHTML = `<strong>Next best action</strong><p>${escapeHtml(bestNextAction(openPoints))}</p>`;
+
+      if (!openPoints.length) {
+        aiList.innerHTML = `<article class="copilot-empty">All strategy points are resolved. Tap <strong>Refresh</strong> after updating priorities, notes, or the calendar to generate fresh coaching prompts.</article>`;
+      } else {
+        aiList.innerHTML = openPoints.map((message) => `
+          <button type="button" class="ai-item" data-point-id="${escapeHtml(message.id)}">
+            <strong>${escapeHtml(message.label)} · ${escapeHtml(message.priorityTag)} priority</strong>
+            <p>${escapeHtml(message.text)}</p>
+          </button>
+        `).join("");
+      }
+
+      aiList.querySelectorAll("[data-point-id]").forEach((item) => {
+        item.addEventListener("click", () => openCopilotPoint(item.dataset.pointId));
+      });
+
+      const resolvedPoints = state.cachedMessages.filter((message) => dismissed.has(message.id));
+      resolvedList.innerHTML = resolvedPoints.map((message) => `
+        <div class="resolved-item">
+          <span>${escapeHtml(message.label)}</span>
+          <button type="button" class="reopen-btn" data-reopen-id="${escapeHtml(message.id)}">Re-open</button>
+        </div>
       `).join("");
+      resolvedWrap.classList.toggle("open", state.showResolved);
+      resolvedToggle.textContent = `${state.showResolved ? "Hide" : "Show"} resolved points (${resolvedPoints.length})`;
+      resolvedList.querySelectorAll("[data-reopen-id]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.reopenId;
+          const idx = copilot.dismissed.indexOf(id);
+          if (idx >= 0) copilot.dismissed.splice(idx, 1);
+          state.activePointId = id;
+          persist();
+          renderAssistant();
+        });
+      });
+
+      const activeOpen = openPoints.find((message) => message.id === state.activePointId);
+      if (!activeOpen) state.activePointId = null;
+      renderChat(activeOpen || null);
     }
 
     function render() {
@@ -438,23 +626,87 @@
         currentPost()[key] = input.value;
         persist();
         renderCalendar();
+        renderAssistant();
       });
     }
 
     buttons.forEach((btn) => {
       btn.addEventListener("click", () => {
         state.brand = btn.dataset.brand;
+        state.activePointId = null;
         render();
       });
     });
 
     aiRefresh.addEventListener("click", () => {
+      state.data[state.brand].copilot.dismissed = [];
+      state.activePointId = null;
+      setSavedLabel("Saving...");
+      persist();
       renderAssistant();
     });
 
+    chatForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const text = chatInput.value.trim();
+      if (!text || !state.activePointId) return;
+      const copilot = brandCopilot();
+      const chat = copilot.chats[state.activePointId] || [];
+      chat.push({ role: "user", text });
+      chat.push({ role: "ai", text: strategicReply(text) });
+      copilot.chats[state.activePointId] = chat;
+      chatInput.value = "";
+      setSavedLabel("Saving...");
+      persist();
+      renderAssistant();
+      chatInput.focus();
+    });
+
+    resolvePoint.addEventListener("click", () => {
+      if (!state.activePointId) return;
+      const copilot = brandCopilot();
+      if (!copilot.dismissed.includes(state.activePointId)) {
+        copilot.dismissed.push(state.activePointId);
+      }
+      state.activePointId = null;
+      setSavedLabel("Saving...");
+      persist();
+      renderAssistant();
+    });
+
+
+    resolvedToggle.addEventListener("click", () => {
+      state.showResolved = !state.showResolved;
+      renderAssistant();
+    });
+
+    quickChipRow.querySelectorAll("[data-chip]").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        if (!state.activePointId) return;
+        chatInput.value = chip.dataset.chip;
+        chatInput.focus();
+      });
+    });
+
+    postAssist.addEventListener("click", () => {
+      editorModal.classList.remove("open");
+      editorModal.setAttribute("aria-hidden", "true");
+      const post = currentPost();
+      let targetId = "content-cadence";
+      if (!post.cta) targetId = "performance-lens";
+      else if (!post.platform) targetId = "quarter-link";
+      if (!state.cachedMessages.some((msg) => msg.id === targetId)) targetId = "team-checkin";
+      const copilot = brandCopilot();
+      const idx = copilot.dismissed.indexOf(targetId);
+      if (idx >= 0) copilot.dismissed.splice(idx, 1);
+      openCopilotPoint(targetId);
+    });
+
     document.getElementById("clearWeek").addEventListener("click", () => {
-      state.data[state.brand] = { priorities: "", notes: "", posts: {} };
+      state.data[state.brand] = emptyBrandState();
       state.selectedDay = "Monday";
+      state.activePointId = null;
+      state.showResolved = false;
       persist();
       render();
     });
@@ -473,5 +725,6 @@
     load();
     loadQuarterContext().finally(() => render());
   </script>
+
 </body>
 </html>
