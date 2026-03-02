@@ -63,9 +63,9 @@
     .next-action p{margin:0;font-size:.88rem;color:#14532d}
     .status-picker{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:8px}
     .status-tag{border:1px solid transparent;border-radius:999px;padding:6px 10px;font:inherit;font-size:.75rem;font-weight:600;text-transform:capitalize;cursor:pointer;transition:var(--trans)}
-    .status-tag[data-status="planned"],.post-tile.status-planned{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
-    .status-tag[data-status="in progress"],.post-tile.status-in-progress{background:#fff7ed;border-color:#fed7aa;color:#c2410c}
-    .status-tag[data-status="posted"],.post-tile.status-posted{background:#ecfdf5;border-color:#bbf7d0;color:#166534}
+    .status-tag[data-status="planned"]{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
+    .status-tag[data-status="in progress"]{background:#fff7ed;border-color:#fed7aa;color:#c2410c}
+    .status-tag[data-status="posted"]{background:#ecfdf5;border-color:#bbf7d0;color:#166534}
     .status-tag.active{box-shadow:inset 0 0 0 1px rgba(15,23,42,.2)}
     .tag-picker{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:8px}
     .tag-chip{border:1px solid rgba(148,163,184,.45);background:rgba(255,255,255,.72);border-radius:999px;padding:7px 11px;font:inherit;font-size:.78rem;font-weight:600;color:#334155;cursor:pointer;transition:var(--trans)}
@@ -87,21 +87,34 @@
     .day:hover{transform:translateY(-2px);box-shadow:0 10px 18px rgba(15,23,42,.11)}
     .day.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,112,202,.16),0 14px 24px rgba(15,23,42,.08)}
     .day-name{display:block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-    .post-tile{border:1px solid rgba(0,112,202,.2);background:linear-gradient(180deg,#ffffff,#f6fbff);border-radius:10px;padding:10px 11px;cursor:pointer;display:grid;gap:6px;text-align:left}
+    .post-tile{border:1px solid rgba(0,112,202,.24);background:linear-gradient(160deg,#0f4d80,#1c6aa8);border-radius:10px;padding:10px 11px;cursor:pointer;display:grid;gap:6px;text-align:left;color:#fff;box-shadow:0 10px 18px rgba(15,23,42,.14)}
+    .post-tile.platform-linkedin{background:linear-gradient(160deg,#0A66C2,#003B75)}
+    .post-tile.platform-facebook{background:linear-gradient(160deg,#1B74E4,#0ea5e9)}
+    .post-tile.platform-instagram{background:linear-gradient(160deg,#F58529,#DD2A7B 55%,#8134AF)}
+    .post-tile.status-planned{border-color:rgba(191,219,254,.95)}
+    .post-tile.status-in-progress{border-color:rgba(253,186,116,.95)}
+    .post-tile.status-posted{border-color:rgba(134,239,172,.95)}
     .post-tile:hover{border-color:rgba(0,112,202,.45)}
-    .post-title{display:block;color:#1e293b;font-size:.84rem;line-height:1.35;font-weight:500}
-    .post-meta{display:flex;justify-content:space-between;gap:8px;font-size:.74rem;font-weight:500;letter-spacing:.02em;text-transform:uppercase;color:#64748b}
-    .post-status{display:inline-flex;align-items:center;border:1px solid currentColor;border-radius:999px;padding:2px 8px;font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+    .post-title{display:block;color:#fff;font-size:.84rem;line-height:1.35;font-weight:600}
+    .post-meta{display:flex;justify-content:space-between;gap:8px;font-size:.74rem;font-weight:500;letter-spacing:.02em;text-transform:none;color:rgba(255,255,255,.88)}
+    .post-status{display:inline-flex;align-items:center;border:1px solid rgba(255,255,255,.68);border-radius:999px;padding:2px 8px;font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#fff;background:rgba(15,23,42,.14)}
     .add-post{margin-top:auto;border:1px dashed rgba(100,116,139,.45);background:rgba(248,250,252,.85);border-radius:10px;padding:9px 10px;color:#475569;font:inherit;font-size:.8rem;cursor:pointer;text-align:left}
     .add-post:hover{border-color:rgba(0,112,202,.45);color:#1e3a5f}
     
     .modal{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}
     .modal.open{display:flex}
-    .modal-card{width:min(620px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:16px;padding:20px;border:1px solid var(--border);box-shadow:0 24px 45px rgba(15,23,42,.28)}
-    .modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+    .modal-card{width:min(680px,100%);max-height:90vh;overflow:auto;background:linear-gradient(165deg,rgba(255,255,255,.96),rgba(248,250,252,.97));border-radius:20px;padding:22px;border:1px solid rgba(148,163,184,.3);box-shadow:0 26px 48px rgba(15,23,42,.24)}
+    .modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid rgba(148,163,184,.25)}
+    .modal-head h2{margin:0;font-size:1.12rem;letter-spacing:-.01em}
     .close-btn{border:0;background:#e2e8f0;border-radius:10px;width:34px;height:34px;font-size:1.1rem;cursor:pointer;color:#334155}
 
-    .fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .field-group{display:grid;gap:6px}
+    .field-group label{font-size:.76rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#475569}
+    .field-hint{margin:0;font-size:.78rem;color:#64748b;grid-column:1 / -1}
+    .platform-block,.status-block{display:grid;gap:8px;padding:12px;border:1px solid rgba(148,163,184,.25);border-radius:12px;background:rgba(248,250,252,.7)}
+    .platform-block strong,.status-block strong{font-size:.76rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#475569}
+    .platform-block .tag-picker,.status-block .status-picker{margin:0}
     .full{grid-column:1 / -1}
 
     @media (max-width:1000px){
@@ -175,22 +188,40 @@
           <button type="button" class="close-btn" id="closeModal" aria-label="Close post editor">×</button>
         </div>
         <div class="fields">
-          <input id="postTitle" class="full" placeholder="Post title" />
-          <div class="tag-picker" id="platformPicker" aria-label="Select post platforms">
-            <button type="button" class="tag-chip" data-platform="LinkedIn">LinkedIn</button>
-            <button type="button" class="tag-chip" data-platform="Facebook">Facebook</button>
-            <button type="button" class="tag-chip" data-platform="Instagram">Instagram</button>
+          <p class="field-hint">Add the essentials and your calendar card updates instantly.</p>
+          <div class="field-group full">
+            <label for="postTitle">Post title</label>
+            <input id="postTitle" placeholder="What are you posting about?" />
           </div>
-          <input id="time" type="time" />
+          <div class="platform-block full">
+            <strong>Platform</strong>
+            <div class="tag-picker" id="platformPicker" aria-label="Select post platforms">
+              <button type="button" class="tag-chip" data-platform="LinkedIn">LinkedIn</button>
+              <button type="button" class="tag-chip" data-platform="Facebook">Facebook</button>
+              <button type="button" class="tag-chip" data-platform="Instagram">Instagram</button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="time">Publish time</label>
+            <input id="time" type="time" />
+          </div>
           <input id="status" class="full" type="hidden" />
-          <div class="status-picker" id="statusPicker" aria-label="Post status">
-            <button type="button" class="status-tag" data-status="planned">Planned</button>
-            <button type="button" class="status-tag" data-status="in progress">In Progress</button>
-            <button type="button" class="status-tag" data-status="posted">Posted</button>
+          <div class="status-block full">
+            <strong>Status</strong>
+            <div class="status-picker" id="statusPicker" aria-label="Post status">
+              <button type="button" class="status-tag" data-status="planned">Planned</button>
+              <button type="button" class="status-tag" data-status="in progress">In Progress</button>
+              <button type="button" class="status-tag" data-status="posted">Posted</button>
+            </div>
           </div>
-          <textarea id="caption" class="full" rows="4" placeholder="Caption"></textarea>
-          <input id="cta" class="full" placeholder="CTA" />
-          <input id="asset" class="full" placeholder="Asset link" />
+          <div class="field-group full">
+            <label for="caption">Caption draft</label>
+            <textarea id="caption" rows="4" placeholder="Write your post copy here..."></textarea>
+          </div>
+          <div class="field-group full">
+            <label for="postLink">Post URL</label>
+            <input id="postLink" type="url" placeholder="https://..." />
+          </div>
         </div>
       </section>
     </div>
@@ -224,8 +255,7 @@
       time: document.getElementById("time"),
       status: document.getElementById("status"),
       caption: document.getElementById("caption"),
-      cta: document.getElementById("cta"),
-      asset: document.getElementById("asset")
+      postLink: document.getElementById("postLink")
     };
 
     function emptyBrandState() {
@@ -308,6 +338,15 @@
       return String(platforms || "").trim();
     }
 
+    function platformClass(platforms) {
+      const firstPlatform = Array.isArray(platforms) ? platforms[0] : String(platforms || "").split(",")[0];
+      const normalized = String(firstPlatform || "").trim().toLowerCase();
+      if (normalized === "linkedin") return "platform-linkedin";
+      if (normalized === "facebook") return "platform-facebook";
+      if (normalized === "instagram") return "platform-instagram";
+      return "";
+    }
+
     function renderCalendar() {
       calendar.innerHTML = "";
       DAYS.forEach((day) => {
@@ -319,7 +358,7 @@
         if (hasPost) {
           const tile = document.createElement("button");
           tile.type = "button";
-          tile.className = `post-tile ${statusClass(post.status)}`.trim();
+          tile.className = `post-tile ${platformClass(post.platforms || post.platform)} ${statusClass(post.status)}`.trim();
           const statusLabel = String(post.status || "planned").trim() || "planned";
           tile.innerHTML = `<span class="post-title">${escapeHtml(post.postTitle)}</span><span class="post-meta"><span>${escapeHtml(formatPlatforms(post.platforms || post.platform) || "Set platform")}</span><span>${escapeHtml(post.time || "Set time")}</span></span><span class="post-status">${escapeHtml(statusLabel)}</span>`;
           tile.addEventListener("click", () => openEditor(day));
@@ -383,7 +422,8 @@
 
       const post = currentPost();
       document.getElementById("editorTitle").textContent = `Post Details • ${state.selectedDay}`;
-      ["postTitle","time","status","caption","cta","asset"].forEach((key) => { fields[key].value = post[key] || ""; });
+      ["postTitle","time","status","caption"].forEach((key) => { fields[key].value = post[key] || ""; });
+      fields.postLink.value = post.postLink || post.asset || "";
       const selectedPlatforms = Array.isArray(post.platforms) ? post.platforms : (post.platform ? [post.platform] : []);
       platformPicker.querySelectorAll(".tag-chip").forEach((chip) => {
         chip.classList.toggle("active", selectedPlatforms.includes(chip.dataset.platform));
@@ -493,8 +533,7 @@
     bindPostInput(fields.time, "time");
     bindPostInput(fields.status, "status");
     bindPostInput(fields.caption, "caption");
-    bindPostInput(fields.cta, "cta");
-    bindPostInput(fields.asset, "asset");
+    bindPostInput(fields.postLink, "postLink");
 
     weekBadge.textContent = `Week of ${formatWeekOf()}`;
     load();
