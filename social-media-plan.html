@@ -79,6 +79,10 @@
 
     .panel{padding:20px}
     .panel h2{margin:0 0 12px;font-size:1rem;font-weight:700;letter-spacing:-.01em}
+    .panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+    .panel-head h2{margin:0}
+    .panel-content.collapsed{display:none}
+    .section-add{border:1px solid var(--border);background:#fff;border-radius:999px;padding:4px 10px;min-width:32px;font:inherit;font-weight:700;color:#334155;line-height:1;cursor:pointer}
 
     textarea,input,select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.88);font:inherit;color:var(--text);transition:var(--trans)}
     textarea:focus,input:focus,select:focus{outline:none;border-color:rgba(0,112,202,.45);box-shadow:0 0 0 3px rgba(0,112,202,.16)}
@@ -201,12 +205,17 @@
     </section>
 
     <section class="panel glass">
-      <h2>Priorities</h2>
-      <ul class="priority-list">
-        <li><input id="priority1" type="text" placeholder="Priority 1" /></li>
-        <li id="priorityItem2" class="hidden"><input id="priority2" type="text" placeholder="Priority 2" /></li>
-        <li id="priorityItem3" class="hidden"><input id="priority3" type="text" placeholder="Priority 3" /></li>
-      </ul>
+      <div class="panel-head">
+        <h2>Priorities</h2>
+        <button type="button" class="section-add" id="prioritiesToggle" aria-expanded="true" aria-label="Toggle priorities section">−</button>
+      </div>
+      <div class="panel-content" id="prioritiesContent">
+        <ul class="priority-list">
+          <li><input id="priority1" type="text" placeholder="Priority 1" /></li>
+          <li id="priorityItem2" class="hidden"><input id="priority2" type="text" placeholder="Priority 2" /></li>
+          <li id="priorityItem3" class="hidden"><input id="priority3" type="text" placeholder="Priority 3" /></li>
+        </ul>
+      </div>
     </section>
 
     <section class="main-grid">
@@ -218,13 +227,23 @@
 
     <section class="notes-grid">
       <section class="panel glass">
-        <h2>Notes</h2>
-        <textarea id="notes" rows="7" placeholder="Notes"></textarea>
+        <div class="panel-head">
+          <h2>Notes</h2>
+          <button type="button" class="section-add" id="notesToggle" aria-expanded="true" aria-label="Toggle notes section">−</button>
+        </div>
+        <div class="panel-content" id="notesContent">
+          <textarea id="notes" rows="7" placeholder="Notes"></textarea>
+        </div>
       </section>
       <section class="panel glass">
-        <h2>To Do List</h2>
-        <div class="todo-list" id="todoList"></div>
-        <button type="button" class="new-task-btn" id="newTaskBtn">New task</button>
+        <div class="panel-head">
+          <h2>To Do List</h2>
+          <button type="button" class="section-add" id="todosToggle" aria-expanded="true" aria-label="Toggle to do section">−</button>
+        </div>
+        <div class="panel-content" id="todosContent">
+          <div class="todo-list" id="todoList"></div>
+          <button type="button" class="new-task-btn" id="newTaskBtn">New task</button>
+        </div>
       </section>
     </section>
 
@@ -292,6 +311,12 @@
     const platformPicker = document.getElementById("platformPicker");
     const todoList = document.getElementById("todoList");
     const newTaskBtn = document.getElementById("newTaskBtn");
+    const prioritiesContent = document.getElementById("prioritiesContent");
+    const notesContent = document.getElementById("notesContent");
+    const todosContent = document.getElementById("todosContent");
+    const prioritiesToggle = document.getElementById("prioritiesToggle");
+    const notesToggle = document.getElementById("notesToggle");
+    const todosToggle = document.getElementById("todosToggle");
 
     const statScheduled = document.getElementById("statScheduled");
     const statPosted = document.getElementById("statPosted");
@@ -318,6 +343,11 @@
       brand: "is",
       selectedDay: "Monday",
       data: { is: emptyBrandState(), as: emptyBrandState(), ad: emptyBrandState() },
+      panelOpen: {
+        is: { priorities: null, notes: null, todos: null },
+        as: { priorities: null, notes: null, todos: null },
+        ad: { priorities: null, notes: null, todos: null }
+      },
       quarter: null
     };
 
@@ -463,6 +493,35 @@
       });
     }
 
+    function hasPriorityContent() {
+      return (state.data[state.brand].priorities || []).some((item) => String(item || "").trim());
+    }
+
+    function hasNotesContent() {
+      return Boolean(String(state.data[state.brand].notes || "").trim());
+    }
+
+    function hasTodoContent() {
+      return (state.data[state.brand].todos || []).some((todo) => String((todo && todo.text) || "").trim() || Boolean(todo && todo.done));
+    }
+
+    function updatePanelSection(contentEl, buttonEl, isOpen) {
+      contentEl.classList.toggle("collapsed", !isOpen);
+      buttonEl.textContent = isOpen ? "−" : "+";
+      buttonEl.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    }
+
+    function renderSectionToggles() {
+      const panelState = state.panelOpen[state.brand];
+      const prioritiesOpen = panelState.priorities == null ? hasPriorityContent() : panelState.priorities;
+      const notesOpen = panelState.notes == null ? hasNotesContent() : panelState.notes;
+      const todosOpen = panelState.todos == null ? hasTodoContent() : panelState.todos;
+
+      updatePanelSection(prioritiesContent, prioritiesToggle, prioritiesOpen);
+      updatePanelSection(notesContent, notesToggle, notesOpen);
+      updatePanelSection(todosContent, todosToggle, todosOpen);
+    }
+
     function render() {
       const brandConfig = {
         is: { primary: "#00549A", accent: "#0070CA", subtitle: "Integrated Staffing", mark: "IS" },
@@ -482,6 +541,7 @@
       fields.priority3.value = priorities[2] || "";
       fields.notes.value = state.data[state.brand].notes || "";
       syncPriorityVisibility();
+      renderSectionToggles();
 
       renderTodos();
 
@@ -519,6 +579,8 @@
         state.data[state.brand].priorities[index] = input.value;
         persist();
         syncPriorityVisibility();
+        state.panelOpen[state.brand].priorities = hasPriorityContent();
+        renderSectionToggles();
       });
     });
 
@@ -526,6 +588,8 @@
       setSavedLabel("Saving...");
       state.data[state.brand].notes = fields.notes.value;
       persist();
+      state.panelOpen[state.brand].notes = hasNotesContent();
+      renderSectionToggles();
     });
 
     platformPicker.querySelectorAll(".tag-chip").forEach((chip) => chip.addEventListener("click", () => {
@@ -549,6 +613,8 @@
       setSavedLabel("Saving...");
       state.data[state.brand].todos[index].text = input.value;
       persist();
+      state.panelOpen[state.brand].todos = hasTodoContent();
+      renderSectionToggles();
     });
 
     todoList.addEventListener("change", (event) => {
@@ -560,13 +626,38 @@
       state.data[state.brand].todos[index].done = check.checked;
       renderTodos();
       persist();
+      state.panelOpen[state.brand].todos = hasTodoContent();
+      renderSectionToggles();
     });
 
     newTaskBtn.addEventListener("click", () => {
       setSavedLabel("Saving...");
       state.data[state.brand].todos.push({ text: "", done: false });
+      state.panelOpen[state.brand].todos = true;
       renderTodos();
       persist();
+      renderSectionToggles();
+    });
+
+    prioritiesToggle.addEventListener("click", () => {
+      const panelState = state.panelOpen[state.brand];
+      const current = panelState.priorities == null ? hasPriorityContent() : panelState.priorities;
+      panelState.priorities = !current;
+      renderSectionToggles();
+    });
+
+    notesToggle.addEventListener("click", () => {
+      const panelState = state.panelOpen[state.brand];
+      const current = panelState.notes == null ? hasNotesContent() : panelState.notes;
+      panelState.notes = !current;
+      renderSectionToggles();
+    });
+
+    todosToggle.addEventListener("click", () => {
+      const panelState = state.panelOpen[state.brand];
+      const current = panelState.todos == null ? hasTodoContent() : panelState.todos;
+      panelState.todos = !current;
+      renderSectionToggles();
     });
 
     statusPicker.querySelectorAll(".status-tag").forEach((tag) => tag.addEventListener("click", () => {
