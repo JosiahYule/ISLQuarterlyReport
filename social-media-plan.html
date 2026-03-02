@@ -60,12 +60,16 @@
 
     .main-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px}
     .calendar-board{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:12px;background:linear-gradient(180deg,#f9fcff,#f2f7fd);padding:12px;border-radius:14px;border:1px solid rgba(148,163,184,.24)}
-    .day{border:1px solid rgba(148,163,184,.25);background:#fff;border-radius:12px;padding:14px;min-height:168px;cursor:pointer;text-align:left;transition:var(--trans);display:flex;flex-direction:column;gap:8px}
+    .day{border:1px solid rgba(148,163,184,.25);background:#fff;border-radius:12px;padding:14px;min-height:168px;text-align:left;transition:var(--trans);display:flex;flex-direction:column;gap:10px}
     .day:hover{transform:translateY(-2px);box-shadow:0 10px 18px rgba(15,23,42,.11)}
     .day.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,112,202,.16),0 14px 24px rgba(15,23,42,.08)}
     .day-name{display:block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-    .day-text{display:block;color:#1e293b;font-size:.84rem;line-height:1.4;font-weight:400}
-    .day-time{font-size:.74rem;font-weight:500;letter-spacing:.02em;text-transform:uppercase;color:#475569;margin-top:auto}
+    .post-tile{border:1px solid rgba(0,112,202,.2);background:linear-gradient(180deg,#ffffff,#f6fbff);border-radius:10px;padding:10px 11px;cursor:pointer;display:grid;gap:4px;text-align:left}
+    .post-tile:hover{border-color:rgba(0,112,202,.45)}
+    .post-title{display:block;color:#1e293b;font-size:.84rem;line-height:1.35;font-weight:500}
+    .post-meta{display:flex;justify-content:space-between;gap:8px;font-size:.74rem;font-weight:500;letter-spacing:.02em;text-transform:uppercase;color:#64748b}
+    .add-post{margin-top:auto;border:1px dashed rgba(100,116,139,.45);background:rgba(248,250,252,.85);border-radius:10px;padding:9px 10px;color:#475569;font:inherit;font-size:.8rem;cursor:pointer;text-align:left}
+    .add-post:hover{border-color:rgba(0,112,202,.45);color:#1e3a5f}
     
     .modal{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}
     .modal.open{display:flex}
@@ -147,7 +151,6 @@
             <option>LinkedIn</option>
             <option>Facebook</option>
             <option>Instagram</option>
-            <option>X / Twitter</option>
           </select>
           <input id="time" type="time" />
           <input id="status" class="full" placeholder="Status" />
@@ -233,26 +236,46 @@
       }
     }
 
+    function openEditor(day) {
+      state.selectedDay = day;
+      editorModal.classList.add("open");
+      editorModal.setAttribute("aria-hidden", "false");
+      render();
+    }
+
     function renderCalendar() {
       calendar.innerHTML = "";
       DAYS.forEach((day) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "day" + (day === state.selectedDay ? " active" : "");
+        const dayCard = document.createElement("article");
+        dayCard.className = "day" + (day === state.selectedDay ? " active" : "");
         const post = state.data[state.brand].posts[day] || {};
-        button.innerHTML = `
-          <span class="day-name">${day}</span>
-          <span class="day-text">${post.postTitle || "No post planned"}</span>
-          <span class="day-text">${post.platform || ""}</span>
-          <span class="day-time">${post.time || "No time set"}</span>
-        `;
-        button.addEventListener("click", () => {
-          state.selectedDay = day;
-          editorModal.classList.add("open");
-          editorModal.setAttribute("aria-hidden", "false");
-          render();
-        });
-        calendar.appendChild(button);
+        const hasPost = Boolean(post.postTitle);
+
+        dayCard.innerHTML = `<span class="day-name">${day}</span>`;
+
+        if (hasPost) {
+          const tile = document.createElement("button");
+          tile.type = "button";
+          tile.className = "post-tile";
+          tile.innerHTML = `
+            <span class="post-title">${escapeHtml(post.postTitle)}</span>
+            <span class="post-meta">
+              <span>${escapeHtml(post.platform || "Set platform")}</span>
+              <span>${escapeHtml(post.time || "Set time")}</span>
+            </span>
+          `;
+          tile.addEventListener("click", () => openEditor(day));
+          dayCard.appendChild(tile);
+        } else {
+          const addButton = document.createElement("button");
+          addButton.type = "button";
+          addButton.className = "add-post";
+          addButton.textContent = "Add post";
+          addButton.addEventListener("click", () => openEditor(day));
+          dayCard.appendChild(addButton);
+        }
+
+        calendar.appendChild(dayCard);
       });
     }
 
