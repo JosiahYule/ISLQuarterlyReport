@@ -111,11 +111,16 @@
     .platform-facebook{border-color:rgba(30,64,175,.34)}
     .platform-instagram{border-color:rgba(219,39,119,.34)}
 
-    .notes-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+    .notes-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;align-items:start}
+    #notes{resize:none;overflow:hidden;min-height:170px}
     .todo-list{display:grid;gap:10px}
     .todo-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.78)}
+    .todo-item input[type="text"]{flex:1}
     .todo-item input[type="checkbox"]{width:auto;accent-color:var(--primary)}
     .todo-item.done input[type="text"]{text-decoration:line-through;color:#94a3b8}
+    .todo-delete{margin-left:auto;border:0;background:transparent;color:#94a3b8;font-size:1rem;line-height:1;padding:4px;cursor:pointer;opacity:0;pointer-events:none;transition:var(--trans)}
+    .todo-item:hover .todo-delete,.todo-item:focus-within .todo-delete{opacity:1;pointer-events:auto}
+    .todo-delete:hover{color:#dc2626}
     .new-task-btn{margin-top:12px;border:0;background:linear-gradient(145deg,var(--primary),var(--accent));color:#fff;padding:10px 13px;border-radius:12px;font:inherit;font-weight:600;cursor:pointer;box-shadow:0 10px 18px rgba(0,84,154,.24)}
 
     .modal{position:fixed;inset:0;background:rgba(15,23,42,.42);display:none;align-items:center;justify-content:center;padding:18px;z-index:40}
@@ -341,6 +346,7 @@
     const state = {
       brand: "is",
       selectedDay: "Monday",
+      selectedPostIndex: 0,
       data: { is: emptyBrandState(), as: emptyBrandState(), ad: emptyBrandState() },
       panelOpen: {
         is: { priorities: null, notes: null, todos: null },
@@ -360,10 +366,38 @@
 
     function setSavedLabel(text) { saveState.textContent = text; }
 
-    function currentPost() {
+    function dayPosts(day = state.selectedDay) {
       const posts = state.data[state.brand].posts;
-      if (!posts[state.selectedDay]) posts[state.selectedDay] = {};
-      return posts[state.selectedDay];
+      const existing = posts[day];
+      if (Array.isArray(existing)) return existing;
+      if (existing && typeof existing === "object") {
+        posts[day] = [existing];
+        return posts[day];
+      }
+      posts[day] = [];
+      return posts[day];
+    }
+
+    function currentPost() {
+      const postsForDay = dayPosts();
+      if (!postsForDay[state.selectedPostIndex]) postsForDay[state.selectedPostIndex] = {};
+      return postsForDay[state.selectedPostIndex];
+    }
+
+    function autoResizeNotes() {
+      fields.notes.style.height = "auto";
+      fields.notes.style.height = `${Math.max(fields.notes.scrollHeight, 170)}px`;
+    }
+
+    function normalizePosts(posts) {
+      const normalized = {};
+      DAYS.forEach((day) => {
+        const value = posts && posts[day];
+        if (Array.isArray(value)) normalized[day] = value.filter((item) => item && typeof item === "object");
+        else if (value && typeof value === "object") normalized[day] = [value];
+        else normalized[day] = [];
+      });
+      return normalized;
     }
 
     function persist() {
@@ -391,7 +425,8 @@
             ...emptyBrandState(),
             ...source,
             priorities,
-            todos: todos.map((todo) => ({ text: String((todo && todo.text) || ""), done: Boolean(todo && todo.done) }))
+            todos: todos.map((todo) => ({ text: String((todo && todo.text) || ""), done: Boolean(todo && todo.done) })),
+            posts: normalizePosts(source.posts)
           };
         });
       } catch {
@@ -399,8 +434,15 @@
       }
     }
 
-    function openEditor(day) {
+    function openEditor(day, postIndex = null) {
       state.selectedDay = day;
+      if (postIndex == null) {
+        const postsForDay = dayPosts(day);
+        postsForDay.push({});
+        state.selectedPostIndex = postsForDay.length - 1;
+      } else {
+        state.selectedPostIndex = postIndex;
+      }
       editorModal.classList.add("open");
       editorModal.setAttribute("aria-hidden", "false");
       render();
@@ -430,9 +472,9 @@
 
     function renderStats() {
       const posts = state.data[state.brand].posts || {};
-      const dayPosts = DAYS.map((day) => posts[day] || {});
-      const scheduled = dayPosts.filter((post) => Boolean(String(post.postTitle || "").trim())).length;
-      const posted = dayPosts.filter((post) => String(post.status || "").toLowerCase().trim() === "posted").length;
+      const allPosts = DAYS.flatMap((day) => Array.isArray(posts[day]) ? posts[day] : []);
+      const scheduled = allPosts.filter((post) => Boolean(String((post && post.postTitle) || "").trim())).length;
+      const posted = allPosts.filter((post) => String((post && post.status) || "").toLowerCase().trim() === "posted").length;
       const completion = Math.round((scheduled / DAYS.length) * 100);
 
       statScheduled.textContent = String(scheduled);
@@ -446,25 +488,23 @@
       DAYS.forEach((day) => {
         const dayCard = document.createElement("article");
         dayCard.className = "day" + (day === state.selectedDay ? " active" : "");
-        const post = state.data[state.brand].posts[day] || {};
-        const hasPost = Boolean(post.postTitle);
         dayCard.innerHTML = `<span class="day-name">${day}</span>`;
-        if (hasPost) {
+        dayPosts(day).forEach((post, index) => {
+          if (!post || !String(post.postTitle || "").trim()) return;
           const tile = document.createElement("button");
           tile.type = "button";
           tile.className = `post-tile ${platformClass(post.platforms || post.platform)} ${statusClass(post.status)}`.trim();
           const statusLabel = String(post.status || "planned").trim() || "planned";
           tile.innerHTML = `<span class="post-title">${escapeHtml(post.postTitle)}</span><span class="post-meta"><span>${escapeHtml(formatPlatforms(post.platforms || post.platform) || "Set platform")}</span><span>${escapeHtml(post.time || "Set time")}</span></span><span class="post-status">${escapeHtml(statusLabel)}</span>`;
-          tile.addEventListener("click", () => openEditor(day));
+          tile.addEventListener("click", () => openEditor(day, index));
           dayCard.appendChild(tile);
-        } else {
-          const addButton = document.createElement("button");
-          addButton.type = "button";
-          addButton.className = "add-post";
-          addButton.textContent = "Add post";
-          addButton.addEventListener("click", () => openEditor(day));
-          dayCard.appendChild(addButton);
-        }
+        });
+        const addButton = document.createElement("button");
+        addButton.type = "button";
+        addButton.className = "add-post";
+        addButton.textContent = "Add post";
+        addButton.addEventListener("click", () => openEditor(day));
+        dayCard.appendChild(addButton);
         calendar.appendChild(dayCard);
       });
     }
@@ -487,7 +527,7 @@
       todos.forEach((todo, index) => {
         const row = document.createElement("label");
         row.className = "todo-item" + (todo.done ? " done" : "");
-        row.innerHTML = `<input type="checkbox" data-todo-check="${index}" ${todo.done ? "checked" : ""} /><input type="text" data-todo-text="${index}" placeholder="Task ${index + 1}" value="${escapeHtml(todo.text || "")}" />`;
+        row.innerHTML = `<input type="checkbox" data-todo-check="${index}" ${todo.done ? "checked" : ""} /><input type="text" data-todo-text="${index}" placeholder="Task ${index + 1}" value="${escapeHtml(todo.text || "")}" /><button type="button" class="todo-delete" data-todo-delete="${index}" aria-label="Delete task ${index + 1}">🗑️</button>`;
         todoList.appendChild(row);
       });
     }
@@ -539,6 +579,7 @@
       fields.priority2.value = priorities[1] || "";
       fields.priority3.value = priorities[2] || "";
       fields.notes.value = state.data[state.brand].notes || "";
+      autoResizeNotes();
       syncPriorityVisibility();
       renderSectionToggles();
 
@@ -586,6 +627,7 @@
     fields.notes.addEventListener("input", () => {
       setSavedLabel("Saving...");
       state.data[state.brand].notes = fields.notes.value;
+      autoResizeNotes();
       persist();
       state.panelOpen[state.brand].notes = hasNotesContent();
       renderSectionToggles();
@@ -623,6 +665,21 @@
       if (Number.isNaN(index) || !state.data[state.brand].todos[index]) return;
       setSavedLabel("Saving...");
       state.data[state.brand].todos[index].done = check.checked;
+      renderTodos();
+      persist();
+      state.panelOpen[state.brand].todos = hasTodoContent();
+      renderSectionToggles();
+    });
+
+
+    todoList.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-todo-delete]");
+      if (!button) return;
+      const index = Number(button.dataset.todoDelete);
+      if (Number.isNaN(index)) return;
+      setSavedLabel("Saving...");
+      state.data[state.brand].todos.splice(index, 1);
+      if (state.data[state.brand].todos.length === 0) state.data[state.brand].todos.push({ text: "", done: false });
       renderTodos();
       persist();
       state.panelOpen[state.brand].todos = hasTodoContent();
