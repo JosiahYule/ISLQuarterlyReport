@@ -12,7 +12,7 @@
       --primary:#00549A;
       --accent:#0070CA;
       --accent-soft:rgba(0,112,202,.14);
-      --bg:#f3f6fb;
+      --bg:#ffffff;
       --surface:rgba(255,255,255,.62);
       --panel-surface:rgba(255,255,255,.74);
       --border:rgba(148,163,184,.25);
@@ -29,11 +29,7 @@
     body{
       margin:0;
       min-height:100vh;
-      background:
-        radial-gradient(circle at 10% 12%, rgba(0,112,202,.2), transparent 28%),
-        radial-gradient(circle at 88% 4%, rgba(56,189,248,.22), transparent 30%),
-        radial-gradient(circle at 78% 90%, rgba(59,130,246,.14), transparent 30%),
-        var(--bg);
+      background:var(--bg);
       font-family:var(--font);
       color:var(--text);
       line-height:1.5;
@@ -67,7 +63,7 @@
     .hero-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:16px;align-items:stretch}
     .hero-copy h1{margin:0;font-size:clamp(1.25rem,2.8vw,2rem);letter-spacing:-.03em}
     .hero-copy p{margin:9px 0 0;color:#475569;font-size:.96rem;max-width:58ch}
-    .meta-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px}
+    .meta-row{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:16px}
     .week-badge{font-size:.82rem;font-weight:600;color:#1e293b;background:rgba(148,163,184,.16);padding:7px 12px;border-radius:999px}
     .meta-actions{display:flex;gap:8px;align-items:center}
     .subtle-btn{border:1px solid var(--border);background:rgba(255,255,255,.84);padding:8px 12px;border-radius:12px;font:inherit;font-weight:600;cursor:pointer;color:#334155;transition:var(--trans)}
@@ -175,13 +171,12 @@
     <section class="hero glass">
       <div class="hero-grid">
         <div class="hero-copy">
-          <h1>State-of-the-art weekly publishing cockpit.</h1>
-          <p>Design your week with clarity, track execution at a glance, and keep every campaign synchronized across platforms with an executive-grade planning dashboard.</p>
+          <h1>Weekly tracker</h1>
           <div class="meta-row">
             <span class="week-badge" id="weekBadge">Week of --</span>
             <div class="meta-actions">
-              <span id="saveState" class="saved-text">Saved</span>
               <button id="clearWeek" type="button" class="subtle-btn">Reset week</button>
+              <span id="saveState" class="saved-text">Saved</span>
             </div>
           </div>
         </div>
