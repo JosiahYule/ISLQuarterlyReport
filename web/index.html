@@ -462,7 +462,8 @@
 
   /* ============= KPI/CHANNEL TOOLTIPS (matches report style) ============= */
   .section#quarter-totals,
-  .section#traffic-channels{ overflow:visible !important; }
+  .section#traffic-channels,
+  .section#top-pages{ overflow:visible !important; }
 
   .kpi-card,
   .channel,
@@ -570,6 +571,28 @@
   .mini-tip:focus{
     box-shadow:0 0 0 3px rgba(0,112,202,.16);
     border-color:rgba(0,112,202,.35);
+  }
+
+
+  .mini-tip::after{
+    left:auto;
+    right:0;
+    transform:translate(0, 6px);
+    max-width:min(320px, calc(100vw - 48px));
+    min-width:200px;
+    text-transform:none;
+    letter-spacing:normal;
+  }
+
+  .mini-tip::before{
+    left:auto;
+    right:6px;
+    transform:rotate(45deg);
+  }
+
+  .mini-tip:hover::after,
+  .mini-tip:focus::after{
+    transform:translate(0, 0);
   }
 
   .kpi-label{
@@ -1919,7 +1942,7 @@ function renderTopPages(){
               role="img"
               aria-label="Bounce rate tooltip"
               data-tip="Bounce rate is the percentage of visits where users leave after viewing just one page, without any additional interaction."
-            >i</span>
+            >?</span>
             <span class="sort-arrow">${getSortArrow("bounce")}</span>
           </button>
         </th>
