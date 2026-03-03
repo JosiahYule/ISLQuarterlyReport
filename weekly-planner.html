@@ -131,23 +131,30 @@
     .todo-delete:hover{color:#dc2626}
     .new-task-btn{margin-top:12px;border:0;background:linear-gradient(145deg,var(--primary),var(--accent));color:#fff;padding:10px 13px;border-radius:12px;font:inherit;font-weight:600;cursor:pointer;box-shadow:0 10px 18px rgba(0,84,154,.24)}
 
-    .project-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px}
-    .project-tile{aspect-ratio:1/1;border-radius:16px;border:1px solid var(--border);background:rgba(255,255,255,.88);display:grid;align-content:space-between;padding:10px;text-align:left;cursor:pointer;font:inherit;transition:var(--trans)}
+    .project-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .project-tile{min-height:156px;border-radius:18px;border:1px solid var(--border);background:rgba(255,255,255,.9);display:grid;align-content:space-between;padding:14px;text-align:left;cursor:pointer;font:inherit;transition:var(--trans)}
     .project-tile:hover{transform:translateY(-1px);box-shadow:var(--soft-shadow)}
-    .project-tile.active{border-color:rgba(0,112,202,.45);box-shadow:0 0 0 2px rgba(0,112,202,.12),var(--soft-shadow)}
-    .project-name{font-weight:700;font-size:.82rem;line-height:1.3;word-break:break-word}
-    .project-status{font-size:.66rem;text-transform:uppercase;letter-spacing:.07em;color:#475569}
-    .project-status[data-state='in progress']{color:#b45309}
-    .project-status[data-state='completed']{color:#166534}
-    .project-status[data-state='strategizing']{color:#4338ca}
-    .project-add{aspect-ratio:1/1;border-radius:16px;border:1px dashed rgba(100,116,139,.5);background:rgba(248,250,252,.9);font:inherit;font-weight:700;color:#334155;cursor:pointer}
-    .project-details{margin-top:12px;border:1px solid var(--border);border-radius:14px;padding:12px;background:rgba(255,255,255,.74);display:grid;gap:10px}
-    .project-details.collapsed{display:none}
+    .project-name{font-weight:700;font-size:.92rem;line-height:1.35;word-break:break-word}
+    .project-status{justify-self:start;font-size:.68rem;padding:4px 9px;border-radius:999px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+    .project-status[data-state='in progress']{background:#ffedd5;color:#9a3412}
+    .project-status[data-state='completed']{background:#dcfce7;color:#166534}
+    .project-status[data-state='strategizing']{background:#ede9fe;color:#5b21b6}
+    .project-status[data-state='on hold']{background:#fef9c3;color:#854d0e}
+    .project-status[data-state='not started']{background:#e2e8f0;color:#334155}
+    .project-add{min-height:156px;border-radius:18px;border:1px dashed rgba(100,116,139,.5);background:rgba(248,250,252,.9);font:inherit;font-weight:700;color:#334155;cursor:pointer}
     .project-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .project-todos{display:grid;gap:8px}
     .project-todo-item{display:flex;align-items:center;gap:8px;padding:8px 9px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.84)}
     .project-todo-item input[type='checkbox']{width:auto;accent-color:var(--primary)}
     .project-todo-item.done input[type='text']{text-decoration:line-through;color:#94a3b8}
+    .project-status-options{display:flex;flex-wrap:wrap;gap:8px}
+    .project-status-option{border:1px solid transparent;background:#f1f5f9;color:#334155;border-radius:999px;padding:7px 11px;font:inherit;font-size:.77rem;font-weight:700;cursor:pointer;transition:var(--trans)}
+    .project-status-option[data-status='in progress']{background:#ffedd5;color:#9a3412}
+    .project-status-option[data-status='completed']{background:#dcfce7;color:#166534}
+    .project-status-option[data-status='strategizing']{background:#ede9fe;color:#5b21b6}
+    .project-status-option[data-status='on hold']{background:#fef9c3;color:#854d0e}
+    .project-status-option[data-status='not started']{background:#e2e8f0;color:#334155}
+    .project-status-option.active{box-shadow:0 0 0 2px rgba(15,23,42,.18)}
 
     .modal{position:fixed;inset:0;background:rgba(15,23,42,.42);display:none;align-items:center;justify-content:center;padding:18px;z-index:40}
     .modal.open{display:flex}
@@ -174,6 +181,7 @@
       .calendar-board{grid-template-columns:repeat(2,minmax(150px,1fr))}
       .notes-grid{grid-template-columns:1fr}
       .fields{grid-template-columns:1fr}
+      .project-grid{grid-template-columns:1fr}
       .project-meta{grid-template-columns:1fr}
     }
 
@@ -275,33 +283,6 @@
           </div>
           <div class="panel-content collapsed" id="projectsContent">
             <div class="project-grid" id="projectGrid"></div>
-            <section class="project-details collapsed" id="projectDetails">
-              <div class="field-group">
-                <label for="projectName">Project name</label>
-                <input id="projectName" type="text" placeholder="Campaign launch" />
-              </div>
-              <div class="project-meta">
-                <div class="field-group">
-                  <label for="projectStatus">Tag / Status</label>
-                  <input id="projectStatus" list="projectStatuses" placeholder="in progress" />
-                  <datalist id="projectStatuses">
-                    <option value="in progress"></option>
-                    <option value="completed"></option>
-                    <option value="strategizing"></option>
-                    <option value="on hold"></option>
-                  </datalist>
-                </div>
-                <div class="field-group">
-                  <label for="projectDeadline">Deadline</label>
-                  <input id="projectDeadline" type="date" />
-                </div>
-              </div>
-              <div>
-                <label>Project to do list</label>
-                <div class="project-todos" id="projectTodoList"></div>
-                <button type="button" class="new-task-btn" id="newProjectTaskBtn">New project task</button>
-              </div>
-            </section>
           </div>
         </section>
       </div>
@@ -361,6 +342,40 @@
         </div>
       </section>
     </div>
+
+    <div class="modal" id="projectModal" aria-hidden="true">
+      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="projectEditorTitle">
+        <div class="modal-head">
+          <h2 id="projectEditorTitle">Project details</h2>
+          <button type="button" class="close-btn" id="closeProjectModal" aria-label="Close project editor">×</button>
+        </div>
+        <div class="fields">
+          <div class="field-group full">
+            <label for="projectName">Project name</label>
+            <input id="projectName" type="text" placeholder="Campaign launch" />
+          </div>
+          <div class="status-block full">
+            <strong>Tag / Status</strong>
+            <div class="project-status-options" id="projectStatusOptions" aria-label="Project status">
+              <button type="button" class="project-status-option" data-status="not started">Not started</button>
+              <button type="button" class="project-status-option" data-status="in progress">In progress</button>
+              <button type="button" class="project-status-option" data-status="strategizing">Strategizing</button>
+              <button type="button" class="project-status-option" data-status="completed">Completed</button>
+              <button type="button" class="project-status-option" data-status="on hold">On hold</button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="projectDeadline">Deadline</label>
+            <input id="projectDeadline" type="date" />
+          </div>
+          <div class="field-group full">
+            <label>Project to do list</label>
+            <div class="project-todos" id="projectTodoList"></div>
+            <button type="button" class="new-task-btn" id="newProjectTaskBtn">New project task</button>
+          </div>
+        </div>
+      </section>
+    </div>
   </main>
 
   <script>
@@ -374,6 +389,8 @@
     const brandMark = document.getElementById("brandMark");
     const editorModal = document.getElementById("editorModal");
     const closeModal = document.getElementById("closeModal");
+    const projectModal = document.getElementById("projectModal");
+    const closeProjectModal = document.getElementById("closeProjectModal");
     const buttons = document.querySelectorAll(".toggle button");
     const statusPicker = document.getElementById("statusPicker");
     const priorityItem2 = document.getElementById("priorityItem2");
@@ -390,9 +407,9 @@
     const todosToggle = document.getElementById("todosToggle");
     const projectsToggle = document.getElementById("projectsToggle");
     const projectGrid = document.getElementById("projectGrid");
-    const projectDetails = document.getElementById("projectDetails");
     const projectTodoList = document.getElementById("projectTodoList");
     const newProjectTaskBtn = document.getElementById("newProjectTaskBtn");
+    const projectStatusOptions = document.getElementById("projectStatusOptions");
 
     const statScheduled = document.getElementById("statScheduled");
     const statPosted = document.getElementById("statPosted");
@@ -410,7 +427,6 @@
       caption: document.getElementById("caption"),
       postLink: document.getElementById("postLink"),
       projectName: document.getElementById("projectName"),
-      projectStatus: document.getElementById("projectStatus"),
       projectDeadline: document.getElementById("projectDeadline")
     };
 
@@ -509,7 +525,7 @@
             todos: todos.map((todo) => ({ text: String((todo && todo.text) || ""), done: Boolean(todo && todo.done) })),
             projects: Array.isArray(source.projects) ? source.projects.map((project) => ({
               name: String((project && project.name) || ""),
-              status: String((project && project.status) || "in progress"),
+              status: normalizeProjectStatus((project && project.status) || "in progress"),
               deadline: String((project && project.deadline) || ""),
               todos: Array.isArray(project && project.todos) && project.todos.length ? project.todos.map((todo) => ({ text: String((todo && todo.text) || ""), done: Boolean(todo && todo.done) })) : [{ text: "", done: false }]
             })) : [],
@@ -713,6 +729,30 @@
       return projectList().length > 0;
     }
 
+
+    function normalizeProjectStatus(status) {
+      const normalized = String(status || "").toLowerCase().trim();
+      const allowed = ["not started", "in progress", "strategizing", "completed", "on hold"];
+      return allowed.includes(normalized) ? normalized : "in progress";
+    }
+
+    function titleCase(text) {
+      return String(text || "").replace(/\b\w/g, (char) => char.toUpperCase());
+    }
+
+    function openProjectEditor(index) {
+      state.selectedProjectIndex = index;
+      projectModal.classList.add("open");
+      projectModal.setAttribute("aria-hidden", "false");
+      renderProjectDetails();
+      renderProjects();
+    }
+
+    function closeProjectEditor() {
+      projectModal.classList.remove("open");
+      projectModal.setAttribute("aria-hidden", "true");
+    }
+
     function renderProjectTodos() {
       const project = currentProject();
       projectTodoList.innerHTML = "";
@@ -731,14 +771,11 @@
       projects.forEach((project, index) => {
         const tile = document.createElement("button");
         tile.type = "button";
-        tile.className = "project-tile" + (index === state.selectedProjectIndex ? " active" : "");
-        tile.innerHTML = `<span class="project-name">${escapeHtml(project.name || `Project ${index + 1}`)}</span><span class="project-status" data-state="${escapeHtml((project.status || "").toLowerCase())}">${escapeHtml(project.status || "in progress")}</span>`;
+        tile.className = "project-tile" + (index === state.selectedProjectIndex && projectModal.classList.contains("open") ? " active" : "");
+        const status = normalizeProjectStatus(project.status);
+        tile.innerHTML = `<span class="project-name">${escapeHtml(project.name || `Project ${index + 1}`)}</span><span class="project-status" data-state="${escapeHtml(status)}">${escapeHtml(titleCase(status))}</span>`;
         tile.addEventListener("click", () => {
-          state.selectedProjectIndex = index;
-          state.panelOpen[state.brand].projects = true;
-          renderProjects();
-          renderProjectDetails();
-          renderSectionToggles();
+          openProjectEditor(index);
         });
         projectGrid.appendChild(tile);
       });
@@ -749,24 +786,25 @@
       add.textContent = "+ New project";
       add.addEventListener("click", () => {
         setSavedLabel("Saving...");
-        projects.push({ name: "", status: "in progress", deadline: "", todos: [{ text: "", done: false }] });
-        state.selectedProjectIndex = projects.length - 1;
+        projects.push({ name: "", status: "not started", deadline: "", todos: [{ text: "", done: false }] });
         state.panelOpen[state.brand].projects = true;
         persist();
-        renderProjects();
-        renderProjectDetails();
         renderSectionToggles();
+        openProjectEditor(projects.length - 1);
       });
       projectGrid.appendChild(add);
     }
 
     function renderProjectDetails() {
       const project = currentProject();
-      projectDetails.classList.toggle("collapsed", !project);
       if (!project) return;
+      const status = normalizeProjectStatus(project.status);
       fields.projectName.value = project.name || "";
-      fields.projectStatus.value = project.status || "";
       fields.projectDeadline.value = project.deadline || "";
+      projectStatusOptions.querySelectorAll(".project-status-option").forEach((option) => {
+        option.classList.toggle("active", option.dataset.status === status);
+      });
+      document.getElementById("projectEditorTitle").textContent = `Project details • ${project.name || `Project ${state.selectedProjectIndex + 1}`}`;
       renderProjectTodos();
     }
 
@@ -813,7 +851,7 @@
 
       renderTodos();
       renderProjects();
-      renderProjectDetails();
+      if (projectModal.classList.contains("open")) renderProjectDetails();
 
       const post = editorModal.classList.contains("open") ? currentPost(false) : {};
       document.getElementById("editorTitle").textContent = `Post Details • ${state.selectedDay}`;
@@ -841,7 +879,7 @@
       });
     }
 
-    buttons.forEach((btn) => btn.addEventListener("click", () => { state.brand = btn.dataset.brand; state.selectedDay = "Monday"; state.selectedPostIndex = 0; state.selectedProjectIndex = null; render(); }));
+    buttons.forEach((btn) => btn.addEventListener("click", () => { state.brand = btn.dataset.brand; state.selectedDay = "Monday"; state.selectedPostIndex = 0; state.selectedProjectIndex = null; closeProjectEditor(); render(); }));
 
     [fields.priority1, fields.priority2, fields.priority3].forEach((input, index) => {
       input.addEventListener("input", () => {
@@ -896,8 +934,6 @@
       setSavedLabel("Saving...");
       state.data[state.brand].todos[index].done = check.checked;
       renderTodos();
-      renderProjects();
-      renderProjectDetails();
       persist();
       state.panelOpen[state.brand].todos = hasTodoContent();
       renderSectionToggles();
@@ -913,8 +949,6 @@
       state.data[state.brand].todos.splice(index, 1);
       if (state.data[state.brand].todos.length === 0) state.data[state.brand].todos.push({ text: "", done: false });
       renderTodos();
-      renderProjects();
-      renderProjectDetails();
       persist();
       state.panelOpen[state.brand].todos = hasTodoContent();
       renderSectionToggles();
@@ -925,8 +959,6 @@
       state.data[state.brand].todos.push({ text: "", done: false });
       state.panelOpen[state.brand].todos = true;
       renderTodos();
-      renderProjects();
-      renderProjectDetails();
       persist();
       renderSectionToggles();
     });
@@ -960,16 +992,27 @@
     });
 
 
-    [fields.projectName, fields.projectStatus, fields.projectDeadline].forEach((input) => {
+    [fields.projectName, fields.projectDeadline].forEach((input) => {
       input.addEventListener("input", () => {
         const project = currentProject();
         if (!project) return;
         setSavedLabel("Saving...");
         project.name = fields.projectName.value;
-        project.status = fields.projectStatus.value || "in progress";
         project.deadline = fields.projectDeadline.value;
         persist();
         renderProjects();
+      });
+    });
+
+    projectStatusOptions.querySelectorAll(".project-status-option").forEach((option) => {
+      option.addEventListener("click", () => {
+        const project = currentProject();
+        if (!project) return;
+        setSavedLabel("Saving...");
+        project.status = normalizeProjectStatus(option.dataset.status);
+        persist();
+        renderProjects();
+        renderProjectDetails();
       });
     });
 
@@ -1030,6 +1073,7 @@
       state.data[state.brand] = emptyBrandState();
       state.selectedDay = "Monday";
       state.selectedProjectIndex = null;
+      closeProjectEditor();
       persist();
       render();
     });
@@ -1042,6 +1086,18 @@
       if (event.target === editorModal) {
         editorModal.classList.remove("open");
         editorModal.setAttribute("aria-hidden", "true");
+      }
+    });
+
+
+    closeProjectModal.addEventListener("click", () => {
+      closeProjectEditor();
+      renderProjects();
+    });
+    projectModal.addEventListener("click", (event) => {
+      if (event.target === projectModal) {
+        closeProjectEditor();
+        renderProjects();
       }
     });
 
