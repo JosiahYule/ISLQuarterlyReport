@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Weekly Social Media Plan</title>
+  <title>Weekly Planner</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -119,6 +119,7 @@
 
     .notes-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;align-items:start}
     .notes-grid .panel{align-self:start;height:auto}
+    .stack-column{display:grid;gap:16px}
     #notes{resize:none;overflow:hidden;min-height:120px}
     .todo-list{display:grid;gap:10px}
     .todo-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.78)}
@@ -129,6 +130,31 @@
     .todo-item:hover .todo-delete,.todo-item:focus-within .todo-delete{opacity:1;pointer-events:auto}
     .todo-delete:hover{color:#dc2626}
     .new-task-btn{margin-top:12px;border:0;background:linear-gradient(145deg,var(--primary),var(--accent));color:#fff;padding:10px 13px;border-radius:12px;font:inherit;font-weight:600;cursor:pointer;box-shadow:0 10px 18px rgba(0,84,154,.24)}
+
+    .project-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .project-tile{min-height:156px;border-radius:18px;border:1px solid var(--border);background:rgba(255,255,255,.9);display:grid;align-content:space-between;padding:14px;text-align:left;cursor:pointer;font:inherit;transition:var(--trans)}
+    .project-tile:hover{transform:translateY(-1px);box-shadow:var(--soft-shadow)}
+    .project-name{font-weight:700;font-size:.92rem;line-height:1.35;word-break:break-word}
+    .project-status{justify-self:start;font-size:.68rem;padding:4px 9px;border-radius:999px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+    .project-status[data-state='in progress']{background:#ffedd5;color:#9a3412}
+    .project-status[data-state='completed']{background:#dcfce7;color:#166534}
+    .project-status[data-state='strategizing']{background:#ede9fe;color:#5b21b6}
+    .project-status[data-state='on hold']{background:#fef9c3;color:#854d0e}
+    .project-status[data-state='not started']{background:#e2e8f0;color:#334155}
+    .project-add{min-height:156px;border-radius:18px;border:1px dashed rgba(100,116,139,.5);background:rgba(248,250,252,.9);font:inherit;font-weight:700;color:#334155;cursor:pointer}
+    .project-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .project-todos{display:grid;gap:8px}
+    .project-todo-item{display:flex;align-items:center;gap:8px;padding:8px 9px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.84)}
+    .project-todo-item input[type='checkbox']{width:auto;accent-color:var(--primary)}
+    .project-todo-item.done input[type='text']{text-decoration:line-through;color:#94a3b8}
+    .project-status-options{display:flex;flex-wrap:wrap;gap:8px}
+    .project-status-option{border:1px solid transparent;background:#f1f5f9;color:#334155;border-radius:999px;padding:7px 11px;font:inherit;font-size:.77rem;font-weight:700;cursor:pointer;transition:var(--trans)}
+    .project-status-option[data-status='in progress']{background:#ffedd5;color:#9a3412}
+    .project-status-option[data-status='completed']{background:#dcfce7;color:#166534}
+    .project-status-option[data-status='strategizing']{background:#ede9fe;color:#5b21b6}
+    .project-status-option[data-status='on hold']{background:#fef9c3;color:#854d0e}
+    .project-status-option[data-status='not started']{background:#e2e8f0;color:#334155}
+    .project-status-option.active{box-shadow:0 0 0 2px rgba(15,23,42,.18)}
 
     .modal{position:fixed;inset:0;background:rgba(15,23,42,.42);display:none;align-items:center;justify-content:center;padding:18px;z-index:40}
     .modal.open{display:flex}
@@ -155,6 +181,8 @@
       .calendar-board{grid-template-columns:repeat(2,minmax(150px,1fr))}
       .notes-grid{grid-template-columns:1fr}
       .fields{grid-template-columns:1fr}
+      .project-grid{grid-template-columns:1fr}
+      .project-meta{grid-template-columns:1fr}
     }
 
     @media (max-width:560px){
@@ -172,7 +200,7 @@
       <div class="brand">
         <div class="brand-mark" id="brandMark">IS</div>
         <div class="brand-text">
-          <strong>Weekly Social Media Plan</strong>
+          <strong>Weekly Planner</strong>
           <span id="brandSubtitle">Integrated Staffing</span>
         </div>
       </div>
@@ -237,15 +265,27 @@
     </section>
 
     <section class="notes-grid">
-      <section class="panel glass">
-        <div class="panel-head">
-          <h2>Notes</h2>
-          <button type="button" class="section-add" id="notesToggle" aria-expanded="false" aria-label="Toggle notes section">+</button>
-        </div>
-        <div class="panel-content collapsed" id="notesContent">
-          <textarea id="notes" rows="7" placeholder="Notes"></textarea>
-        </div>
-      </section>
+      <div class="stack-column">
+        <section class="panel glass">
+          <div class="panel-head">
+            <h2>Notes</h2>
+            <button type="button" class="section-add" id="notesToggle" aria-expanded="false" aria-label="Toggle notes section">+</button>
+          </div>
+          <div class="panel-content collapsed" id="notesContent">
+            <textarea id="notes" rows="7" placeholder="Notes"></textarea>
+          </div>
+        </section>
+
+        <section class="panel glass">
+          <div class="panel-head">
+            <h2>Project Tracker</h2>
+            <button type="button" class="section-add" id="projectsToggle" aria-expanded="false" aria-label="Toggle project tracker section">+</button>
+          </div>
+          <div class="panel-content collapsed" id="projectsContent">
+            <div class="project-grid" id="projectGrid"></div>
+          </div>
+        </section>
+      </div>
       <section class="panel glass">
         <div class="panel-head">
           <h2>To Do List</h2>
@@ -302,11 +342,45 @@
         </div>
       </section>
     </div>
+
+    <div class="modal" id="projectModal" aria-hidden="true">
+      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="projectEditorTitle">
+        <div class="modal-head">
+          <h2 id="projectEditorTitle">Project details</h2>
+          <button type="button" class="close-btn" id="closeProjectModal" aria-label="Close project editor">×</button>
+        </div>
+        <div class="fields">
+          <div class="field-group full">
+            <label for="projectName">Project name</label>
+            <input id="projectName" type="text" placeholder="Campaign launch" />
+          </div>
+          <div class="status-block full">
+            <strong>Tag / Status</strong>
+            <div class="project-status-options" id="projectStatusOptions" aria-label="Project status">
+              <button type="button" class="project-status-option" data-status="not started">Not started</button>
+              <button type="button" class="project-status-option" data-status="in progress">In progress</button>
+              <button type="button" class="project-status-option" data-status="strategizing">Strategizing</button>
+              <button type="button" class="project-status-option" data-status="completed">Completed</button>
+              <button type="button" class="project-status-option" data-status="on hold">On hold</button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="projectDeadline">Deadline</label>
+            <input id="projectDeadline" type="date" />
+          </div>
+          <div class="field-group full">
+            <label>Project to do list</label>
+            <div class="project-todos" id="projectTodoList"></div>
+            <button type="button" class="new-task-btn" id="newProjectTaskBtn">New project task</button>
+          </div>
+        </div>
+      </section>
+    </div>
   </main>
 
   <script>
     const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday"];
-    const STORAGE_KEY = "weekly-social-plan-v2";
+    const STORAGE_KEY = "weekly-planner-v3";
 
     const calendar = document.getElementById("calendar");
     const weekBadge = document.getElementById("weekBadge");
@@ -315,6 +389,8 @@
     const brandMark = document.getElementById("brandMark");
     const editorModal = document.getElementById("editorModal");
     const closeModal = document.getElementById("closeModal");
+    const projectModal = document.getElementById("projectModal");
+    const closeProjectModal = document.getElementById("closeProjectModal");
     const buttons = document.querySelectorAll(".toggle button");
     const statusPicker = document.getElementById("statusPicker");
     const priorityItem2 = document.getElementById("priorityItem2");
@@ -325,9 +401,15 @@
     const prioritiesContent = document.getElementById("prioritiesContent");
     const notesContent = document.getElementById("notesContent");
     const todosContent = document.getElementById("todosContent");
+    const projectsContent = document.getElementById("projectsContent");
     const prioritiesToggle = document.getElementById("prioritiesToggle");
     const notesToggle = document.getElementById("notesToggle");
     const todosToggle = document.getElementById("todosToggle");
+    const projectsToggle = document.getElementById("projectsToggle");
+    const projectGrid = document.getElementById("projectGrid");
+    const projectTodoList = document.getElementById("projectTodoList");
+    const newProjectTaskBtn = document.getElementById("newProjectTaskBtn");
+    const projectStatusOptions = document.getElementById("projectStatusOptions");
 
     const statScheduled = document.getElementById("statScheduled");
     const statPosted = document.getElementById("statPosted");
@@ -343,24 +425,27 @@
       time: document.getElementById("time"),
       status: document.getElementById("status"),
       caption: document.getElementById("caption"),
-      postLink: document.getElementById("postLink")
+      postLink: document.getElementById("postLink"),
+      projectName: document.getElementById("projectName"),
+      projectDeadline: document.getElementById("projectDeadline")
     };
 
 
     const dragState = { fromDay: null, fromIndex: null };
     function emptyBrandState() {
-      return { priorities: ["", "", ""], notes: "", todos: [{ text: "", done: false }], posts: {} };
+      return { priorities: ["", "", ""], notes: "", todos: [{ text: "", done: false }], projects: [], posts: {} };
     }
 
     const state = {
       brand: "is",
       selectedDay: "Monday",
       selectedPostIndex: 0,
+      selectedProjectIndex: null,
       data: { is: emptyBrandState(), as: emptyBrandState(), ad: emptyBrandState() },
       panelOpen: {
-        is: { priorities: null, notes: null, todos: null },
-        as: { priorities: null, notes: null, todos: null },
-        ad: { priorities: null, notes: null, todos: null }
+        is: { priorities: null, notes: null, todos: null, projects: null },
+        as: { priorities: null, notes: null, todos: null, projects: null },
+        ad: { priorities: null, notes: null, todos: null, projects: null }
       },
       quarter: null
     };
@@ -438,6 +523,12 @@
             ...source,
             priorities,
             todos: todos.map((todo) => ({ text: String((todo && todo.text) || ""), done: Boolean(todo && todo.done) })),
+            projects: Array.isArray(source.projects) ? source.projects.map((project) => ({
+              name: String((project && project.name) || ""),
+              status: normalizeProjectStatus((project && project.status) || "in progress"),
+              deadline: String((project && project.deadline) || ""),
+              todos: Array.isArray(project && project.todos) && project.todos.length ? project.todos.map((todo) => ({ text: String((todo && todo.text) || ""), done: Boolean(todo && todo.done) })) : [{ text: "", done: false }]
+            })) : [],
             posts: normalizePosts(source.posts)
           };
         });
@@ -622,6 +713,101 @@
       return (state.data[state.brand].todos || []).some((todo) => String((todo && todo.text) || "").trim() || Boolean(todo && todo.done));
     }
 
+
+    function projectList() {
+      const projects = state.data[state.brand].projects;
+      return Array.isArray(projects) ? projects : [];
+    }
+
+    function currentProject() {
+      const projects = projectList();
+      if (state.selectedProjectIndex == null || !projects[state.selectedProjectIndex]) return null;
+      return projects[state.selectedProjectIndex];
+    }
+
+    function hasProjectsContent() {
+      return projectList().length > 0;
+    }
+
+
+    function normalizeProjectStatus(status) {
+      const normalized = String(status || "").toLowerCase().trim();
+      const allowed = ["not started", "in progress", "strategizing", "completed", "on hold"];
+      return allowed.includes(normalized) ? normalized : "in progress";
+    }
+
+    function titleCase(text) {
+      return String(text || "").replace(/\b\w/g, (char) => char.toUpperCase());
+    }
+
+    function openProjectEditor(index) {
+      state.selectedProjectIndex = index;
+      projectModal.classList.add("open");
+      projectModal.setAttribute("aria-hidden", "false");
+      renderProjectDetails();
+      renderProjects();
+    }
+
+    function closeProjectEditor() {
+      projectModal.classList.remove("open");
+      projectModal.setAttribute("aria-hidden", "true");
+    }
+
+    function renderProjectTodos() {
+      const project = currentProject();
+      projectTodoList.innerHTML = "";
+      if (!project) return;
+      project.todos.forEach((todo, index) => {
+        const row = document.createElement("div");
+        row.className = "project-todo-item" + (todo.done ? " done" : "");
+        row.innerHTML = `<input type="checkbox" data-project-todo-check="${index}" ${todo.done ? "checked" : ""} /><input type="text" data-project-todo-text="${index}" placeholder="Task ${index + 1}" value="${escapeHtml(todo.text || "")}" /><button type="button" class="todo-delete" data-project-todo-delete="${index}" aria-label="Delete project task ${index + 1}">🗑️</button>`;
+        projectTodoList.appendChild(row);
+      });
+    }
+
+    function renderProjects() {
+      const projects = projectList();
+      projectGrid.innerHTML = "";
+      projects.forEach((project, index) => {
+        const tile = document.createElement("button");
+        tile.type = "button";
+        tile.className = "project-tile" + (index === state.selectedProjectIndex && projectModal.classList.contains("open") ? " active" : "");
+        const status = normalizeProjectStatus(project.status);
+        tile.innerHTML = `<span class="project-name">${escapeHtml(project.name || `Project ${index + 1}`)}</span><span class="project-status" data-state="${escapeHtml(status)}">${escapeHtml(titleCase(status))}</span>`;
+        tile.addEventListener("click", () => {
+          openProjectEditor(index);
+        });
+        projectGrid.appendChild(tile);
+      });
+
+      const add = document.createElement("button");
+      add.type = "button";
+      add.className = "project-add";
+      add.textContent = "+ New project";
+      add.addEventListener("click", () => {
+        setSavedLabel("Saving...");
+        projects.push({ name: "", status: "not started", deadline: "", todos: [{ text: "", done: false }] });
+        state.panelOpen[state.brand].projects = true;
+        persist();
+        renderSectionToggles();
+        openProjectEditor(projects.length - 1);
+      });
+      projectGrid.appendChild(add);
+    }
+
+    function renderProjectDetails() {
+      const project = currentProject();
+      if (!project) return;
+      const status = normalizeProjectStatus(project.status);
+      fields.projectName.value = project.name || "";
+      fields.projectDeadline.value = project.deadline || "";
+      projectStatusOptions.querySelectorAll(".project-status-option").forEach((option) => {
+        option.classList.toggle("active", option.dataset.status === status);
+      });
+      document.getElementById("projectEditorTitle").textContent = `Project details • ${project.name || `Project ${state.selectedProjectIndex + 1}`}`;
+      renderProjectTodos();
+    }
+
     function updatePanelSection(contentEl, buttonEl, isOpen) {
       contentEl.classList.toggle("collapsed", !isOpen);
       buttonEl.textContent = isOpen ? "−" : "+";
@@ -633,10 +819,12 @@
       const prioritiesOpen = panelState.priorities == null ? hasPriorityContent() : panelState.priorities;
       const notesOpen = panelState.notes == null ? hasNotesContent() : panelState.notes;
       const todosOpen = panelState.todos == null ? hasTodoContent() : panelState.todos;
+      const projectsOpen = panelState.projects == null ? hasProjectsContent() : panelState.projects;
 
       updatePanelSection(prioritiesContent, prioritiesToggle, prioritiesOpen);
       updatePanelSection(notesContent, notesToggle, notesOpen);
       updatePanelSection(todosContent, todosToggle, todosOpen);
+      updatePanelSection(projectsContent, projectsToggle, projectsOpen);
     }
 
     function render() {
@@ -662,6 +850,8 @@
       renderSectionToggles();
 
       renderTodos();
+      renderProjects();
+      if (projectModal.classList.contains("open")) renderProjectDetails();
 
       const post = editorModal.classList.contains("open") ? currentPost(false) : {};
       document.getElementById("editorTitle").textContent = `Post Details • ${state.selectedDay}`;
@@ -689,7 +879,7 @@
       });
     }
 
-    buttons.forEach((btn) => btn.addEventListener("click", () => { state.brand = btn.dataset.brand; state.selectedDay = "Monday"; state.selectedPostIndex = 0; render(); }));
+    buttons.forEach((btn) => btn.addEventListener("click", () => { state.brand = btn.dataset.brand; state.selectedDay = "Monday"; state.selectedPostIndex = 0; state.selectedProjectIndex = null; closeProjectEditor(); render(); }));
 
     [fields.priority1, fields.priority2, fields.priority3].forEach((input, index) => {
       input.addEventListener("input", () => {
@@ -794,6 +984,83 @@
       renderSectionToggles();
     });
 
+    projectsToggle.addEventListener("click", () => {
+      const panelState = state.panelOpen[state.brand];
+      const current = panelState.projects == null ? hasProjectsContent() : panelState.projects;
+      panelState.projects = !current;
+      renderSectionToggles();
+    });
+
+
+    [fields.projectName, fields.projectDeadline].forEach((input) => {
+      input.addEventListener("input", () => {
+        const project = currentProject();
+        if (!project) return;
+        setSavedLabel("Saving...");
+        project.name = fields.projectName.value;
+        project.deadline = fields.projectDeadline.value;
+        persist();
+        renderProjects();
+      });
+    });
+
+    projectStatusOptions.querySelectorAll(".project-status-option").forEach((option) => {
+      option.addEventListener("click", () => {
+        const project = currentProject();
+        if (!project) return;
+        setSavedLabel("Saving...");
+        project.status = normalizeProjectStatus(option.dataset.status);
+        persist();
+        renderProjects();
+        renderProjectDetails();
+      });
+    });
+
+    projectTodoList.addEventListener("input", (event) => {
+      const input = event.target.closest("[data-project-todo-text]");
+      if (!input) return;
+      const project = currentProject();
+      const index = Number(input.dataset.projectTodoText);
+      if (!project || Number.isNaN(index) || !project.todos[index]) return;
+      setSavedLabel("Saving...");
+      project.todos[index].text = input.value;
+      persist();
+    });
+
+    projectTodoList.addEventListener("change", (event) => {
+      const check = event.target.closest("[data-project-todo-check]");
+      if (!check) return;
+      const project = currentProject();
+      const index = Number(check.dataset.projectTodoCheck);
+      if (!project || Number.isNaN(index) || !project.todos[index]) return;
+      setSavedLabel("Saving...");
+      project.todos[index].done = check.checked;
+      renderProjectTodos();
+      persist();
+    });
+
+    projectTodoList.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-project-todo-delete]");
+      if (!button) return;
+      const project = currentProject();
+      const index = Number(button.dataset.projectTodoDelete);
+      if (!project || Number.isNaN(index)) return;
+      setSavedLabel("Saving...");
+      project.todos.splice(index, 1);
+      if (project.todos.length === 0) project.todos.push({ text: "", done: false });
+      renderProjectTodos();
+      persist();
+    });
+
+    newProjectTaskBtn.addEventListener("click", () => {
+      const project = currentProject();
+      if (!project) return;
+      setSavedLabel("Saving...");
+      project.todos.push({ text: "", done: false });
+      renderProjectTodos();
+      persist();
+    });
+
     statusPicker.querySelectorAll(".status-tag").forEach((tag) => tag.addEventListener("click", () => {
       setSavedLabel("Saving...");
       currentPost().status = tag.dataset.status;
@@ -805,6 +1072,8 @@
     document.getElementById("clearWeek").addEventListener("click", () => {
       state.data[state.brand] = emptyBrandState();
       state.selectedDay = "Monday";
+      state.selectedProjectIndex = null;
+      closeProjectEditor();
       persist();
       render();
     });
@@ -817,6 +1086,18 @@
       if (event.target === editorModal) {
         editorModal.classList.remove("open");
         editorModal.setAttribute("aria-hidden", "true");
+      }
+    });
+
+
+    closeProjectModal.addEventListener("click", () => {
+      closeProjectEditor();
+      renderProjects();
+    });
+    projectModal.addEventListener("click", (event) => {
+      if (event.target === projectModal) {
+        closeProjectEditor();
+        renderProjects();
       }
     });
 
