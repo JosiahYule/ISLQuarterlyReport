@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Weekly Planner</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -119,8 +120,11 @@
     .day.drag-over{border-color:rgba(0,112,202,.65);box-shadow:inset 0 0 0 2px rgba(0,112,202,.2),var(--soft-shadow)}
     .post-title{font-size:.86rem;font-weight:700;letter-spacing:-.01em}
     .post-meta{display:flex;justify-content:space-between;gap:8px;font-size:.74rem;color:#475569}
+    .platform-icons{display:flex;gap:6px;align-items:center}
+    .platform-icon{width:15px;height:15px;display:inline-block;color:#475569}
     .post-status{justify-self:start;font-size:.68rem;padding:4px 8px;border-radius:999px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;background:rgba(148,163,184,.16);color:#475569}
     .status-planned .post-status{background:#dbeafe;color:#1d4ed8}
+    .status-scheduled .post-status{background:#e0f2fe;color:#075985}
     .status-in-progress .post-status{background:#ffedd5;color:#c2410c}
     .status-posted .post-status{background:#dcfce7;color:#166534}
     .platform-linkedin{border-color:rgba(37,99,235,.3)}
@@ -183,6 +187,17 @@
     .tag-picker,.status-picker{display:flex;flex-wrap:wrap;gap:8px}
     .tag-chip,.status-tag{border:1px solid rgba(148,163,184,.45);background:rgba(255,255,255,.88);border-radius:999px;padding:7px 11px;font:inherit;font-size:.77rem;font-weight:700;color:#334155;cursor:pointer;transition:var(--trans)}
     .tag-chip.active,.status-tag.active{background:linear-gradient(145deg,var(--primary),var(--accent));border-color:transparent;color:#fff;box-shadow:0 8px 16px rgba(0,84,154,.2)}
+    .platform-chip{width:40px;height:40px;padding:0;border-radius:12px;display:grid;place-items:center}
+    .platform-chip svg{width:20px;height:20px}
+    .post-type-tag{justify-self:start;font-size:.62rem;line-height:1;padding:4px 7px;border-radius:999px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:#e2e8f0;color:#334155}
+    .post-type-perm-job-ad{background:#dbeafe;color:#1e40af}
+    .post-type-team-culture-post{background:#fce7f3;color:#9d174d}
+    .post-type-blog-post{background:#ecfccb;color:#3f6212}
+    .post-type-anniversary-post{background:#fef3c7;color:#92400e}
+    .post-type-video-post{background:#fee2e2;color:#991b1b}
+    .post-type-holiday-post{background:#dcfce7;color:#166534}
+    .post-type-contract-job-ad{background:#ede9fe;color:#5b21b6}
+    .post-type-announcement-post{background:#e0f2fe;color:#0c4a6e}
 
     @media (prefers-reduced-motion:reduce){
       *,*::before,*::after{animation:none !important;transition:none !important;scroll-behavior:auto !important}
@@ -333,10 +348,24 @@
           <div class="platform-block full">
             <strong>Platform</strong>
             <div class="tag-picker" id="platformPicker" aria-label="Select post platforms">
-              <button type="button" class="tag-chip" data-platform="LinkedIn">LinkedIn</button>
-              <button type="button" class="tag-chip" data-platform="Facebook">Facebook</button>
-              <button type="button" class="tag-chip" data-platform="Instagram">Instagram</button>
+              <button type="button" class="tag-chip platform-chip" data-platform="LinkedIn" aria-label="LinkedIn" title="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.94 8.5H3.56V19h3.38V8.5Zm.24-3.24a1.95 1.95 0 1 0-3.9 0 1.95 1.95 0 0 0 3.9 0ZM20.72 12.96c0-3.17-1.69-4.65-3.95-4.65-1.82 0-2.63 1-3.09 1.7V8.5h-3.37V19h3.37v-5.2c0-1.37.26-2.7 1.96-2.7 1.68 0 1.7 1.57 1.7 2.8V19h3.38l.01-6.04Z"/></svg></button>
+              <button type="button" class="tag-chip platform-chip" data-platform="Facebook" aria-label="Facebook" title="Facebook"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.35 20v-7.28h2.45l.37-2.84h-2.82V8.06c0-.83.23-1.39 1.42-1.39h1.51V4.13A20.4 20.4 0 0 0 14.58 4c-2.18 0-3.67 1.33-3.67 3.78v2.1H8.44v2.84h2.47V20h2.44Z"/></svg></button>
+              <button type="button" class="tag-chip platform-chip" data-platform="Instagram" aria-label="Instagram" title="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.6" cy="6.4" r="1" fill="currentColor" stroke="none"/></svg></button>
             </div>
+          </div>
+          <div class="field-group full">
+            <label for="postType">Post type tag</label>
+            <select id="postType">
+              <option value="">Select post type</option>
+              <option value="Perm Job Ad">Perm Job Ad</option>
+              <option value="Team Culture Post">Team Culture Post</option>
+              <option value="Blog Post">Blog Post</option>
+              <option value="Anniversary Post">Anniversary Post</option>
+              <option value="Video Post">Video Post</option>
+              <option value="Holiday Post">Holiday Post</option>
+              <option value="Contract Job Ad">Contract Job Ad</option>
+              <option value="Announcement Post">Announcement Post</option>
+            </select>
           </div>
           <div class="field-group">
             <label for="postDay">Day of week</label>
@@ -357,6 +386,7 @@
             <strong>Status</strong>
             <div class="status-picker" id="statusPicker" aria-label="Post status">
               <button type="button" class="status-tag" data-status="planned">Planned</button>
+              <button type="button" class="status-tag" data-status="scheduled">Scheduled</button>
               <button type="button" class="status-tag" data-status="in progress">In Progress</button>
               <button type="button" class="status-tag" data-status="posted">Posted</button>
             </div>
@@ -458,6 +488,7 @@
       postDay: document.getElementById("postDay"),
       time: document.getElementById("time"),
       status: document.getElementById("status"),
+      postType: document.getElementById("postType"),
       caption: document.getElementById("caption"),
       postLink: document.getElementById("postLink"),
       projectName: document.getElementById("projectName"),
@@ -619,9 +650,27 @@
     function statusClass(status) {
       const normalized = String(status || "").toLowerCase().trim();
       if (normalized === "planned") return "status-planned";
+      if (normalized === "scheduled") return "status-scheduled";
       if (normalized === "in progress") return "status-in-progress";
       if (normalized === "posted") return "status-posted";
       return "";
+    }
+
+    function postTypeClass(postType) {
+      return `post-type-${String(postType || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-")}`;
+    }
+
+    function platformIcons(platforms) {
+      const selected = Array.isArray(platforms)
+        ? platforms
+        : String(platforms || "").split(",").map((item) => item.trim()).filter(Boolean);
+      return selected.map((platform) => {
+        const key = String(platform).toLowerCase();
+        if (key === "linkedin") return '<span class="platform-icon" title="LinkedIn" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.94 8.5H3.56V19h3.38V8.5Zm.24-3.24a1.95 1.95 0 1 0-3.9 0 1.95 1.95 0 0 0 3.9 0ZM20.72 12.96c0-3.17-1.69-4.65-3.95-4.65-1.82 0-2.63 1-3.09 1.7V8.5h-3.37V19h3.37v-5.2c0-1.37.26-2.7 1.96-2.7 1.68 0 1.7 1.57 1.7 2.8V19h3.38l.01-6.04Z"/></svg></span>';
+        if (key === "facebook") return '<span class="platform-icon" title="Facebook" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.35 20v-7.28h2.45l.37-2.84h-2.82V8.06c0-.83.23-1.39 1.42-1.39h1.51V4.13A20.4 20.4 0 0 0 14.58 4c-2.18 0-3.67 1.33-3.67 3.78v2.1H8.44v2.84h2.47V20h2.44Z"/></svg></span>';
+        if (key === "instagram") return '<span class="platform-icon" title="Instagram" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.6" cy="6.4" r="1" fill="currentColor" stroke="none"/></svg></span>';
+        return "";
+      }).join("");
     }
 
     function formatPlatforms(platforms) {
@@ -713,7 +762,10 @@
           tile.draggable = true;
           tile.className = `post-tile ${platformClass(post.platforms || post.platform)} ${statusClass(post.status)}`.trim();
           const statusLabel = String(post.status || "planned").trim() || "planned";
-          tile.innerHTML = `<span class="post-title">${escapeHtml(post.postTitle)}</span><span class="post-meta"><span>${escapeHtml(formatPlatforms(post.platforms || post.platform) || "Set platform")}</span><span>${escapeHtml(post.time || "Set time")}</span></span><span class="post-status">${escapeHtml(statusLabel)}</span>`;
+          const typeTag = String(post.postType || "").trim();
+          const typeTagMarkup = typeTag ? `<span class="post-type-tag ${postTypeClass(typeTag)}">${escapeHtml(typeTag)}</span>` : "";
+          const platformMarkup = platformIcons(post.platforms || post.platform);
+          tile.innerHTML = `<span class="post-title">${escapeHtml(post.postTitle)}</span>${typeTagMarkup}<span class="post-meta"><span class="platform-icons">${platformMarkup || '<span>Set platform</span>'}</span><span>${escapeHtml(post.time || "Set time")}</span></span><span class="post-status">${escapeHtml(statusLabel)}</span>`;
           tile.addEventListener("click", () => openEditor(day, index));
           tile.addEventListener("dragstart", () => {
             dragState.fromDay = day;
@@ -932,7 +984,7 @@
       const post = editorModal.classList.contains("open") ? currentPost(false) : {};
       document.getElementById("editorTitle").textContent = `Post Details • ${state.selectedDay}`;
       fields.postDay.value = state.selectedDay;
-      ["postTitle","time","status","caption"].forEach((key) => { fields[key].value = post[key] || ""; });
+      ["postTitle","time","status","caption","postType"].forEach((key) => { fields[key].value = post[key] || ""; });
       fields.postLink.value = post.postLink || post.asset || "";
       const selectedPlatforms = Array.isArray(post.platforms) ? post.platforms : (post.platform ? [post.platform] : []);
       platformPicker.querySelectorAll(".tag-chip").forEach((chip) => {
@@ -1267,6 +1319,7 @@
     bindPostInput(fields.time, "time");
     bindPostInput(fields.status, "status");
     bindPostInput(fields.caption, "caption");
+    bindPostInput(fields.postType, "postType");
     bindPostInput(fields.postLink, "postLink");
 
     load();
