@@ -96,11 +96,17 @@
     .day:hover{transform:translateY(-2px)}
     .day-name{font-size:.8rem;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:.08em}
 
-    .add-post{margin-top:auto;border:1px dashed rgba(100,116,139,.5);background:rgba(248,250,252,.8);padding:9px 11px;border-radius:12px;font:inherit;font-weight:600;color:#475569;cursor:pointer;transition:var(--trans)}
+    .add-post{border:1px dashed rgba(100,116,139,.5);background:rgba(248,250,252,.8);padding:9px 11px;border-radius:12px;font:inherit;font-weight:600;color:#475569;cursor:pointer;transition:var(--trans)}
     .add-post:hover{border-color:rgba(0,112,202,.45);color:#0f4d80;background:rgba(239,246,255,.8)}
 
-    .post-tile{border:1px solid transparent;border-radius:13px;padding:11px;background:#fff;text-align:left;display:grid;gap:8px;cursor:pointer;box-shadow:var(--soft-shadow);transition:var(--trans)}
+    .day-posts{display:grid;gap:8px;min-height:0}
+    .post-tile-wrap{position:relative}
+    .post-tile{width:100%;border:1px solid transparent;border-radius:13px;padding:11px;background:#fff;text-align:left;display:grid;gap:8px;cursor:pointer;box-shadow:var(--soft-shadow);transition:var(--trans)}
     .post-tile:hover{transform:translateY(-1px)}
+    .post-delete{position:absolute;top:8px;right:8px;border:0;background:rgba(15,23,42,.72);color:#fff;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:.78rem;line-height:1;cursor:pointer;opacity:0;pointer-events:none;transition:var(--trans)}
+    .post-tile-wrap:hover .post-delete,.post-tile-wrap:focus-within .post-delete{opacity:1;pointer-events:auto}
+    .post-delete:hover{background:#dc2626}
+    .day.drag-over{border-color:rgba(0,112,202,.65);box-shadow:inset 0 0 0 2px rgba(0,112,202,.2),var(--soft-shadow)}
     .post-title{font-size:.86rem;font-weight:700;letter-spacing:-.01em}
     .post-meta{display:flex;justify-content:space-between;gap:8px;font-size:.74rem;color:#475569}
     .post-status{justify-self:start;font-size:.68rem;padding:4px 8px;border-radius:999px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;background:rgba(148,163,184,.16);color:#475569}
@@ -112,7 +118,8 @@
     .platform-instagram{border-color:rgba(219,39,119,.34)}
 
     .notes-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;align-items:start}
-    #notes{resize:none;overflow:hidden;min-height:170px}
+    .notes-grid .panel{align-self:start;height:auto}
+    #notes{resize:none;overflow:hidden;min-height:120px}
     .todo-list{display:grid;gap:10px}
     .todo-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.78)}
     .todo-item input[type="text"]{flex:1}
@@ -339,6 +346,8 @@
       postLink: document.getElementById("postLink")
     };
 
+
+    const dragState = { fromDay: null, fromIndex: null };
     function emptyBrandState() {
       return { priorities: ["", "", ""], notes: "", todos: [{ text: "", done: false }], posts: {} };
     }
@@ -481,22 +490,93 @@
       statCompletionText.textContent = completion >= 80 ? "Execution velocity is elite" : completion >= 50 ? "Great momentum this week" : "Build momentum";
     }
 
+    function deletePost(day, postIndex) {
+      const posts = dayPosts(day);
+      posts.splice(postIndex, 1);
+      if (state.selectedDay === day && state.selectedPostIndex >= posts.length) {
+        state.selectedPostIndex = Math.max(posts.length - 1, 0);
+      }
+      persist();
+      render();
+    }
+
+    function movePost(fromDay, fromIndex, toDay) {
+      if (!DAYS.includes(fromDay) || !DAYS.includes(toDay)) return;
+      const sourcePosts = dayPosts(fromDay);
+      const [post] = sourcePosts.splice(fromIndex, 1);
+      if (!post) return;
+      dayPosts(toDay).push(post);
+      if (state.selectedDay === fromDay && state.selectedPostIndex === fromIndex) {
+        state.selectedDay = toDay;
+        state.selectedPostIndex = dayPosts(toDay).length - 1;
+      }
+      persist();
+      render();
+    }
+
     function renderCalendar() {
       calendar.innerHTML = "";
       DAYS.forEach((day) => {
         const dayCard = document.createElement("article");
         dayCard.className = "day" + (day === state.selectedDay ? " active" : "");
         dayCard.innerHTML = `<span class="day-name">${day}</span>`;
+
+        dayCard.addEventListener("dragover", (event) => {
+          event.preventDefault();
+          dayCard.classList.add("drag-over");
+        });
+        dayCard.addEventListener("dragleave", () => dayCard.classList.remove("drag-over"));
+        dayCard.addEventListener("drop", (event) => {
+          event.preventDefault();
+          dayCard.classList.remove("drag-over");
+          if (dragState.fromDay == null || dragState.fromIndex == null) return;
+          movePost(dragState.fromDay, dragState.fromIndex, day);
+          dragState.fromDay = null;
+          dragState.fromIndex = null;
+        });
+
+        const postsContainer = document.createElement("div");
+        postsContainer.className = "day-posts";
+
         dayPosts(day).forEach((post, index) => {
           if (!post || !String(post.postTitle || "").trim()) return;
+          const wrap = document.createElement("div");
+          wrap.className = "post-tile-wrap";
+
           const tile = document.createElement("button");
           tile.type = "button";
+          tile.draggable = true;
           tile.className = `post-tile ${platformClass(post.platforms || post.platform)} ${statusClass(post.status)}`.trim();
           const statusLabel = String(post.status || "planned").trim() || "planned";
           tile.innerHTML = `<span class="post-title">${escapeHtml(post.postTitle)}</span><span class="post-meta"><span>${escapeHtml(formatPlatforms(post.platforms || post.platform) || "Set platform")}</span><span>${escapeHtml(post.time || "Set time")}</span></span><span class="post-status">${escapeHtml(statusLabel)}</span>`;
           tile.addEventListener("click", () => openEditor(day, index));
-          dayCard.appendChild(tile);
+          tile.addEventListener("dragstart", () => {
+            dragState.fromDay = day;
+            dragState.fromIndex = index;
+          });
+          tile.addEventListener("dragend", () => {
+            dragState.fromDay = null;
+            dragState.fromIndex = null;
+            document.querySelectorAll(".day.drag-over").forEach((card) => card.classList.remove("drag-over"));
+          });
+
+          const deleteButton = document.createElement("button");
+          deleteButton.type = "button";
+          deleteButton.className = "post-delete";
+          deleteButton.setAttribute("aria-label", `Delete post ${index + 1} on ${day}`);
+          deleteButton.textContent = "🗑";
+          deleteButton.addEventListener("click", (event) => {
+            event.stopPropagation();
+            deletePost(day, index);
+          });
+
+          wrap.appendChild(tile);
+          wrap.appendChild(deleteButton);
+          postsContainer.appendChild(wrap);
         });
+
+        dayCard.appendChild(postsContainer);
+
         const addButton = document.createElement("button");
         addButton.type = "button";
         addButton.className = "add-post";
