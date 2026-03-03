@@ -85,6 +85,7 @@
     .panel-content{display:grid;grid-template-rows:1fr;max-height:1000px;opacity:1;overflow:hidden;transition:max-height .42s cubic-bezier(.22,1,.36,1),opacity .28s ease}
     .panel-content.collapsed{max-height:0;opacity:0;pointer-events:none}
     .section-add{border:1px solid var(--border);background:#fff;border-radius:999px;padding:4px 10px;min-width:32px;font:inherit;font-weight:700;color:#334155;line-height:1;cursor:pointer}
+    .calendar-add{width:34px;height:34px;padding:0;border-radius:10px;display:grid;place-items:center;font-size:1.05rem}
 
     textarea,input,select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.88);font:inherit;color:var(--text);transition:var(--trans)}
     textarea:focus,input:focus,select:focus{outline:none;border-color:rgba(0,112,202,.45);box-shadow:0 0 0 3px rgba(0,112,202,.16)}
@@ -102,9 +103,6 @@
     .day-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
     .day-name{font-size:.8rem;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:.08em}
     .day-date{font-size:.74rem;font-weight:600;color:#64748b;line-height:1;text-align:right}
-
-    .add-post{border:1px dashed rgba(100,116,139,.5);background:rgba(248,250,252,.8);padding:9px 11px;border-radius:12px;font:inherit;font-weight:600;color:#475569;cursor:pointer;transition:var(--trans)}
-    .add-post:hover{border-color:rgba(0,112,202,.45);color:#0f4d80;background:rgba(239,246,255,.8)}
 
     .day-posts{display:grid;gap:8px;min-height:0}
     .post-tile-wrap{position:relative}
@@ -268,7 +266,10 @@
 
     <section class="main-grid">
       <section class="panel glass">
-        <h2>Calendar</h2>
+        <div class="panel-head">
+          <h2>Calendar</h2>
+          <button type="button" class="section-add calendar-add" id="calendarAddBtn" aria-label="Add post">+</button>
+        </div>
         <div class="calendar-board" id="calendar"></div>
       </section>
     </section>
@@ -326,6 +327,16 @@
               <button type="button" class="tag-chip" data-platform="Facebook">Facebook</button>
               <button type="button" class="tag-chip" data-platform="Instagram">Instagram</button>
             </div>
+          </div>
+          <div class="field-group">
+            <label for="postDay">Day of week</label>
+            <select id="postDay">
+              <option value="Monday">Monday</option>
+              <option value="Tuesday">Tuesday</option>
+              <option value="Wednesday">Wednesday</option>
+              <option value="Thursday">Thursday</option>
+              <option value="Friday">Friday</option>
+            </select>
           </div>
           <div class="field-group">
             <label for="time">Publish time</label>
@@ -419,6 +430,7 @@
     const projectTodoList = document.getElementById("projectTodoList");
     const newProjectTaskBtn = document.getElementById("newProjectTaskBtn");
     const projectStatusOptions = document.getElementById("projectStatusOptions");
+    const calendarAddBtn = document.getElementById("calendarAddBtn");
 
     const statScheduled = document.getElementById("statScheduled");
     const statPosted = document.getElementById("statPosted");
@@ -431,6 +443,7 @@
       priority3: document.getElementById("priority3"),
       notes: document.getElementById("notes"),
       postTitle: document.getElementById("postTitle"),
+      postDay: document.getElementById("postDay"),
       time: document.getElementById("time"),
       status: document.getElementById("status"),
       caption: document.getElementById("caption"),
@@ -701,12 +714,6 @@
 
         dayCard.appendChild(postsContainer);
 
-        const addButton = document.createElement("button");
-        addButton.type = "button";
-        addButton.className = "add-post";
-        addButton.textContent = "Add post";
-        addButton.addEventListener("click", () => openEditor(day));
-        dayCard.appendChild(addButton);
         calendar.appendChild(dayCard);
       });
     }
@@ -888,6 +895,7 @@
 
       const post = editorModal.classList.contains("open") ? currentPost(false) : {};
       document.getElementById("editorTitle").textContent = `Post Details • ${state.selectedDay}`;
+      fields.postDay.value = state.selectedDay;
       ["postTitle","time","status","caption"].forEach((key) => { fields[key].value = post[key] || ""; });
       fields.postLink.value = post.postLink || post.asset || "";
       const selectedPlatforms = Array.isArray(post.platforms) ? post.platforms : (post.platform ? [post.platform] : []);
@@ -1102,6 +1110,28 @@
       persist();
       render();
     }));
+
+    calendarAddBtn.addEventListener("click", () => {
+      openEditor(state.selectedDay);
+    });
+
+    fields.postDay.addEventListener("change", () => {
+      const targetDay = fields.postDay.value;
+      if (!DAYS.includes(targetDay) || targetDay === state.selectedDay) return;
+      setSavedLabel("Saving...");
+      const sourcePosts = dayPosts(state.selectedDay);
+      const [post] = sourcePosts.splice(state.selectedPostIndex, 1);
+      const destinationPosts = dayPosts(targetDay);
+      if (post) {
+        destinationPosts.push(post);
+        state.selectedPostIndex = destinationPosts.length - 1;
+      } else {
+        state.selectedPostIndex = destinationPosts.length;
+      }
+      state.selectedDay = targetDay;
+      persist();
+      render();
+    });
 
     document.getElementById("clearWeek").addEventListener("click", () => {
       state.data[state.brand] = emptyBrandState();
