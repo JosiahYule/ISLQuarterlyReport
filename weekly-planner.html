@@ -19,8 +19,8 @@
       --border:rgba(148,163,184,.25);
       --text:#0f172a;
       --muted:#64748b;
-      --shadow:0 20px 55px rgba(15,23,42,.14);
-      --soft-shadow:0 8px 24px rgba(15,23,42,.08);
+      --shadow:0 16px 36px rgba(15,23,42,.12);
+      --soft-shadow:0 6px 18px rgba(15,23,42,.07);
       --radius:22px;
       --font:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;
       --trans:all .4s cubic-bezier(.22,1,.36,1);
@@ -71,7 +71,7 @@
       outline-offset:2px;
     }
 
-    .hero{padding:22px 22px 18px;margin-bottom:16px}
+    .hero{padding:22px 22px 18px;margin-bottom:16px;box-shadow:0 22px 46px rgba(15,23,42,.14)}
     .hero-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:16px;align-items:stretch}
     .hero-copy h1{margin:0;font-size:clamp(1.25rem,2.8vw,2rem);letter-spacing:-.03em}
     .meta-row{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:16px}
@@ -90,7 +90,7 @@
     .stat-card em{font-style:normal;font-size:.76rem;color:#64748b}
     .stat-card.wide{grid-column:1 / -1;background:linear-gradient(145deg,rgba(0,112,202,.11),rgba(14,165,233,.08));border-color:rgba(0,112,202,.25)}
 
-    .panel{padding:20px}
+    .panel{padding:20px;background:rgba(255,255,255,.84);box-shadow:0 8px 22px rgba(15,23,42,.06)}
     .panel h2{margin:0 0 12px;font-size:1rem;font-weight:700;letter-spacing:-.01em}
     .panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
     .panel-head h2{margin:0}
@@ -107,6 +107,8 @@
 
     .main-grid{display:grid;gap:16px;margin-top:16px}
     .calendar-board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+    .calendar-controls{display:flex;gap:8px;flex-wrap:wrap;margin:-2px 0 10px}
+    .calendar-filter{max-width:180px;font-size:.8rem;padding:8px 10px;border-radius:999px;background:rgba(248,250,252,.95)}
     .day{border:1px solid var(--border);border-radius:18px;padding:12px;background:rgba(255,255,255,.58);display:flex;flex-direction:column;gap:9px;min-height:184px;transition:var(--trans-slow)}
     .day.active{border-color:rgba(0,112,202,.42);box-shadow:inset 0 0 0 1px rgba(0,112,202,.3),var(--soft-shadow)}
     .day.today{border-color:rgba(0,112,202,.6);background:linear-gradient(165deg,rgba(219,234,254,.75),rgba(255,255,255,.86));box-shadow:inset 0 0 0 1px rgba(0,112,202,.34),0 14px 34px rgba(0,112,202,.16)}
@@ -120,13 +122,17 @@
     .post-tile-wrap{position:relative}
     .post-tile{width:100%;border:1px solid rgba(255,255,255,.78);border-radius:13px;padding:11px;background:linear-gradient(160deg,rgba(255,255,255,.98),rgba(248,250,252,.92));text-align:left;display:grid;gap:8px;cursor:pointer;box-shadow:0 10px 20px rgba(15,23,42,.08),inset 0 1px 0 rgba(255,255,255,.9);transition:var(--trans-slow)}
     .post-tile:hover{transform:translateY(-1px)}
-    .post-delete{position:absolute;top:8px;right:8px;border:0;background:rgba(15,23,42,.72);color:#fff;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:.78rem;line-height:1;cursor:pointer;opacity:0;pointer-events:none;transition:var(--trans)}
-    .post-tile-wrap:hover .post-delete,.post-tile-wrap:focus-within .post-delete{opacity:1;pointer-events:auto}
+    .post-actions{position:absolute;top:8px;right:8px;display:flex;gap:5px;opacity:0;pointer-events:none;transition:var(--trans)}
+    .post-tile-wrap:hover .post-actions,.post-tile-wrap:focus-within .post-actions{opacity:1;pointer-events:auto}
+    .post-action{border:0;background:rgba(15,23,42,.72);color:#fff;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:.78rem;line-height:1;cursor:pointer;transition:var(--trans)}
+    .post-action:hover{background:#0f172a}
     .post-delete:hover{background:#dc2626}
     .day.drag-over{border-color:rgba(0,112,202,.65);box-shadow:inset 0 0 0 2px rgba(0,112,202,.2),var(--soft-shadow)}
     .post-title{font-size:.86rem;font-weight:700;letter-spacing:-.01em}
     .post-tile-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
-    .post-meta{display:flex;justify-content:flex-end;gap:8px;font-size:.74rem;color:#475569}
+    .post-meta{display:flex;justify-content:space-between;gap:8px;font-size:.74rem;color:#475569;flex-wrap:wrap}
+    .post-goals{display:flex;gap:6px;flex-wrap:wrap}
+    .post-goal{font-size:.68rem;padding:2px 7px;border-radius:999px;background:#f1f5f9;color:#334155;font-weight:600}
     .platform-icons{display:flex;gap:6px;align-items:center;justify-content:flex-end}
     .platform-icon{width:15px;height:15px;display:inline-block;color:#475569}
     .post-badges{display:grid;gap:6px;justify-items:start}
@@ -145,8 +151,8 @@
     .notes-grid .panel{align-self:start;height:auto}
     .stack-column{display:grid;gap:16px}
     #notes{resize:none;overflow:hidden;min-height:120px}
-    .todo-list{display:grid;gap:10px}
-    .todo-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.86);box-shadow:0 8px 18px rgba(15,23,42,.06),inset 0 1px 0 rgba(255,255,255,.9);transition:var(--trans);cursor:pointer}
+    .todo-list{display:grid;gap:12px}
+    .todo-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:12px;padding:12px 13px;border-radius:14px;border:1px solid rgba(148,163,184,.2);background:rgba(255,255,255,.9);box-shadow:0 5px 14px rgba(15,23,42,.05),inset 0 1px 0 rgba(255,255,255,.9);transition:var(--trans);cursor:pointer}
     .todo-item:hover{transform:translateY(-1px)}
     .todo-item input[type="checkbox"]{width:auto;accent-color:var(--primary)}
     .todo-item.done .todo-name{text-decoration:line-through;color:#94a3b8}
@@ -160,7 +166,7 @@
     .new-task-btn{margin-top:10px;border:1px solid var(--border);background:rgba(255,255,255,.9);color:#334155;padding:7px 11px;border-radius:10px;font:inherit;font-weight:600;font-size:.82rem;cursor:pointer;box-shadow:0 4px 10px rgba(15,23,42,.06);transition:var(--trans);width:auto;justify-self:start}
     .new-task-btn:hover{transform:translateY(-1px);box-shadow:0 7px 14px rgba(15,23,42,.09)}
 
-    .day,.project-tile,.project-add,.recurring-tile{background:linear-gradient(165deg,rgba(255,255,255,.97),rgba(248,250,252,.88));box-shadow:0 12px 28px rgba(15,23,42,.08),inset 0 1px 0 rgba(255,255,255,.92);border-color:rgba(226,232,240,.9)}
+    .day,.project-tile,.project-add,.recurring-tile{background:linear-gradient(165deg,rgba(255,255,255,.97),rgba(248,250,252,.88));box-shadow:0 8px 20px rgba(15,23,42,.06),inset 0 1px 0 rgba(255,255,255,.92);border-color:rgba(226,232,240,.9)}
     .project-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     .project-tile{min-height:156px;border-radius:18px;border:1px solid var(--border);background:rgba(255,255,255,.9);display:grid;align-content:space-between;padding:14px;text-align:left;cursor:pointer;font:inherit;transition:var(--trans)}
     .project-tile:hover{transform:translateY(-1px);box-shadow:var(--soft-shadow)}
@@ -168,9 +174,11 @@
     .project-status{justify-self:start;font-size:.68rem;padding:4px 9px;border-radius:999px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
     .project-status[data-state='in progress']{background:#ffedd5;color:#9a3412}
     .project-status[data-state='completed']{background:#dcfce7;color:#166534}
-    .project-status[data-state='strategizing']{background:#ede9fe;color:#5b21b6}
+    .project-status[data-state='strategizing']{background:#dbeafe;color:#1d4ed8}
     .project-status[data-state='on hold']{background:#fef9c3;color:#854d0e}
     .project-status[data-state='not started']{background:#e2e8f0;color:#334155}
+    .due-badge{justify-self:start;font-size:.64rem;padding:3px 8px;border-radius:999px;font-weight:700;letter-spacing:.04em;background:#fee2e2;color:#991b1b;text-transform:uppercase}
+    .due-badge.week{background:#fef3c7;color:#92400e}
     .project-add{min-height:156px;border-radius:18px;border:1px dashed rgba(100,116,139,.5);background:rgba(248,250,252,.9);font:inherit;font-weight:700;color:#334155;cursor:pointer}
     .project-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .project-todos{display:grid;gap:8px}
@@ -199,6 +207,11 @@
     .recurring-status[data-state='in progress']{background:#ffedd5;color:#9a3412}
     .recurring-status[data-state='done']{background:#dcfce7;color:#166534}
     .recurring-status[data-state='on hold']{background:#fef9c3;color:#854d0e}
+
+    body.compact .container{padding:18px 16px 28px}
+    body.compact .panel{padding:16px}
+    body.compact .day,body.compact .project-tile,body.compact .recurring-tile{min-height:140px}
+    body.compact .post-tile{padding:9px}
 
     .modal{position:fixed;inset:0;background:rgba(15,23,42,.42);display:none;align-items:center;justify-content:center;padding:18px;z-index:40}
     .modal.open{display:flex}
@@ -280,6 +293,7 @@
           <div class="meta-row">
             <span class="week-badge" id="weekBadge">Week of --</span>
             <div class="meta-actions">
+              <button id="compactToggle" type="button" class="subtle-btn">Compact mode</button>
               <button id="clearWeek" type="button" class="subtle-btn">Reset week</button>
               <button id="undoReset" type="button" class="subtle-btn" hidden>Undo reset</button>
               <span id="saveState" class="saved-text">Saved</span>
@@ -325,6 +339,21 @@
         <div class="panel-head">
           <h2>Calendar</h2>
           <button type="button" class="section-add calendar-add" id="calendarAddBtn" aria-label="Add post">+</button>
+        </div>
+        <div class="calendar-controls">
+          <select id="calendarPlatformFilter" class="calendar-filter" aria-label="Filter by platform">
+            <option value="all">All platforms</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="facebook">Facebook</option>
+            <option value="instagram">Instagram</option>
+          </select>
+          <select id="calendarStatusFilter" class="calendar-filter" aria-label="Filter by status">
+            <option value="all">All statuses</option>
+            <option value="planned">Planned</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="in progress">In Progress</option>
+            <option value="posted">Posted</option>
+          </select>
         </div>
         <div class="calendar-board" id="calendar"></div>
       </section>
@@ -419,6 +448,20 @@
           <div class="field-group">
             <label for="time">Publish time</label>
             <input id="time" type="time" />
+          </div>
+          <div class="field-group">
+            <label for="objective">Objective</label>
+            <select id="objective">
+              <option value="">Select objective</option>
+              <option value="Brand awareness">Brand awareness</option>
+              <option value="Lead generation">Lead generation</option>
+              <option value="Engagement">Engagement</option>
+              <option value="Recruitment">Recruitment</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="kpiTarget">KPI target</label>
+            <input id="kpiTarget" type="text" placeholder="e.g., 15 applicants" />
           </div>
           <input id="status" class="full" type="hidden" />
           <div class="status-block full">
@@ -599,6 +642,9 @@
     const newProjectTaskBtn = document.getElementById("newProjectTaskBtn");
     const projectStatusOptions = document.getElementById("projectStatusOptions");
     const calendarAddBtn = document.getElementById("calendarAddBtn");
+    const compactToggle = document.getElementById("compactToggle");
+    const calendarPlatformFilter = document.getElementById("calendarPlatformFilter");
+    const calendarStatusFilter = document.getElementById("calendarStatusFilter");
 
     const statScheduled = document.getElementById("statScheduled");
     const statPosted = document.getElementById("statPosted");
@@ -617,6 +663,8 @@
       postType: document.getElementById("postType"),
       caption: document.getElementById("caption"),
       postLink: document.getElementById("postLink"),
+      objective: document.getElementById("objective"),
+      kpiTarget: document.getElementById("kpiTarget"),
       projectName: document.getElementById("projectName"),
       projectDeadline: document.getElementById("projectDeadline"),
       recurringName: document.getElementById("recurringName"),
@@ -659,7 +707,9 @@
         as: { priorities: null, notes: null, todos: null, projects: null },
         ad: { priorities: null, notes: null, todos: null, projects: null }
       },
-      quarter: null
+      quarter: null,
+      filters: { platform: "all", status: "all" },
+      compactMode: false
     };
     let resetSnapshot = null;
     let restoreFocusTo = null;
@@ -790,6 +840,19 @@
       return { priorities, posts: normalizePosts(source.posts) };
     }
 
+    function withinCurrentWeek(dateValue) {
+      if (!dateValue) return null;
+      const date = new Date(`${dateValue}T00:00:00`);
+      if (Number.isNaN(date.getTime())) return null;
+      const { monday } = weekContext();
+      const weekStart = new Date(monday);
+      const weekEnd = new Date(monday);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      if (date < weekStart) return "overdue";
+      if (date <= weekEnd) return "week";
+      return null;
+    }
+
     function persist() {
       const existing = readSavedState();
       const weekKey = getWeekKey();
@@ -912,6 +975,17 @@
       render();
     }
 
+    function duplicatePost(day, postIndex) {
+      const posts = dayPosts(day);
+      const source = posts[postIndex];
+      if (!source) return;
+      const clone = JSON.parse(JSON.stringify(source));
+      posts.splice(postIndex + 1, 0, clone);
+      setSavedLabel("Saving...");
+      persist();
+      render();
+    }
+
     function movePost(fromDay, fromIndex, toDay) {
       if (!DAYS.includes(fromDay) || !DAYS.includes(toDay)) return;
       const sourcePosts = dayPosts(fromDay);
@@ -929,11 +1003,15 @@
     function renderCalendar() {
       calendar.innerHTML = "";
       const { datesByDay, activeWeekday } = weekContext();
+      const statusFilter = state.filters.status;
+      const platformFilter = state.filters.platform;
+      calendarPlatformFilter.value = platformFilter;
+      calendarStatusFilter.value = statusFilter;
       DAYS.forEach((day) => {
         const dayCard = document.createElement("article");
         const dayDate = datesByDay[day];
         const dayDateLabel = dayDate ? dayDate.toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "";
-        const todayLabel = day === activeWeekday ? " aria-current=\"date\"" : "";
+        const todayLabel = day === activeWeekday ? ' aria-current="date"' : "";
         dayCard.className = "day" + (day === state.selectedDay ? " active" : "") + (day === activeWeekday ? " today" : "");
         dayCard.innerHTML = `<div class="day-head"><span class="day-name"${todayLabel}>${day}</span><span class="day-date">${dayDateLabel}</span></div>`;
 
@@ -956,6 +1034,11 @@
 
         dayPosts(day).forEach((post, index) => {
           if (!post || !String(post.postTitle || "").trim()) return;
+          const platforms = Array.isArray(post.platforms) ? post.platforms.map((item) => String(item).toLowerCase()) : [String(post.platform || "").toLowerCase()].filter(Boolean);
+          const normalizedStatus = String(post.status || "planned").toLowerCase().trim();
+          if (statusFilter !== "all" && normalizedStatus !== statusFilter) return;
+          if (platformFilter !== "all" && !platforms.includes(platformFilter)) return;
+
           const wrap = document.createElement("div");
           wrap.className = "post-tile-wrap";
 
@@ -967,7 +1050,9 @@
           const typeTag = String(post.postType || "").trim();
           const typeTagMarkup = typeTag ? `<span class="post-type-tag ${postTypeClass(typeTag)}">${escapeHtml(typeTag)}</span>` : "";
           const platformMarkup = platformIcons(post.platforms || post.platform);
-          tile.innerHTML = `<span class="post-tile-top"><span class="post-title">${escapeHtml(post.postTitle)}</span><span class="platform-icons">${platformMarkup || '<span>Set platform</span>'}</span></span><span class="post-badges">${typeTagMarkup}<span class="post-status">${escapeHtml(statusLabel)}</span></span><span class="post-meta"><span>${escapeHtml(post.time || "Set time")}</span></span>`;
+          const objectiveMarkup = post.objective ? `<span class="post-goal">${escapeHtml(post.objective)}</span>` : "";
+          const kpiMarkup = post.kpiTarget ? `<span class="post-goal">KPI: ${escapeHtml(post.kpiTarget)}</span>` : "";
+          tile.innerHTML = `<span class="post-tile-top"><span class="post-title">${escapeHtml(post.postTitle)}</span><span class="platform-icons">${platformMarkup || '<span>Set platform</span>'}</span></span><span class="post-badges">${typeTagMarkup}<span class="post-status">${escapeHtml(statusLabel)}</span></span><span class="post-meta"><span>${escapeHtml(post.time || "Set time")}</span><span class="post-goals">${objectiveMarkup}${kpiMarkup}</span></span>`;
           tile.addEventListener("click", () => openEditor(day, index));
           tile.addEventListener("dragstart", () => {
             dragState.fromDay = day;
@@ -979,9 +1064,22 @@
             document.querySelectorAll(".day.drag-over").forEach((card) => card.classList.remove("drag-over"));
           });
 
+          const actions = document.createElement("div");
+          actions.className = "post-actions";
+
+          const duplicateButton = document.createElement("button");
+          duplicateButton.type = "button";
+          duplicateButton.className = "post-action";
+          duplicateButton.setAttribute("aria-label", `Duplicate post ${index + 1} on ${day}`);
+          duplicateButton.textContent = "⧉";
+          duplicateButton.addEventListener("click", (event) => {
+            event.stopPropagation();
+            duplicatePost(day, index);
+          });
+
           const deleteButton = document.createElement("button");
           deleteButton.type = "button";
-          deleteButton.className = "post-delete";
+          deleteButton.className = "post-action post-delete";
           deleteButton.setAttribute("aria-label", `Delete post ${index + 1} on ${day}`);
           deleteButton.textContent = "🗑";
           deleteButton.addEventListener("click", (event) => {
@@ -989,8 +1087,10 @@
             deletePost(day, index);
           });
 
+          actions.appendChild(duplicateButton);
+          actions.appendChild(deleteButton);
           wrap.appendChild(tile);
-          wrap.appendChild(deleteButton);
+          wrap.appendChild(actions);
           postsContainer.appendChild(wrap);
         });
 
@@ -1106,7 +1206,13 @@ function renderRecurringTasks() {
         tile.type = "button";
         tile.className = "recurring-tile" + (task.done ? " done" : "");
         const status = normalizeRecurringStatus(task.status);
-        tile.innerHTML = `<span class="recurring-name">${escapeHtml(task.text || `Recurring Task ${index + 1}`)}</span><span class="recurring-meta-line"><span>${escapeHtml(titleCase(normalizeRecurringPeriod(task.timePeriod)))}</span><span>${escapeHtml(titleCase(normalizeRecurringFrequency(task.frequency)))}</span></span><span class="recurring-status" data-state="${escapeHtml(status)}">${escapeHtml(titleCase(status))}</span>`;
+        const dueState = withinCurrentWeek(task.dueDate);
+        const dueMarkup = dueState === "overdue"
+          ? '<span class="due-badge">Overdue</span>'
+          : dueState === "week"
+            ? '<span class="due-badge week">Due this week</span>'
+            : "";
+        tile.innerHTML = `<span class="recurring-name">${escapeHtml(task.text || `Recurring Task ${index + 1}`)}</span><span class="recurring-meta-line"><span>${escapeHtml(titleCase(normalizeRecurringPeriod(task.timePeriod)))}</span><span>${escapeHtml(titleCase(normalizeRecurringFrequency(task.frequency)))}</span></span><span class="recurring-status" data-state="${escapeHtml(status)}">${escapeHtml(titleCase(status))}</span>${dueMarkup}`;
         tile.addEventListener("click", () => openRecurringEditor(index));
         recurringList.appendChild(tile);
       });
@@ -1225,7 +1331,13 @@ function renderRecurringTasks() {
         const status = normalizeProjectStatus(project.status);
         const linkedTodos = (state.data[state.brand].todos || []).filter((todo) => todo && todo.projectId === project.id && String(todo.text || "").trim());
         const linkedMarkup = linkedTodos.length ? `<div class="linked-task-list">${linkedTodos.map((todo) => `<div class="linked-task"><span>${escapeHtml(todo.text)}</span><span>${escapeHtml(titleCase(normalizeTodoPriority(todo.priority)))}</span></div>`).join("")}</div>` : "";
-        tile.innerHTML = `<span class="project-name">${escapeHtml(project.name || `Project ${index + 1}`)}</span><span class="project-status" data-state="${escapeHtml(status)}">${escapeHtml(titleCase(status))}</span>${linkedMarkup}`;
+        const dueState = withinCurrentWeek(project.deadline);
+        const dueMarkup = dueState === "overdue"
+          ? '<span class="due-badge">Overdue</span>'
+          : dueState === "week"
+            ? '<span class="due-badge week">Due this week</span>'
+            : "";
+        tile.innerHTML = `<span class="project-name">${escapeHtml(project.name || `Project ${index + 1}`)}</span><span class="project-status" data-state="${escapeHtml(status)}">${escapeHtml(titleCase(status))}</span>${dueMarkup}${linkedMarkup}`;
         tile.addEventListener("click", () => {
           openProjectEditor(index);
         });
@@ -1296,6 +1408,8 @@ function renderRecurringTasks() {
         btn.setAttribute("aria-selected", isActive ? "true" : "false");
         btn.setAttribute("tabindex", isActive ? "0" : "-1");
       });
+      document.body.classList.toggle("compact", state.compactMode);
+      compactToggle.textContent = state.compactMode ? "Comfort mode" : "Compact mode";
 
       const priorities = state.data[state.brand].priorities || ["", "", ""];
       fields.priority1.value = priorities[0] || "";
@@ -1316,7 +1430,7 @@ function renderRecurringTasks() {
       const post = editorModal.classList.contains("open") ? currentPost(false) : {};
       document.getElementById("editorTitle").textContent = `Post Details • ${state.selectedDay}`;
       fields.postDay.value = state.selectedDay;
-      ["postTitle","time","status","caption","postType"].forEach((key) => { fields[key].value = post[key] || ""; });
+      ["postTitle","time","status","caption","postType","objective","kpiTarget"].forEach((key) => { fields[key].value = post[key] || ""; });
       fields.postLink.value = post.postLink || post.asset || "";
       const selectedPlatforms = Array.isArray(post.platforms) ? post.platforms : (post.platform ? [post.platform] : []);
       platformPicker.querySelectorAll(".tag-chip").forEach((chip) => {
@@ -1756,6 +1870,23 @@ function renderRecurringTasks() {
     bindPostInput(fields.caption, "caption");
     bindPostInput(fields.postType, "postType");
     bindPostInput(fields.postLink, "postLink");
+    bindPostInput(fields.objective, "objective");
+    bindPostInput(fields.kpiTarget, "kpiTarget");
+
+    calendarPlatformFilter.addEventListener("change", () => {
+      state.filters.platform = calendarPlatformFilter.value;
+      renderCalendar();
+    });
+
+    calendarStatusFilter.addEventListener("change", () => {
+      state.filters.status = calendarStatusFilter.value;
+      renderCalendar();
+    });
+
+    compactToggle.addEventListener("click", () => {
+      state.compactMode = !state.compactMode;
+      render();
+    });
 
     load();
     render();
