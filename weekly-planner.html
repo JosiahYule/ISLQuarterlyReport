@@ -274,6 +274,9 @@
           <div class="meta-row">
             <span class="week-badge" id="weekBadge">Week of --</span>
             <div class="meta-actions">
+              <button id="exportData" type="button" class="subtle-btn">Export backup</button>
+              <button id="importData" type="button" class="subtle-btn">Import backup</button>
+              <input id="importFile" type="file" accept="application/json" hidden />
               <button id="clearWeek" type="button" class="subtle-btn">Reset week</button>
               <button id="undoReset" type="button" class="subtle-btn" hidden>Undo reset</button>
               <span id="saveState" class="saved-text">Saved</span>
@@ -552,6 +555,8 @@
   <script>
     const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday"];
     const STORAGE_KEY = "weekly-planner-v5";
+    const BACKUP_KEY = "weekly-planner-v5-last-good";
+    const EXPORT_VERSION = 1;
 
     const calendar = document.getElementById("calendar");
     const weekBadge = document.getElementById("weekBadge");
@@ -572,6 +577,9 @@
     const statusPicker = document.getElementById("statusPicker");
     const clearWeekBtn = document.getElementById("clearWeek");
     const undoResetBtn = document.getElementById("undoReset");
+    const exportDataBtn = document.getElementById("exportData");
+    const importDataBtn = document.getElementById("importData");
+    const importFileInput = document.getElementById("importFile");
     const priorityItem2 = document.getElementById("priorityItem2");
     const priorityItem3 = document.getElementById("priorityItem3");
     const platformPicker = document.getElementById("platformPicker");
@@ -732,9 +740,22 @@
       return `${year}-${month}-${day}`;
     }
 
+    function readSavedState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return {};
+      try {
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch {
+        console.warn("Saved planner data was corrupted and could not be parsed.");
+        return {};
+      }
+    }
+
     function persist() {
-      const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      const existing = readSavedState();
       existing[getWeekKey()] = state.data;
+      localStorage.setItem(BACKUP_KEY, JSON.stringify(existing));
       localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
       setSavedLabel("Saved");
     }
@@ -745,10 +766,9 @@
     }
 
     function load() {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) return;
+      const parsed = readSavedState();
+      if (!Object.keys(parsed).length) return;
       try {
-        const parsed = JSON.parse(saved);
         const weekKey = getWeekKey();
         const parsedState = parsed[weekKey] || parsed;
         ["is", "as", "ad"].forEach((brand) => {
@@ -792,6 +812,52 @@
       } catch {
         console.warn("Unable to parse saved social plan data.");
       }
+    }
+
+    function exportBackup() {
+      const payload = {
+        type: "weekly-planner-backup",
+        version: EXPORT_VERSION,
+        exportedAt: new Date().toISOString(),
+        storageKey: STORAGE_KEY,
+        data: readSavedState()
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `weekly-planner-backup-${timestamp}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setSavedLabel("Backup exported");
+      setTimeout(() => setSavedLabel("Saved"), 1800);
+    }
+
+    function importBackupFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(String(reader.result || "{}"));
+          const importedData = parsed && parsed.type === "weekly-planner-backup" && parsed.data && typeof parsed.data === "object"
+            ? parsed.data
+            : parsed;
+          if (!importedData || typeof importedData !== "object") throw new Error("Invalid backup data");
+          localStorage.setItem(BACKUP_KEY, JSON.stringify(readSavedState()));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(importedData));
+          load();
+          render();
+          setSavedLabel("Backup imported");
+          setTimeout(() => setSavedLabel("Saved"), 1800);
+          window.alert("Backup imported. This is the easiest way to move data between desktop and mobile.");
+        } catch {
+          window.alert("Could not import that file. Please choose a valid planner backup JSON.");
+        }
+      };
+      reader.readAsText(file);
     }
 
     function openEditor(day, postIndex = null) {
@@ -1606,6 +1672,20 @@ function renderRecurringTasks() {
       undoResetBtn.hidden = true;
       persist();
       render();
+    });
+
+    exportDataBtn.addEventListener("click", () => {
+      exportBackup();
+    });
+
+    importDataBtn.addEventListener("click", () => {
+      importFileInput.click();
+    });
+
+    importFileInput.addEventListener("change", (event) => {
+      const [file] = event.target.files || [];
+      importBackupFile(file);
+      event.target.value = "";
     });
 
     closeModal.addEventListener("click", () => {
