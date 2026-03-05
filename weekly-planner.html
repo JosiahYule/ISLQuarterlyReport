@@ -56,6 +56,7 @@
     }
 
     .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+    .topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto}
     .brand{display:flex;align-items:center;gap:13px}
     .brand-mark{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(145deg,var(--primary),var(--accent));color:#fff;font-size:1.25rem;font-weight:700;letter-spacing:.02em;box-shadow:0 11px 24px rgba(0,84,154,.28)}
     .brand-text{display:flex;flex-direction:column;line-height:1.2;gap:3px}
@@ -75,8 +76,9 @@
     .hero-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:16px;align-items:stretch;position:relative}
     .hero-copy{padding-bottom:34px}
     .hero-copy h1{margin:0;font-size:clamp(1.25rem,2.8vw,2rem);letter-spacing:-.03em}
-    .meta-row{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:16px}
+    .meta-row{display:flex;align-items:center;gap:10px;margin-top:16px}
     .week-badge{font-size:.78rem;font-weight:600;letter-spacing:.02em;color:#0f172a;background:linear-gradient(140deg,rgba(255,255,255,.96),rgba(219,234,254,.75));border:1px solid rgba(148,163,184,.36);padding:6px 11px;border-radius:999px;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 6px 16px rgba(15,23,42,.08);backdrop-filter:blur(8px)}
+    .topbar .week-badge{margin-left:auto}
     .meta-actions{display:flex;gap:8px;align-items:center}
     .subtle-btn{border:1px solid var(--border);background:rgba(255,255,255,.84);padding:8px 12px;border-radius:12px;font:inherit;font-weight:600;cursor:pointer;color:#334155;transition:var(--trans);box-shadow:0 4px 10px rgba(15,23,42,.04)}
     .subtle-btn:hover{transform:translateY(-1px);box-shadow:0 8px 16px rgba(15,23,42,.08)}
@@ -138,7 +140,7 @@
     .platform-icons{display:flex;gap:6px;align-items:center;justify-content:flex-end}
     .platform-icon{width:15px;height:15px;display:inline-block;color:#475569}
     .post-badges{display:grid;gap:6px;justify-items:start}
-    .post-status,.post-type-tag,.todo-priority-badge,.project-status,.due-badge,.recurring-status{justify-self:start;font-family:var(--font);line-height:1.2;border-radius:999px;font-weight:700;letter-spacing:.02em;border:1px solid rgba(148,163,184,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.92),0 6px 14px rgba(15,23,42,.08);backdrop-filter:blur(8px)}
+    .post-status,.post-type-tag,.todo-priority-badge,.project-status,.due-badge,.recurring-status{justify-self:start;font-family:var(--font);line-height:1.2;border-radius:999px;font-weight:500;letter-spacing:.02em;border:1px solid rgba(148,163,184,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.92),0 6px 14px rgba(15,23,42,.08);backdrop-filter:blur(8px)}
     .post-status,.post-type-tag{font-size:.72rem;padding:4px 8px;text-transform:none}
     .post-status{background:rgba(148,163,184,.16);color:#475569}
     .status-planned .post-status{background:#dbeafe;color:#1d4ed8}
@@ -187,7 +189,7 @@
     .project-todo-item input[type='checkbox']{width:auto;accent-color:var(--primary)}
     .project-todo-item.done input[type='text']{text-decoration:line-through;color:#94a3b8}
     .project-status-options{display:flex;flex-wrap:wrap;gap:8px}
-    .project-status-option{border:1px solid transparent;background:#f1f5f9;color:#334155;border-radius:999px;padding:7px 11px;font:inherit;font-size:.77rem;font-weight:700;cursor:pointer;transition:var(--trans)}
+    .project-status-option{border:1px solid transparent;background:#f1f5f9;color:#334155;border-radius:999px;padding:7px 11px;font:inherit;font-size:.77rem;font-weight:500;cursor:pointer;transition:var(--trans)}
     .project-status-option[data-status='in progress']{background:#ffedd5;color:#9a3412}
     .project-status-option[data-status='completed']{background:#dcfce7;color:#166534}
     .project-status-option[data-status='strategizing']{background:#ede9fe;color:#5b21b6}
@@ -207,7 +209,7 @@
     .recurring-meta-line{display:flex;align-items:center;justify-content:flex-end;gap:7px;color:#475569;font-size:.75rem;white-space:nowrap;margin-left:auto}
     .recurring-meta-chip{font-weight:600}
     .recurring-meta-divider{opacity:.5}
-    .recurring-status{font-size:.63rem;padding:3px 8px;text-transform:uppercase;background:#e2e8f0;color:#334155}
+    .recurring-status{font-size:.63rem;padding:3px 8px;text-transform:uppercase;background:#e2e8f0;color:#334155;align-self:start}
     .recurring-status[data-state='in progress']{background:#ffedd5;color:#9a3412}
     .recurring-status[data-state='done']{background:#dcfce7;color:#166534}
     .recurring-status[data-state='on hold']{background:#fef9c3;color:#854d0e}
@@ -220,7 +222,7 @@
     .modal-head h2{margin:0;font-size:1.08rem}
     .close-btn{border:0;background:transparent;font-size:1.6rem;line-height:1;cursor:pointer;color:#64748b}
     .edit-btn{font-size:.82rem;padding:7px 11px;border-radius:999px}
-        .fields{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .fields{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .post-overview{margin-top:12px;display:grid;gap:10px}
     .overview-row{display:grid;gap:4px;padding:9px 10px;border:1px solid var(--border);border-radius:12px;background:rgba(248,250,252,.8)}
     .overview-row strong{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b}
@@ -231,7 +233,7 @@
     .full{grid-column:1 / -1}
     .platform-block strong,.status-block strong{font-size:.77rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b}
     .tag-picker,.status-picker{display:flex;flex-wrap:wrap;gap:8px}
-    .tag-chip,.status-tag{border:1px solid rgba(148,163,184,.45);background:rgba(255,255,255,.88);border-radius:999px;padding:7px 11px;font:inherit;font-size:.77rem;font-weight:700;color:#334155;cursor:pointer;transition:var(--trans)}
+    .tag-chip,.status-tag{border:1px solid rgba(148,163,184,.45);background:rgba(255,255,255,.88);border-radius:999px;padding:7px 11px;font:inherit;font-size:.77rem;font-weight:500;color:#334155;cursor:pointer;transition:var(--trans)}
     .tag-chip.active,.status-tag.active{background:linear-gradient(145deg,var(--primary),var(--accent));border-color:transparent;color:#fff;box-shadow:0 8px 16px rgba(0,84,154,.2)}
     .platform-chip{width:40px;height:40px;padding:0;border-radius:12px;display:grid;place-items:center}
     .platform-chip svg{width:20px;height:20px}
@@ -285,10 +287,13 @@
           <span id="brandSubtitle">Integrated Staffing</span>
         </div>
       </div>
-      <div class="toggle" role="tablist" aria-label="Staffing brand toggle">
+      <div class="topbar-right">
+        <span class="week-badge" id="weekBadge">Week of --</span>
+        <div class="toggle" role="tablist" aria-label="Staffing brand toggle">
         <button type="button" role="tab" aria-selected="true" aria-controls="plannerContent" tabindex="0" data-brand="is" class="active">IS</button>
         <button type="button" role="tab" aria-selected="false" aria-controls="plannerContent" tabindex="-1" data-brand="as">AS</button>
         <button type="button" role="tab" aria-selected="false" aria-controls="plannerContent" tabindex="-1" data-brand="ad">AD</button>
+        </div>
       </div>
     </header>
 
@@ -297,7 +302,6 @@
         <div class="hero-copy">
           <h1>Weekly tracker</h1>
           <div class="meta-row">
-            <span class="week-badge" id="weekBadge">Week of --</span>
             <div class="meta-actions">
               <button id="undoReset" type="button" class="subtle-btn" hidden>Undo reset</button>
             </div>
