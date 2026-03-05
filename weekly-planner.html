@@ -218,15 +218,9 @@
     .modal.open{display:flex}
     .modal-card{width:min(760px,100%);padding:20px;border-radius:22px;border:1px solid var(--border);background:rgba(255,255,255,.92);box-shadow:0 34px 70px rgba(15,23,42,.28)}
     .modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
-    .modal-head-actions{display:flex;align-items:center;gap:6px}
     .modal-head h2{margin:0;font-size:1.08rem}
     .close-btn{border:0;background:transparent;font-size:1.6rem;line-height:1;cursor:pointer;color:#64748b}
-    .edit-btn{font-size:.82rem;padding:7px 11px;border-radius:999px}
     .fields{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .post-overview{margin-top:12px;display:grid;gap:10px}
-    .overview-row{display:grid;gap:4px;padding:9px 10px;border:1px solid var(--border);border-radius:12px;background:rgba(248,250,252,.8)}
-    .overview-row strong{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b}
-    .overview-row span{font-size:.9rem;color:#0f172a}
     .field-hint{grid-column:1 / -1;margin:0;color:#64748b;font-size:.84rem}
     .field-group,.platform-block,.status-block{display:grid;gap:7px}
     .field-group label{font-size:.77rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:700}
@@ -384,12 +378,9 @@
       <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="editorTitle">
         <div class="modal-head">
           <h2 id="editorTitle">Post Details • Monday</h2>
-          <div class="modal-head-actions">
-            <button type="button" class="subtle-btn edit-btn" id="togglePostEditBtn">Edit</button>
-            <button type="button" class="close-btn" id="closeModal" aria-label="Close post editor">×</button>
-          </div>
+          <button type="button" class="close-btn" id="closeModal" aria-label="Close post editor">×</button>
         </div>
-        <div class="fields" id="postFields">
+        <div class="fields">
           <p class="field-hint">Add the essentials and your calendar card updates instantly.</p>
           <div class="field-group full">
             <label for="postTitle">Post title</label>
@@ -464,7 +455,6 @@
             <input id="postLink" type="url" placeholder="https://..." />
           </div>
         </div>
-        <div class="post-overview" id="postOverview" hidden></div>
       </section>
     </div>
 
@@ -592,9 +582,6 @@
     const brandMark = document.getElementById("brandMark");
     const editorModal = document.getElementById("editorModal");
     const closeModal = document.getElementById("closeModal");
-    const togglePostEditBtn = document.getElementById("togglePostEditBtn");
-    const postFields = document.getElementById("postFields");
-    const postOverview = document.getElementById("postOverview");
     const projectModal = document.getElementById("projectModal");
     const closeProjectModal = document.getElementById("closeProjectModal");
     const todoModal = document.getElementById("todoModal");
@@ -684,8 +671,7 @@
         ad: { priorities: null, todos: null, projects: null }
       },
       quarter: null,
-      filters: { platform: "all", status: "all" },
-      postEditorReadOnly: true
+      filters: { platform: "all", status: "all" }
     };
     let resetSnapshot = null;
     let restoreFocusTo = null;
@@ -884,44 +870,15 @@
     function openEditor(day, postIndex = null) {
       restoreFocusTo = document.activeElement;
       state.selectedDay = day;
-      if (postIndex == null) {
-        state.selectedPostIndex = dayPosts(day).length;
-        state.postEditorReadOnly = false;
-      } else {
-        state.selectedPostIndex = postIndex;
-        state.postEditorReadOnly = true;
-      }
+      if (postIndex == null) state.selectedPostIndex = dayPosts(day).length;
+      else state.selectedPostIndex = postIndex;
       editorModal.classList.add("open");
       editorModal.setAttribute("aria-hidden", "false");
       render();
-      if (state.postEditorReadOnly) setTimeout(() => togglePostEditBtn.focus(), 0);
-      else setTimeout(() => fields.postTitle.focus(), 0);
+      setTimeout(() => fields.postTitle.focus(), 0);
     }
 
 
-    function setPostEditorMode(readOnly) {
-      state.postEditorReadOnly = readOnly;
-      postFields.hidden = readOnly;
-      postOverview.hidden = !readOnly;
-      togglePostEditBtn.textContent = readOnly ? "Edit" : "Done";
-    }
-
-    function renderPostOverview(post) {
-      const selectedPlatforms = Array.isArray(post.platforms) ? post.platforms : (post.platform ? [post.platform] : []);
-      const overviewData = [
-        ["Post title", post.postTitle || "—"],
-        ["Platforms", selectedPlatforms.join(", ") || "—"],
-        ["Post type", post.postType || "—"],
-        ["Day", state.selectedDay || "—"],
-        ["Publish time", post.time || "—"],
-        ["Status", titleCase(post.status || "—")],
-        ["Objective", post.objective || "—"],
-        ["KPI target", post.kpiTarget || "—"],
-        ["Caption", post.caption || "—"],
-        ["Post URL", post.postLink || post.asset || "—"]
-      ];
-      postOverview.innerHTML = overviewData.map(([label, value]) => `<div class="overview-row"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(value)}</span></div>`).join("");
-    }
 
     function statusClass(status) {
       const normalized = String(status || "").toLowerCase().trim();
@@ -1436,8 +1393,6 @@ function renderRecurringTasks() {
       statusPicker.querySelectorAll(".status-tag").forEach((tag) => {
         tag.classList.toggle("active", tag.dataset.status === (post.status || "").toLowerCase());
       });
-      renderPostOverview(post);
-      setPostEditorMode(state.postEditorReadOnly);
 
       weekBadge.textContent = `Week of ${formatWeekOf()}`;
       renderStats();
@@ -1481,7 +1436,6 @@ function renderRecurringTasks() {
     });
 
     platformPicker.querySelectorAll(".tag-chip").forEach((chip) => chip.addEventListener("click", () => {
-      if (state.postEditorReadOnly) return;
       setSavedLabel("Saving...");
       const post = currentPost();
       const selectedPlatforms = Array.isArray(post.platforms) ? [...post.platforms] : (post.platform ? [post.platform] : []);
@@ -1703,7 +1657,6 @@ function renderRecurringTasks() {
     });
 
     statusPicker.querySelectorAll(".status-tag").forEach((tag) => tag.addEventListener("click", () => {
-      if (state.postEditorReadOnly) return;
       setSavedLabel("Saving...");
       currentPost().status = tag.dataset.status;
       fields.status.value = tag.dataset.status;
@@ -1711,10 +1664,6 @@ function renderRecurringTasks() {
       render();
     }));
 
-    togglePostEditBtn.addEventListener("click", () => {
-      setPostEditorMode(!state.postEditorReadOnly);
-      if (!state.postEditorReadOnly) setTimeout(() => fields.postTitle.focus(), 0);
-    });
 
     calendarAddBtn.addEventListener("click", () => {
       openEditor(state.selectedDay);
@@ -1772,15 +1721,13 @@ function renderRecurringTasks() {
     closeModal.addEventListener("click", () => {
       editorModal.classList.remove("open");
       editorModal.setAttribute("aria-hidden", "true");
-      state.postEditorReadOnly = true;
       if (restoreFocusTo && typeof restoreFocusTo.focus === "function") restoreFocusTo.focus();
     });
     editorModal.addEventListener("click", (event) => {
       if (event.target === editorModal) {
         editorModal.classList.remove("open");
         editorModal.setAttribute("aria-hidden", "true");
-        state.postEditorReadOnly = true;
-      }
+        }
     });
 
 
@@ -1838,8 +1785,7 @@ function renderRecurringTasks() {
       trapFocus(event, card, () => {
         editorModal.classList.remove("open");
         editorModal.setAttribute("aria-hidden", "true");
-        state.postEditorReadOnly = true;
-        if (restoreFocusTo && typeof restoreFocusTo.focus === "function") restoreFocusTo.focus();
+          if (restoreFocusTo && typeof restoreFocusTo.focus === "function") restoreFocusTo.focus();
       });
     });
 
