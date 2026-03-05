@@ -84,7 +84,7 @@
     #clearWeek:hover{opacity:.9;color:#334155;background:rgba(255,255,255,.8)}
     .saved-text{font-size:.8rem;color:var(--muted)}
 
-    .stats{display:grid;grid-template-columns:minmax(88px,1fr);gap:7px;justify-items:end;align-content:start}
+    .stats{display:grid;grid-template-columns:repeat(2,minmax(88px,1fr));gap:7px;justify-items:end;align-content:start}
     .stat-card{padding:9px 8px;border-radius:13px;background:rgba(255,255,255,.72);border:1px solid var(--border);box-shadow:var(--soft-shadow)}
     .stats .stat-card{aspect-ratio:1/1;width:min(100%,120px);display:grid;align-content:center}
     .stat-card span{display:block;font-size:.62rem;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
@@ -203,7 +203,9 @@
     .recurring-tile{min-height:132px;border-radius:16px;border:1px solid var(--border);padding:12px;text-align:left;display:grid;align-content:space-between;gap:8px;cursor:pointer;transition:var(--trans)}
     .recurring-tile:hover{transform:translateY(-1px)}
     .recurring-name{font-weight:700;font-size:.88rem;line-height:1.3;word-break:break-word}
-    .recurring-meta-line{display:flex;align-items:center;justify-content:space-between;gap:7px;color:#475569;font-size:.75rem}
+    .recurring-meta-line{display:flex;align-items:center;justify-content:flex-end;gap:7px;color:#475569;font-size:.75rem}
+    .recurring-meta-chip{font-weight:600}
+    .recurring-meta-divider{opacity:.5}
     .recurring-status{font-size:.63rem;padding:3px 8px;text-transform:uppercase;background:#e2e8f0;color:#334155}
     .recurring-status[data-state='in progress']{background:#ffedd5;color:#9a3412}
     .recurring-status[data-state='done']{background:#dcfce7;color:#166534}
@@ -213,8 +215,12 @@
     .modal.open{display:flex}
     .modal-card{width:min(760px,100%);padding:20px;border-radius:22px;border:1px solid var(--border);background:rgba(255,255,255,.92);box-shadow:0 34px 70px rgba(15,23,42,.28)}
     .modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .modal-head-actions{display:flex;align-items:center;gap:6px}
     .modal-head h2{margin:0;font-size:1.08rem}
     .close-btn{border:0;background:transparent;font-size:1.6rem;line-height:1;cursor:pointer;color:#64748b}
+    .edit-btn{font-size:.82rem;padding:7px 11px;border-radius:999px}
+    .fields.read-only input,.fields.read-only select,.fields.read-only textarea{background:rgba(248,250,252,.95);border-color:rgba(203,213,225,.8);box-shadow:none;color:#334155;pointer-events:none}
+    .fields.read-only .tag-chip,.fields.read-only .status-tag{opacity:.65;pointer-events:none}
     .fields{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .field-hint{grid-column:1 / -1;margin:0;color:#64748b;font-size:.84rem}
     .field-group,.platform-block,.status-block{display:grid;gap:7px}
@@ -297,14 +303,13 @@
         </div>
         <aside class="stats">
           <article class="stat-card">
-            <span>Posts scheduled</span>
+            <span>Scheduled</span>
             <strong id="statScheduled">0</strong>
             <em>of 5 weekdays</em>
           </article>
           <article class="stat-card">
-            <span>Posted live</span>
+            <span>Posted</span>
             <strong id="statPosted">0</strong>
-            <em>ready metrics</em>
           </article>
         </aside>
         <button id="clearWeek" type="button" class="subtle-btn hero-reset">Reset</button>
@@ -384,9 +389,12 @@
       <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="editorTitle">
         <div class="modal-head">
           <h2 id="editorTitle">Post Details • Monday</h2>
-          <button type="button" class="close-btn" id="closeModal" aria-label="Close post editor">×</button>
+          <div class="modal-head-actions">
+            <button type="button" class="subtle-btn edit-btn" id="togglePostEditBtn">Edit</button>
+            <button type="button" class="close-btn" id="closeModal" aria-label="Close post editor">×</button>
+          </div>
         </div>
-        <div class="fields">
+        <div class="fields" id="postFields">
           <p class="field-hint">Add the essentials and your calendar card updates instantly.</p>
           <div class="field-group full">
             <label for="postTitle">Post title</label>
@@ -589,6 +597,8 @@
     const brandMark = document.getElementById("brandMark");
     const editorModal = document.getElementById("editorModal");
     const closeModal = document.getElementById("closeModal");
+    const togglePostEditBtn = document.getElementById("togglePostEditBtn");
+    const postFields = document.getElementById("postFields");
     const projectModal = document.getElementById("projectModal");
     const closeProjectModal = document.getElementById("closeProjectModal");
     const todoModal = document.getElementById("todoModal");
@@ -680,7 +690,8 @@
         ad: { priorities: null, todos: null, projects: null }
       },
       quarter: null,
-      filters: { platform: "all", status: "all" }
+      filters: { platform: "all", status: "all" },
+      postEditorReadOnly: true
     };
     let resetSnapshot = null;
     let restoreFocusTo = null;
@@ -772,11 +783,21 @@
         id: String((project && project.id) || makeId("project")),
         name: String((project && project.name) || ""),
         status: normalizeProjectStatus((project && project.status) || "in progress"),
-        deadline: String((project && project.deadline) || ""),
-        todos: Array.isArray(project && project.todos) && project.todos.length ? project.todos.map((todo) => ({ text: String((todo && todo.text) || ""), done: Boolean(todo && todo.done) })) : [{ text: "", done: false }]
+        deadline: String((project && project.deadline) || "")
       })) : [];
       const projectIds = new Set(projects.map((project) => project.id));
-      const todos = Array.isArray(source.todos) ? source.todos : [];
+      const todos = Array.isArray(source.todos) ? [...source.todos] : [];
+
+      projects.forEach((project, projectIndex) => {
+        const legacyTodos = Array.isArray(source.projects && source.projects[projectIndex] && source.projects[projectIndex].todos)
+          ? source.projects[projectIndex].todos
+          : [];
+        legacyTodos.forEach((todo) => {
+          if (!todo || typeof todo !== "object") return;
+          todos.push({ text: todo.text || "", done: Boolean(todo.done), priority: "medium", projectId: project.id });
+        });
+      });
+
       if (todos.length === 0) todos.push({ text: "", done: false, priority: "medium", projectId: "" });
       const recurringTasks = Array.isArray(source.recurringTasks) ? source.recurringTasks : [];
       if (recurringTasks.length === 0) recurringTasks.push({ text: "", done: false, frequency: "weekly", dueDate: "", timePeriod: "anytime", status: "in progress" });
@@ -869,12 +890,38 @@
     function openEditor(day, postIndex = null) {
       restoreFocusTo = document.activeElement;
       state.selectedDay = day;
-      if (postIndex == null) state.selectedPostIndex = dayPosts(day).length;
-      else state.selectedPostIndex = postIndex;
+      if (postIndex == null) {
+        state.selectedPostIndex = dayPosts(day).length;
+        state.postEditorReadOnly = false;
+      } else {
+        state.selectedPostIndex = postIndex;
+        state.postEditorReadOnly = true;
+      }
       editorModal.classList.add("open");
       editorModal.setAttribute("aria-hidden", "false");
       render();
-      setTimeout(() => fields.postTitle.focus(), 0);
+      setTimeout(() => togglePostEditBtn.focus(), 0);
+    }
+
+
+    function setPostEditorMode(readOnly) {
+      state.postEditorReadOnly = readOnly;
+      const editableFields = [
+        fields.postTitle,
+        fields.postDay,
+        fields.time,
+        fields.postType,
+        fields.caption,
+        fields.postLink,
+        fields.objective,
+        fields.kpiTarget
+      ];
+      editableFields.forEach((input) => {
+        if (!input) return;
+        input.disabled = readOnly;
+      });
+      postFields.classList.toggle("read-only", readOnly);
+      togglePostEditBtn.textContent = readOnly ? "Edit" : "Done";
     }
 
     function statusClass(status) {
@@ -1174,7 +1221,7 @@ function renderRecurringTasks() {
           : dueState === "week"
             ? '<span class="due-badge week">Due this week</span>'
             : "";
-        tile.innerHTML = `<span class="recurring-name">${escapeHtml(task.text || `Recurring Task ${index + 1}`)}</span><span class="recurring-meta-line"><span>${escapeHtml(titleCase(normalizeRecurringPeriod(task.timePeriod)))}</span><span>${escapeHtml(titleCase(normalizeRecurringFrequency(task.frequency)))}</span></span><span class="recurring-status" data-state="${escapeHtml(status)}">${escapeHtml(titleCase(status))}</span>${dueMarkup}`;
+        tile.innerHTML = `<span class="recurring-name">${escapeHtml(task.text || `Recurring Task ${index + 1}`)}</span><span class="recurring-meta-line"><span class="recurring-meta-chip">${escapeHtml(titleCase(normalizeRecurringPeriod(task.timePeriod)))}</span><span class="recurring-meta-divider">|</span><span class="recurring-meta-chip">${escapeHtml(titleCase(normalizeRecurringFrequency(task.frequency)))}</span></span><span class="recurring-status" data-state="${escapeHtml(status)}">${escapeHtml(titleCase(status))}</span>${dueMarkup}`;
         tile.addEventListener("click", () => openRecurringEditor(index));
         recurringList.appendChild(tile);
       });
@@ -1267,14 +1314,20 @@ function renderRecurringTasks() {
       if (restoreFocusTo && typeof restoreFocusTo.focus === "function") restoreFocusTo.focus();
     }
 
+    function projectTodoEntries(projectId) {
+      return (state.data[state.brand].todos || []).map((todo, index) => ({ todo, index }))
+        .filter(({ todo }) => todo && todo.projectId === projectId);
+    }
+
     function renderProjectTodos() {
       const project = currentProject();
       projectTodoList.innerHTML = "";
       if (!project) return;
-      project.todos.forEach((todo, index) => {
+      const linkedTodos = projectTodoEntries(project.id);
+      linkedTodos.forEach(({ todo, index }, rowIndex) => {
         const row = document.createElement("div");
         row.className = "project-todo-item" + (todo.done ? " done" : "");
-        row.innerHTML = `<input type="checkbox" data-project-todo-check="${index}" ${todo.done ? "checked" : ""} /><input type="text" data-project-todo-text="${index}" placeholder="Task ${index + 1}" value="${escapeHtml(todo.text || "")}" /><button type="button" class="todo-delete" data-project-todo-delete="${index}" aria-label="Delete project task ${index + 1}">🗑️</button>`;
+        row.innerHTML = `<input type="checkbox" data-project-todo-check="${index}" ${todo.done ? "checked" : ""} /><input type="text" data-project-todo-text="${index}" placeholder="Task ${rowIndex + 1}" value="${escapeHtml(todo.text || "")}" /><button type="button" class="todo-delete" data-project-todo-delete="${index}" aria-label="Delete project task ${rowIndex + 1}">🗑️</button>`;
         projectTodoList.appendChild(row);
       });
     }
@@ -1308,7 +1361,7 @@ function renderRecurringTasks() {
       add.textContent = "+ New project";
       add.addEventListener("click", () => {
         setSavedLabel("Saving...");
-        projects.push({ id: makeId("project"), name: "", status: "not started", deadline: "", todos: [{ text: "", done: false }] });
+        projects.push({ id: makeId("project"), name: "", status: "not started", deadline: "" });
         state.panelOpen[state.brand].projects = true;
         persist();
         renderSectionToggles();
@@ -1390,6 +1443,7 @@ function renderRecurringTasks() {
       statusPicker.querySelectorAll(".status-tag").forEach((tag) => {
         tag.classList.toggle("active", tag.dataset.status === (post.status || "").toLowerCase());
       });
+      setPostEditorMode(state.postEditorReadOnly);
 
       weekBadge.textContent = `Week of ${formatWeekOf()}`;
       renderStats();
@@ -1433,6 +1487,7 @@ function renderRecurringTasks() {
     });
 
     platformPicker.querySelectorAll(".tag-chip").forEach((chip) => chip.addEventListener("click", () => {
+      if (state.postEditorReadOnly) return;
       setSavedLabel("Saving...");
       const post = currentPost();
       const selectedPlatforms = Array.isArray(post.platforms) ? [...post.platforms] : (post.platform ? [post.platform] : []);
@@ -1603,55 +1658,69 @@ function renderRecurringTasks() {
     projectTodoList.addEventListener("input", (event) => {
       const input = event.target.closest("[data-project-todo-text]");
       if (!input) return;
-      const project = currentProject();
       const index = Number(input.dataset.projectTodoText);
-      if (!project || Number.isNaN(index) || !project.todos[index]) return;
+      const todos = state.data[state.brand].todos || [];
+      if (Number.isNaN(index) || !todos[index]) return;
       setSavedLabel("Saving...");
-      project.todos[index].text = input.value;
+      todos[index].text = input.value;
       persist();
+      renderTodos();
+      renderProjects();
     });
 
     projectTodoList.addEventListener("change", (event) => {
       const check = event.target.closest("[data-project-todo-check]");
       if (!check) return;
-      const project = currentProject();
       const index = Number(check.dataset.projectTodoCheck);
-      if (!project || Number.isNaN(index) || !project.todos[index]) return;
+      const todos = state.data[state.brand].todos || [];
+      if (Number.isNaN(index) || !todos[index]) return;
       setSavedLabel("Saving...");
-      project.todos[index].done = check.checked;
+      todos[index].done = check.checked;
       renderProjectTodos();
       persist();
+      renderTodos();
+      renderProjects();
     });
 
     projectTodoList.addEventListener("click", (event) => {
       const button = event.target.closest("[data-project-todo-delete]");
       if (!button) return;
-      const project = currentProject();
       const index = Number(button.dataset.projectTodoDelete);
-      if (!project || Number.isNaN(index)) return;
+      const todos = state.data[state.brand].todos || [];
+      if (Number.isNaN(index) || !todos[index]) return;
       setSavedLabel("Saving...");
-      project.todos.splice(index, 1);
-      if (project.todos.length === 0) project.todos.push({ text: "", done: false });
+      todos.splice(index, 1);
+      if (todos.length === 0) todos.push({ text: "", done: false, priority: "medium", projectId: "" });
       renderProjectTodos();
       persist();
+      renderTodos();
+      renderProjects();
     });
 
     newProjectTaskBtn.addEventListener("click", () => {
       const project = currentProject();
       if (!project) return;
       setSavedLabel("Saving...");
-      project.todos.push({ text: "", done: false });
+      state.data[state.brand].todos.push({ text: "", done: false, priority: "medium", projectId: project.id });
       renderProjectTodos();
       persist();
+      renderTodos();
+      renderProjects();
     });
 
     statusPicker.querySelectorAll(".status-tag").forEach((tag) => tag.addEventListener("click", () => {
+      if (state.postEditorReadOnly) return;
       setSavedLabel("Saving...");
       currentPost().status = tag.dataset.status;
       fields.status.value = tag.dataset.status;
       persist();
       render();
     }));
+
+    togglePostEditBtn.addEventListener("click", () => {
+      setPostEditorMode(!state.postEditorReadOnly);
+      if (!state.postEditorReadOnly) setTimeout(() => fields.postTitle.focus(), 0);
+    });
 
     calendarAddBtn.addEventListener("click", () => {
       openEditor(state.selectedDay);
@@ -1709,12 +1778,14 @@ function renderRecurringTasks() {
     closeModal.addEventListener("click", () => {
       editorModal.classList.remove("open");
       editorModal.setAttribute("aria-hidden", "true");
+      state.postEditorReadOnly = true;
       if (restoreFocusTo && typeof restoreFocusTo.focus === "function") restoreFocusTo.focus();
     });
     editorModal.addEventListener("click", (event) => {
       if (event.target === editorModal) {
         editorModal.classList.remove("open");
         editorModal.setAttribute("aria-hidden", "true");
+        state.postEditorReadOnly = true;
       }
     });
 
@@ -1773,6 +1844,7 @@ function renderRecurringTasks() {
       trapFocus(event, card, () => {
         editorModal.classList.remove("open");
         editorModal.setAttribute("aria-hidden", "true");
+        state.postEditorReadOnly = true;
         if (restoreFocusTo && typeof restoreFocusTo.focus === "function") restoreFocusTo.focus();
       });
     });
