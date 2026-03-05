@@ -135,6 +135,7 @@
     .platform-instagram{border-color:rgba(219,39,119,.34)}
 
     .notes-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;align-items:start}
+    .recurring-section{margin-top:16px}
     .notes-grid .panel{align-self:start;height:auto}
     .stack-column{display:grid;gap:16px}
     #notes{resize:none;overflow:hidden;min-height:120px}
@@ -183,10 +184,14 @@
     .linked-task{display:flex;justify-content:space-between;gap:8px;padding:8px 9px;border:1px dashed var(--border);border-radius:10px;font-size:.83rem;background:rgba(248,250,252,.75)}
     .linked-task span:last-child{font-weight:700}
 
-    .recurring-wrap{display:grid;gap:10px}
-    .recurring-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:10px;border-radius:12px;background:rgba(255,255,255,.82);border:1px solid var(--border)}
-    .recurring-item.done input[type='text']{text-decoration:line-through;color:#94a3b8}
-    .recurring-item input[type='checkbox']{width:auto;accent-color:var(--primary)}
+    .recurring-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+    .recurring-tile{border:1px solid var(--border);border-radius:16px;padding:12px;background:rgba(255,255,255,.88);box-shadow:0 8px 20px rgba(15,23,42,.06);display:grid;gap:10px}
+    .recurring-top{display:flex;align-items:center;gap:8px}
+    .recurring-top input[type='checkbox']{width:auto;accent-color:var(--primary)}
+    .recurring-tile.done [data-recurring-text]{text-decoration:line-through;color:#94a3b8}
+    .recurring-tile .todo-delete{opacity:1;pointer-events:auto}
+    .recurring-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .recurring-meta label{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:700}
 
     .modal{position:fixed;inset:0;background:rgba(15,23,42,.42);display:none;align-items:center;justify-content:center;padding:18px;z-index:40}
     .modal.open{display:flex}
@@ -238,7 +243,8 @@
       .toggle button{flex:1}
       .calendar-board{grid-template-columns:1fr}
       .stats{grid-template-columns:1fr}
-      .todo-item,.recurring-item{grid-template-columns:auto minmax(0,1fr);align-items:start}
+      .todo-item{grid-template-columns:auto minmax(0,1fr);align-items:start}
+      .recurring-meta{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -316,15 +322,12 @@
       </section>
     </section>
 
-    <section class="panel glass">
+    <section class="panel glass recurring-section">
       <div class="panel-head">
         <h2>Recurring Tasks</h2>
-        <button type="button" class="section-add" id="recurringToggle" aria-expanded="false" aria-label="Toggle recurring tasks section">+</button>
+        <button type="button" class="section-add calendar-add" id="recurringAddBtn" aria-label="Add recurring task">+</button>
       </div>
-      <div class="panel-content collapsed" id="recurringContent">
-        <div class="recurring-wrap" id="recurringList"></div>
-        <button type="button" class="new-task-btn" id="newRecurringTaskBtn">New recurring task</button>
-      </div>
+      <div class="recurring-board" id="recurringList"></div>
     </section>
 
     <section class="notes-grid">
@@ -489,15 +492,13 @@
     const todoList = document.getElementById("todoList");
     const newTaskBtn = document.getElementById("newTaskBtn");
     const recurringList = document.getElementById("recurringList");
-    const newRecurringTaskBtn = document.getElementById("newRecurringTaskBtn");
+    const recurringAddBtn = document.getElementById("recurringAddBtn");
     const prioritiesContent = document.getElementById("prioritiesContent");
     const notesContent = document.getElementById("notesContent");
-    const recurringContent = document.getElementById("recurringContent");
     const todosContent = document.getElementById("todosContent");
     const projectsContent = document.getElementById("projectsContent");
     const prioritiesToggle = document.getElementById("prioritiesToggle");
     const notesToggle = document.getElementById("notesToggle");
-    const recurringToggle = document.getElementById("recurringToggle");
     const todosToggle = document.getElementById("todosToggle");
     const projectsToggle = document.getElementById("projectsToggle");
     const projectGrid = document.getElementById("projectGrid");
@@ -538,7 +539,7 @@
         priorities: ["", "", ""],
         notes: "",
         todos: [{ text: "", done: false, priority: "medium", projectId: "" }],
-        recurringTasks: [{ text: "", done: false, frequency: "daily" }],
+        recurringTasks: [{ text: "", done: false, frequency: "weekly", dueDate: "", timePeriod: "anytime" }],
         projects: [],
         posts: {}
       };
@@ -551,9 +552,9 @@
       selectedProjectIndex: null,
       data: { is: emptyBrandState(), as: emptyBrandState(), ad: emptyBrandState() },
       panelOpen: {
-        is: { priorities: null, notes: null, recurring: null, todos: null, projects: null },
-        as: { priorities: null, notes: null, recurring: null, todos: null, projects: null },
-        ad: { priorities: null, notes: null, recurring: null, todos: null, projects: null }
+        is: { priorities: null, notes: null, todos: null, projects: null },
+        as: { priorities: null, notes: null, todos: null, projects: null },
+        ad: { priorities: null, notes: null, todos: null, projects: null }
       },
       quarter: null
     };
@@ -669,7 +670,7 @@
           const todos = Array.isArray(source.todos) ? source.todos : [];
           if (todos.length === 0) todos.push({ text: "", done: false, priority: "medium", projectId: "" });
           const recurringTasks = Array.isArray(source.recurringTasks) ? source.recurringTasks : [];
-          if (recurringTasks.length === 0) recurringTasks.push({ text: "", done: false, frequency: "daily" });
+          if (recurringTasks.length === 0) recurringTasks.push({ text: "", done: false, frequency: "weekly", dueDate: "", timePeriod: "anytime" });
           state.data[brand] = {
             ...emptyBrandState(),
             ...source,
@@ -683,7 +684,9 @@
             recurringTasks: recurringTasks.map((task) => ({
               text: String((task && task.text) || ""),
               done: Boolean(task && task.done),
-              frequency: normalizeRecurringFrequency(task && task.frequency)
+              frequency: normalizeRecurringFrequency(task && task.frequency),
+              dueDate: String((task && task.dueDate) || ""),
+              timePeriod: normalizeRecurringPeriod(task && task.timePeriod)
             })),
             projects,
             posts: normalizePosts(source.posts)
@@ -878,6 +881,11 @@
       return ["daily", "weekly", "monthly"].includes(value) ? value : "weekly";
     }
 
+    function normalizeRecurringPeriod(period) {
+      const value = String(period || "").toLowerCase().trim();
+      return ["anytime", "morning", "afternoon", "evening"].includes(value) ? value : "anytime";
+    }
+
     function renderTodos() {
       const todos = state.data[state.brand].todos || [];
       const projects = projectList();
@@ -906,10 +914,10 @@
       const recurringTasks = state.data[state.brand].recurringTasks || [];
       recurringList.innerHTML = "";
       recurringTasks.forEach((task, index) => {
-        const row = document.createElement("div");
-        row.className = "recurring-item" + (task.done ? " done" : "");
-        row.innerHTML = `<input type="checkbox" data-recurring-check="${index}" ${task.done ? "checked" : ""} /><input type="text" data-recurring-text="${index}" placeholder="Recurring task ${index + 1}" value="${escapeHtml(task.text || "")}" /><select data-recurring-frequency="${index}" aria-label="Frequency for recurring task ${index + 1}"><option value="daily" ${normalizeRecurringFrequency(task.frequency) === "daily" ? "selected" : ""}>Daily</option><option value="weekly" ${normalizeRecurringFrequency(task.frequency) === "weekly" ? "selected" : ""}>Weekly</option><option value="monthly" ${normalizeRecurringFrequency(task.frequency) === "monthly" ? "selected" : ""}>Monthly</option></select><button type="button" class="todo-delete" data-recurring-delete="${index}" aria-label="Delete recurring task ${index + 1}">🗑️</button>`;
-        recurringList.appendChild(row);
+        const tile = document.createElement("article");
+        tile.className = "recurring-tile" + (task.done ? " done" : "");
+        tile.innerHTML = `<div class="recurring-top"><input type="checkbox" data-recurring-check="${index}" ${task.done ? "checked" : ""} /><input type="text" data-recurring-text="${index}" placeholder="Recurring task ${index + 1}" value="${escapeHtml(task.text || "")}" /><button type="button" class="todo-delete" data-recurring-delete="${index}" aria-label="Delete recurring task ${index + 1}">🗑️</button></div><div class="recurring-meta"><label>Due date<input type="date" data-recurring-date="${index}" value="${escapeHtml(task.dueDate || "")}" /></label><label>Time period<select data-recurring-period="${index}"><option value="anytime" ${normalizeRecurringPeriod(task.timePeriod) === "anytime" ? "selected" : ""}>Anytime</option><option value="morning" ${normalizeRecurringPeriod(task.timePeriod) === "morning" ? "selected" : ""}>Morning</option><option value="afternoon" ${normalizeRecurringPeriod(task.timePeriod) === "afternoon" ? "selected" : ""}>Afternoon</option><option value="evening" ${normalizeRecurringPeriod(task.timePeriod) === "evening" ? "selected" : ""}>Evening</option></select></label><label>Repeat<select data-recurring-frequency="${index}"><option value="daily" ${normalizeRecurringFrequency(task.frequency) === "daily" ? "selected" : ""}>Daily</option><option value="weekly" ${normalizeRecurringFrequency(task.frequency) === "weekly" ? "selected" : ""}>Weekly</option><option value="monthly" ${normalizeRecurringFrequency(task.frequency) === "monthly" ? "selected" : ""}>Monthly</option></select></label></div>`;
+        recurringList.appendChild(tile);
       });
     }
 
@@ -924,11 +932,6 @@
     function hasTodoContent() {
       return (state.data[state.brand].todos || []).some((todo) => String((todo && todo.text) || "").trim() || Boolean(todo && todo.done));
     }
-
-    function hasRecurringContent() {
-      return (state.data[state.brand].recurringTasks || []).some((task) => String((task && task.text) || "").trim() || Boolean(task && task.done));
-    }
-
 
     function projectList() {
       const projects = state.data[state.brand].projects;
@@ -1039,13 +1042,11 @@
       const panelState = state.panelOpen[state.brand];
       const prioritiesOpen = panelState.priorities == null ? hasPriorityContent() : panelState.priorities;
       const notesOpen = panelState.notes == null ? hasNotesContent() : panelState.notes;
-      const recurringOpen = panelState.recurring == null ? hasRecurringContent() : panelState.recurring;
       const todosOpen = panelState.todos == null ? hasTodoContent() : panelState.todos;
       const projectsOpen = panelState.projects == null ? hasProjectsContent() : panelState.projects;
 
       updatePanelSection(prioritiesContent, prioritiesToggle, prioritiesOpen);
       updatePanelSection(notesContent, notesToggle, notesOpen);
-      updatePanelSection(recurringContent, recurringToggle, recurringOpen);
       updatePanelSection(todosContent, todosToggle, todosOpen);
       updatePanelSection(projectsContent, projectsToggle, projectsOpen);
     }
@@ -1243,8 +1244,6 @@
       setSavedLabel("Saving...");
       state.data[state.brand].recurringTasks[index].text = input.value;
       persist();
-      state.panelOpen[state.brand].recurring = hasRecurringContent();
-      renderSectionToggles();
     });
 
     recurringList.addEventListener("change", (event) => {
@@ -1260,11 +1259,31 @@
       }
 
       const frequency = event.target.closest("[data-recurring-frequency]");
-      if (!frequency) return;
-      const index = Number(frequency.dataset.recurringFrequency);
+      if (frequency) {
+        const index = Number(frequency.dataset.recurringFrequency);
+        if (Number.isNaN(index) || !state.data[state.brand].recurringTasks[index]) return;
+        setSavedLabel("Saving...");
+        state.data[state.brand].recurringTasks[index].frequency = normalizeRecurringFrequency(frequency.value);
+        persist();
+        return;
+      }
+
+      const period = event.target.closest("[data-recurring-period]");
+      if (period) {
+        const index = Number(period.dataset.recurringPeriod);
+        if (Number.isNaN(index) || !state.data[state.brand].recurringTasks[index]) return;
+        setSavedLabel("Saving...");
+        state.data[state.brand].recurringTasks[index].timePeriod = normalizeRecurringPeriod(period.value);
+        persist();
+        return;
+      }
+
+      const dueDate = event.target.closest("[data-recurring-date]");
+      if (!dueDate) return;
+      const index = Number(dueDate.dataset.recurringDate);
       if (Number.isNaN(index) || !state.data[state.brand].recurringTasks[index]) return;
       setSavedLabel("Saving...");
-      state.data[state.brand].recurringTasks[index].frequency = normalizeRecurringFrequency(frequency.value);
+      state.data[state.brand].recurringTasks[index].dueDate = dueDate.value;
       persist();
     });
 
@@ -1275,20 +1294,16 @@
       if (Number.isNaN(index)) return;
       setSavedLabel("Saving...");
       state.data[state.brand].recurringTasks.splice(index, 1);
-      if (state.data[state.brand].recurringTasks.length === 0) state.data[state.brand].recurringTasks.push({ text: "", done: false, frequency: "daily" });
+      if (state.data[state.brand].recurringTasks.length === 0) state.data[state.brand].recurringTasks.push({ text: "", done: false, frequency: "weekly", dueDate: "", timePeriod: "anytime" });
       renderRecurringTasks();
       persist();
-      state.panelOpen[state.brand].recurring = hasRecurringContent();
-      renderSectionToggles();
     });
 
-    newRecurringTaskBtn.addEventListener("click", () => {
+    recurringAddBtn.addEventListener("click", () => {
       setSavedLabel("Saving...");
-      state.data[state.brand].recurringTasks.push({ text: "", done: false, frequency: "weekly" });
-      state.panelOpen[state.brand].recurring = true;
+      state.data[state.brand].recurringTasks.push({ text: "", done: false, frequency: "weekly", dueDate: "", timePeriod: "anytime" });
       renderRecurringTasks();
       persist();
-      renderSectionToggles();
     });
 
     prioritiesToggle.addEventListener("click", () => {
@@ -1302,13 +1317,6 @@
       const panelState = state.panelOpen[state.brand];
       const current = panelState.notes == null ? hasNotesContent() : panelState.notes;
       panelState.notes = !current;
-      renderSectionToggles();
-    });
-
-    recurringToggle.addEventListener("click", () => {
-      const panelState = state.panelOpen[state.brand];
-      const current = panelState.recurring == null ? hasRecurringContent() : panelState.recurring;
-      panelState.recurring = !current;
       renderSectionToggles();
     });
 
