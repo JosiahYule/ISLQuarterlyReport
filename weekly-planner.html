@@ -139,11 +139,16 @@
     .stack-column{display:grid;gap:16px}
     #notes{resize:none;overflow:hidden;min-height:120px}
     .todo-list{display:grid;gap:10px}
-    .todo-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:12px;border:0;background:rgba(255,255,255,.78);box-shadow:0 4px 14px rgba(15,23,42,.05);transition:var(--trans)}
+    .todo-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto auto;align-items:center;gap:10px;padding:9px 10px;border-radius:12px;border:0;background:rgba(255,255,255,.78);box-shadow:0 4px 14px rgba(15,23,42,.05);transition:var(--trans)}
     .todo-item input[type="text"]{flex:1;border:0;background:transparent;box-shadow:none;padding:7px 0}
     .todo-item input[type="text"]:focus{outline:none;border:0;box-shadow:none}
     .todo-item input[type="checkbox"]{width:auto;accent-color:var(--primary)}
     .todo-item.done input[type="text"]{text-decoration:line-through;color:#94a3b8}
+    .todo-item select{min-width:110px;padding:8px 10px}
+    .todo-priority-badge{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:5px 8px;border-radius:999px;background:#e2e8f0;color:#334155}
+    .todo-priority-badge[data-priority='high']{background:#fee2e2;color:#991b1b}
+    .todo-priority-badge[data-priority='medium']{background:#fef3c7;color:#92400e}
+    .todo-priority-badge[data-priority='low']{background:#dcfce7;color:#166534}
     .todo-delete{margin-left:auto;border:0;background:transparent;color:#94a3b8;font-size:1rem;line-height:1;padding:4px;cursor:pointer;opacity:0;pointer-events:none;transition:var(--trans)}
     .todo-item:hover .todo-delete,.todo-item:focus-within .todo-delete{opacity:1;pointer-events:auto}
     .todo-delete:hover{color:#dc2626}
@@ -174,6 +179,14 @@
     .project-status-option[data-status='on hold']{background:#fef9c3;color:#854d0e}
     .project-status-option[data-status='not started']{background:#e2e8f0;color:#334155}
     .project-status-option.active{box-shadow:0 0 0 2px rgba(15,23,42,.18)}
+    .linked-task-list{margin-top:10px;display:grid;gap:8px}
+    .linked-task{display:flex;justify-content:space-between;gap:8px;padding:8px 9px;border:1px dashed var(--border);border-radius:10px;font-size:.83rem;background:rgba(248,250,252,.75)}
+    .linked-task span:last-child{font-weight:700}
+
+    .recurring-wrap{display:grid;gap:10px}
+    .recurring-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:10px;border-radius:12px;background:rgba(255,255,255,.82);border:1px solid var(--border)}
+    .recurring-item.done input[type='text']{text-decoration:line-through;color:#94a3b8}
+    .recurring-item input[type='checkbox']{width:auto;accent-color:var(--primary)}
 
     .modal{position:fixed;inset:0;background:rgba(15,23,42,.42);display:none;align-items:center;justify-content:center;padding:18px;z-index:40}
     .modal.open{display:flex}
@@ -225,6 +238,7 @@
       .toggle button{flex:1}
       .calendar-board{grid-template-columns:1fr}
       .stats{grid-template-columns:1fr}
+      .todo-item,.recurring-item{grid-template-columns:auto minmax(0,1fr);align-items:start}
     }
   </style>
 </head>
@@ -300,6 +314,17 @@
         </div>
         <div class="calendar-board" id="calendar"></div>
       </section>
+    </section>
+
+    <section class="panel glass">
+      <div class="panel-head">
+        <h2>Recurring Tasks</h2>
+        <button type="button" class="section-add" id="recurringToggle" aria-expanded="false" aria-label="Toggle recurring tasks section">+</button>
+      </div>
+      <div class="panel-content collapsed" id="recurringContent">
+        <div class="recurring-wrap" id="recurringList"></div>
+        <button type="button" class="new-task-btn" id="newRecurringTaskBtn">New recurring task</button>
+      </div>
     </section>
 
     <section class="notes-grid">
@@ -443,7 +468,7 @@
 
   <script>
     const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday"];
-    const STORAGE_KEY = "weekly-planner-v4";
+    const STORAGE_KEY = "weekly-planner-v5";
 
     const calendar = document.getElementById("calendar");
     const weekBadge = document.getElementById("weekBadge");
@@ -463,12 +488,16 @@
     const platformPicker = document.getElementById("platformPicker");
     const todoList = document.getElementById("todoList");
     const newTaskBtn = document.getElementById("newTaskBtn");
+    const recurringList = document.getElementById("recurringList");
+    const newRecurringTaskBtn = document.getElementById("newRecurringTaskBtn");
     const prioritiesContent = document.getElementById("prioritiesContent");
     const notesContent = document.getElementById("notesContent");
+    const recurringContent = document.getElementById("recurringContent");
     const todosContent = document.getElementById("todosContent");
     const projectsContent = document.getElementById("projectsContent");
     const prioritiesToggle = document.getElementById("prioritiesToggle");
     const notesToggle = document.getElementById("notesToggle");
+    const recurringToggle = document.getElementById("recurringToggle");
     const todosToggle = document.getElementById("todosToggle");
     const projectsToggle = document.getElementById("projectsToggle");
     const projectGrid = document.getElementById("projectGrid");
@@ -500,8 +529,19 @@
 
 
     const dragState = { fromDay: null, fromIndex: null };
+    function makeId(prefix = "item") {
+      return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+    }
+
     function emptyBrandState() {
-      return { priorities: ["", "", ""], notes: "", todos: [{ text: "", done: false }], projects: [], posts: {} };
+      return {
+        priorities: ["", "", ""],
+        notes: "",
+        todos: [{ text: "", done: false, priority: "medium", projectId: "" }],
+        recurringTasks: [{ text: "", done: false, frequency: "daily" }],
+        projects: [],
+        posts: {}
+      };
     }
 
     const state = {
@@ -511,9 +551,9 @@
       selectedProjectIndex: null,
       data: { is: emptyBrandState(), as: emptyBrandState(), ad: emptyBrandState() },
       panelOpen: {
-        is: { priorities: null, notes: null, todos: null, projects: null },
-        as: { priorities: null, notes: null, todos: null, projects: null },
-        ad: { priorities: null, notes: null, todos: null, projects: null }
+        is: { priorities: null, notes: null, recurring: null, todos: null, projects: null },
+        as: { priorities: null, notes: null, recurring: null, todos: null, projects: null },
+        ad: { priorities: null, notes: null, recurring: null, todos: null, projects: null }
       },
       quarter: null
     };
@@ -618,19 +658,34 @@
           const source = parsedState[brand] || {};
           const priorities = Array.isArray(source.priorities) ? source.priorities.slice(0, 3) : listItems(source.priorities).slice(0, 3);
           while (priorities.length < 3) priorities.push("");
+          const projects = Array.isArray(source.projects) ? source.projects.map((project) => ({
+            id: String((project && project.id) || makeId("project")),
+            name: String((project && project.name) || ""),
+            status: normalizeProjectStatus((project && project.status) || "in progress"),
+            deadline: String((project && project.deadline) || ""),
+            todos: Array.isArray(project && project.todos) && project.todos.length ? project.todos.map((todo) => ({ text: String((todo && todo.text) || ""), done: Boolean(todo && todo.done) })) : [{ text: "", done: false }]
+          })) : [];
+          const projectIds = new Set(projects.map((project) => project.id));
           const todos = Array.isArray(source.todos) ? source.todos : [];
-          if (todos.length === 0) todos.push({ text: "", done: false });
+          if (todos.length === 0) todos.push({ text: "", done: false, priority: "medium", projectId: "" });
+          const recurringTasks = Array.isArray(source.recurringTasks) ? source.recurringTasks : [];
+          if (recurringTasks.length === 0) recurringTasks.push({ text: "", done: false, frequency: "daily" });
           state.data[brand] = {
             ...emptyBrandState(),
             ...source,
             priorities,
-            todos: todos.map((todo) => ({ text: String((todo && todo.text) || ""), done: Boolean(todo && todo.done) })),
-            projects: Array.isArray(source.projects) ? source.projects.map((project) => ({
-              name: String((project && project.name) || ""),
-              status: normalizeProjectStatus((project && project.status) || "in progress"),
-              deadline: String((project && project.deadline) || ""),
-              todos: Array.isArray(project && project.todos) && project.todos.length ? project.todos.map((todo) => ({ text: String((todo && todo.text) || ""), done: Boolean(todo && todo.done) })) : [{ text: "", done: false }]
-            })) : [],
+            todos: todos.map((todo) => ({
+              text: String((todo && todo.text) || ""),
+              done: Boolean(todo && todo.done),
+              priority: normalizeTodoPriority(todo && todo.priority),
+              projectId: projectIds.has(String(todo && todo.projectId || "")) ? String(todo && todo.projectId || "") : ""
+            })),
+            recurringTasks: recurringTasks.map((task) => ({
+              text: String((task && task.text) || ""),
+              done: Boolean(task && task.done),
+              frequency: normalizeRecurringFrequency(task && task.frequency)
+            })),
+            projects,
             posts: normalizePosts(source.posts)
           };
         });
@@ -813,14 +868,48 @@
       priorityItem3.classList.toggle("hidden", !showThird);
     }
 
+    function normalizeTodoPriority(priority) {
+      const value = String(priority || "").toLowerCase().trim();
+      return ["high", "medium", "low"].includes(value) ? value : "medium";
+    }
+
+    function normalizeRecurringFrequency(frequency) {
+      const value = String(frequency || "").toLowerCase().trim();
+      return ["daily", "weekly", "monthly"].includes(value) ? value : "weekly";
+    }
+
     function renderTodos() {
       const todos = state.data[state.brand].todos || [];
+      const projects = projectList();
+      const priorityRank = { high: 0, medium: 1, low: 2 };
+      const sorted = todos.map((todo, index) => ({ ...todo, originalIndex: index }))
+        .sort((a, b) => {
+          const priorityDiff = priorityRank[normalizeTodoPriority(a.priority)] - priorityRank[normalizeTodoPriority(b.priority)];
+          if (priorityDiff !== 0) return priorityDiff;
+          if (a.done !== b.done) return a.done ? 1 : -1;
+          return a.originalIndex - b.originalIndex;
+        });
       todoList.innerHTML = "";
-      todos.forEach((todo, index) => {
+      sorted.forEach((todo, visualIndex) => {
+        const index = todo.originalIndex;
+        const projectOptions = ['<option value="">No project</option>']
+          .concat(projects.map((project) => `<option value="${escapeHtml(project.id)}" ${project.id === todo.projectId ? "selected" : ""}>${escapeHtml(project.name || "Untitled project")}</option>`))
+          .join("");
         const row = document.createElement("div");
         row.className = "todo-item" + (todo.done ? " done" : "");
-        row.innerHTML = `<input type="checkbox" data-todo-check="${index}" ${todo.done ? "checked" : ""} /><input type="text" data-todo-text="${index}" placeholder="Task ${index + 1}" value="${escapeHtml(todo.text || "")}" /><button type="button" class="todo-delete" data-todo-delete="${index}" aria-label="Delete task ${index + 1}">🗑️</button>`;
+        row.innerHTML = `<input type="checkbox" data-todo-check="${index}" ${todo.done ? "checked" : ""} /><input type="text" data-todo-text="${index}" placeholder="Task ${visualIndex + 1}" value="${escapeHtml(todo.text || "")}" /><select data-todo-priority="${index}" aria-label="Priority for task ${visualIndex + 1}"><option value="high" ${normalizeTodoPriority(todo.priority) === "high" ? "selected" : ""}>High</option><option value="medium" ${normalizeTodoPriority(todo.priority) === "medium" ? "selected" : ""}>Medium</option><option value="low" ${normalizeTodoPriority(todo.priority) === "low" ? "selected" : ""}>Low</option></select><select data-todo-project="${index}" aria-label="Project for task ${visualIndex + 1}">${projectOptions}</select><span class="todo-priority-badge" data-priority="${normalizeTodoPriority(todo.priority)}">${escapeHtml(normalizeTodoPriority(todo.priority))}</span><button type="button" class="todo-delete" data-todo-delete="${index}" aria-label="Delete task ${visualIndex + 1}">🗑️</button>`;
         todoList.appendChild(row);
+      });
+    }
+
+    function renderRecurringTasks() {
+      const recurringTasks = state.data[state.brand].recurringTasks || [];
+      recurringList.innerHTML = "";
+      recurringTasks.forEach((task, index) => {
+        const row = document.createElement("div");
+        row.className = "recurring-item" + (task.done ? " done" : "");
+        row.innerHTML = `<input type="checkbox" data-recurring-check="${index}" ${task.done ? "checked" : ""} /><input type="text" data-recurring-text="${index}" placeholder="Recurring task ${index + 1}" value="${escapeHtml(task.text || "")}" /><select data-recurring-frequency="${index}" aria-label="Frequency for recurring task ${index + 1}"><option value="daily" ${normalizeRecurringFrequency(task.frequency) === "daily" ? "selected" : ""}>Daily</option><option value="weekly" ${normalizeRecurringFrequency(task.frequency) === "weekly" ? "selected" : ""}>Weekly</option><option value="monthly" ${normalizeRecurringFrequency(task.frequency) === "monthly" ? "selected" : ""}>Monthly</option></select><button type="button" class="todo-delete" data-recurring-delete="${index}" aria-label="Delete recurring task ${index + 1}">🗑️</button>`;
+        recurringList.appendChild(row);
       });
     }
 
@@ -834,6 +923,10 @@
 
     function hasTodoContent() {
       return (state.data[state.brand].todos || []).some((todo) => String((todo && todo.text) || "").trim() || Boolean(todo && todo.done));
+    }
+
+    function hasRecurringContent() {
+      return (state.data[state.brand].recurringTasks || []).some((task) => String((task && task.text) || "").trim() || Boolean(task && task.done));
     }
 
 
@@ -899,7 +992,9 @@
         tile.type = "button";
         tile.className = "project-tile" + (index === state.selectedProjectIndex && projectModal.classList.contains("open") ? " active" : "");
         const status = normalizeProjectStatus(project.status);
-        tile.innerHTML = `<span class="project-name">${escapeHtml(project.name || `Project ${index + 1}`)}</span><span class="project-status" data-state="${escapeHtml(status)}">${escapeHtml(titleCase(status))}</span>`;
+        const linkedTodos = (state.data[state.brand].todos || []).filter((todo) => todo && todo.projectId === project.id && String(todo.text || "").trim());
+        const linkedMarkup = linkedTodos.length ? `<div class="linked-task-list">${linkedTodos.map((todo) => `<div class="linked-task"><span>${escapeHtml(todo.text)}</span><span>${escapeHtml(titleCase(normalizeTodoPriority(todo.priority)))}</span></div>`).join("")}</div>` : "";
+        tile.innerHTML = `<span class="project-name">${escapeHtml(project.name || `Project ${index + 1}`)}</span><span class="project-status" data-state="${escapeHtml(status)}">${escapeHtml(titleCase(status))}</span>${linkedMarkup}`;
         tile.addEventListener("click", () => {
           openProjectEditor(index);
         });
@@ -912,7 +1007,7 @@
       add.textContent = "+ New project";
       add.addEventListener("click", () => {
         setSavedLabel("Saving...");
-        projects.push({ name: "", status: "not started", deadline: "", todos: [{ text: "", done: false }] });
+        projects.push({ id: makeId("project"), name: "", status: "not started", deadline: "", todos: [{ text: "", done: false }] });
         state.panelOpen[state.brand].projects = true;
         persist();
         renderSectionToggles();
@@ -944,11 +1039,13 @@
       const panelState = state.panelOpen[state.brand];
       const prioritiesOpen = panelState.priorities == null ? hasPriorityContent() : panelState.priorities;
       const notesOpen = panelState.notes == null ? hasNotesContent() : panelState.notes;
+      const recurringOpen = panelState.recurring == null ? hasRecurringContent() : panelState.recurring;
       const todosOpen = panelState.todos == null ? hasTodoContent() : panelState.todos;
       const projectsOpen = panelState.projects == null ? hasProjectsContent() : panelState.projects;
 
       updatePanelSection(prioritiesContent, prioritiesToggle, prioritiesOpen);
       updatePanelSection(notesContent, notesToggle, notesOpen);
+      updatePanelSection(recurringContent, recurringToggle, recurringOpen);
       updatePanelSection(todosContent, todosToggle, todosOpen);
       updatePanelSection(projectsContent, projectsToggle, projectsOpen);
     }
@@ -980,6 +1077,7 @@
       syncPriorityVisibility();
       renderSectionToggles();
 
+      renderRecurringTasks();
       renderTodos();
       renderProjects();
       if (projectModal.classList.contains("open")) renderProjectDetails();
@@ -1067,21 +1165,47 @@
       setSavedLabel("Saving...");
       state.data[state.brand].todos[index].text = input.value;
       persist();
+      renderProjects();
       state.panelOpen[state.brand].todos = hasTodoContent();
       renderSectionToggles();
     });
 
     todoList.addEventListener("change", (event) => {
       const check = event.target.closest("[data-todo-check]");
-      if (!check) return;
-      const index = Number(check.dataset.todoCheck);
+      if (check) {
+        const index = Number(check.dataset.todoCheck);
+        if (Number.isNaN(index) || !state.data[state.brand].todos[index]) return;
+        setSavedLabel("Saving...");
+        state.data[state.brand].todos[index].done = check.checked;
+        renderTodos();
+        persist();
+        renderProjects();
+        state.panelOpen[state.brand].todos = hasTodoContent();
+        renderSectionToggles();
+        return;
+      }
+
+      const priority = event.target.closest("[data-todo-priority]");
+      if (priority) {
+        const index = Number(priority.dataset.todoPriority);
+        if (Number.isNaN(index) || !state.data[state.brand].todos[index]) return;
+        setSavedLabel("Saving...");
+        state.data[state.brand].todos[index].priority = normalizeTodoPriority(priority.value);
+        renderTodos();
+        renderProjects();
+        persist();
+        return;
+      }
+
+      const project = event.target.closest("[data-todo-project]");
+      if (!project) return;
+      const index = Number(project.dataset.todoProject);
       if (Number.isNaN(index) || !state.data[state.brand].todos[index]) return;
       setSavedLabel("Saving...");
-      state.data[state.brand].todos[index].done = check.checked;
+      state.data[state.brand].todos[index].projectId = String(project.value || "");
       renderTodos();
+      renderProjects();
       persist();
-      state.panelOpen[state.brand].todos = hasTodoContent();
-      renderSectionToggles();
     });
 
 
@@ -1092,18 +1216,77 @@
       if (Number.isNaN(index)) return;
       setSavedLabel("Saving...");
       state.data[state.brand].todos.splice(index, 1);
-      if (state.data[state.brand].todos.length === 0) state.data[state.brand].todos.push({ text: "", done: false });
+      if (state.data[state.brand].todos.length === 0) state.data[state.brand].todos.push({ text: "", done: false, priority: "medium", projectId: "" });
       renderTodos();
       persist();
+      renderProjects();
       state.panelOpen[state.brand].todos = hasTodoContent();
       renderSectionToggles();
     });
 
     newTaskBtn.addEventListener("click", () => {
       setSavedLabel("Saving...");
-      state.data[state.brand].todos.push({ text: "", done: false });
+      state.data[state.brand].todos.push({ text: "", done: false, priority: "medium", projectId: "" });
       state.panelOpen[state.brand].todos = true;
       renderTodos();
+      persist();
+      renderProjects();
+      renderSectionToggles();
+    });
+
+
+    recurringList.addEventListener("input", (event) => {
+      const input = event.target.closest("[data-recurring-text]");
+      if (!input) return;
+      const index = Number(input.dataset.recurringText);
+      if (Number.isNaN(index) || !state.data[state.brand].recurringTasks[index]) return;
+      setSavedLabel("Saving...");
+      state.data[state.brand].recurringTasks[index].text = input.value;
+      persist();
+      state.panelOpen[state.brand].recurring = hasRecurringContent();
+      renderSectionToggles();
+    });
+
+    recurringList.addEventListener("change", (event) => {
+      const check = event.target.closest("[data-recurring-check]");
+      if (check) {
+        const index = Number(check.dataset.recurringCheck);
+        if (Number.isNaN(index) || !state.data[state.brand].recurringTasks[index]) return;
+        setSavedLabel("Saving...");
+        state.data[state.brand].recurringTasks[index].done = check.checked;
+        renderRecurringTasks();
+        persist();
+        return;
+      }
+
+      const frequency = event.target.closest("[data-recurring-frequency]");
+      if (!frequency) return;
+      const index = Number(frequency.dataset.recurringFrequency);
+      if (Number.isNaN(index) || !state.data[state.brand].recurringTasks[index]) return;
+      setSavedLabel("Saving...");
+      state.data[state.brand].recurringTasks[index].frequency = normalizeRecurringFrequency(frequency.value);
+      persist();
+    });
+
+    recurringList.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-recurring-delete]");
+      if (!button) return;
+      const index = Number(button.dataset.recurringDelete);
+      if (Number.isNaN(index)) return;
+      setSavedLabel("Saving...");
+      state.data[state.brand].recurringTasks.splice(index, 1);
+      if (state.data[state.brand].recurringTasks.length === 0) state.data[state.brand].recurringTasks.push({ text: "", done: false, frequency: "daily" });
+      renderRecurringTasks();
+      persist();
+      state.panelOpen[state.brand].recurring = hasRecurringContent();
+      renderSectionToggles();
+    });
+
+    newRecurringTaskBtn.addEventListener("click", () => {
+      setSavedLabel("Saving...");
+      state.data[state.brand].recurringTasks.push({ text: "", done: false, frequency: "weekly" });
+      state.panelOpen[state.brand].recurring = true;
+      renderRecurringTasks();
       persist();
       renderSectionToggles();
     });
@@ -1119,6 +1302,13 @@
       const panelState = state.panelOpen[state.brand];
       const current = panelState.notes == null ? hasNotesContent() : panelState.notes;
       panelState.notes = !current;
+      renderSectionToggles();
+    });
+
+    recurringToggle.addEventListener("click", () => {
+      const panelState = state.panelOpen[state.brand];
+      const current = panelState.recurring == null ? hasRecurringContent() : panelState.recurring;
+      panelState.recurring = !current;
       renderSectionToggles();
     });
 
