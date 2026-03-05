@@ -97,6 +97,12 @@
     .panel{padding:20px;background:rgba(255,255,255,.84);box-shadow:0 8px 22px rgba(15,23,42,.06)}
     .panel h2{margin:0 0 12px;font-size:1rem;font-weight:700;letter-spacing:-.01em}
     .panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+
+    .ai-bot-card{display:grid;gap:10px}
+    .ai-bot-help{margin:0;color:var(--muted);font-size:.88rem}
+    .ai-bot-input{width:100%;min-height:110px;resize:vertical;padding:12px;border-radius:12px;border:1px solid var(--border);font:inherit;background:#fff;color:var(--text)}
+    .ai-bot-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .ai-bot-output{margin-top:2px;padding:12px;border-radius:12px;border:1px solid var(--border);background:rgba(248,250,252,.9);font-size:.92rem;white-space:pre-wrap}
     .panel-head h2{margin:0}
     .panel-content{display:grid;grid-template-rows:1fr;max-height:1000px;opacity:1;overflow:hidden;transition:max-height .42s cubic-bezier(.22,1,.36,1),opacity .28s ease}
     .panel-content.collapsed{max-height:0;opacity:0;pointer-events:none}
@@ -350,6 +356,21 @@
         <button type="button" class="section-add calendar-add" id="recurringAddBtn" aria-label="Add recurring task">+</button>
       </div>
       <div class="recurring-board" id="recurringList"></div>
+    </section>
+
+    <section class="panel glass">
+      <div class="panel-head">
+        <h2>AI Post Feedback Bot</h2>
+      </div>
+      <div class="ai-bot-card">
+        <p class="ai-bot-help">Paste your post draft. I&apos;ll compare it against the latest report insights and give quick teammate-style feedback.</p>
+        <textarea id="aiPostInput" class="ai-bot-input" placeholder="Example: Celebrating our latest placements and inviting hiring managers to chat..."></textarea>
+        <div class="ai-bot-actions">
+          <button type="button" id="aiReviewBtn" class="subtle-btn">Review post</button>
+          <span class="saved-text" id="aiInsightSource">Loading insights…</span>
+        </div>
+        <div id="aiBotOutput" class="ai-bot-output">I&apos;m warming up. Once insights load, drop in a draft and I&apos;ll help sharpen it.</div>
+      </div>
     </section>
 
     <section class="work-grid">
@@ -614,6 +635,14 @@
     const calendarAddBtn = document.getElementById("calendarAddBtn");
     const calendarPlatformFilter = document.getElementById("calendarPlatformFilter");
     const calendarStatusFilter = document.getElementById("calendarStatusFilter");
+    const aiPostInput = document.getElementById("aiPostInput");
+    const aiReviewBtn = document.getElementById("aiReviewBtn");
+    const aiBotOutput = document.getElementById("aiBotOutput");
+    const aiInsightSource = document.getElementById("aiInsightSource");
+
+    const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbxYvOvx6CIxqkyc8R1EnoDS3a7dXISab5SYFlgIQRyveNToBfbT1G57dtM1rXTv9Ybu/exec";
+    const REPORT_KEY_BY_BRAND = { is: "islq2", as: "asq2", ad: "adq2" };
+    const aiContext = { insights: null, reportKey: "islq2" };
 
 
     const fields = {
@@ -1063,6 +1092,93 @@
       return String(text || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;");
     }
 
+    function normalizeInsightSection(value) {
+      return String(value || "")
+        .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim()
+        .replace(/\s+/g, "");
+    }
+
+    function summarizeInsights(rows) {
+      const grouped = { working: [], notWorking: [], actions: [], next: [] };
+      (Array.isArray(rows) ? rows : []).forEach((row) => {
+        const section = normalizeInsightSection(row.Section || row.section);
+        const text = String(row.Text || row.text || "").trim();
+        if (!text) return;
+        if (section.includes("working")) grouped.working.push(text);
+        else if (section.includes("notworking")) grouped.notWorking.push(text);
+        else if (section.includes("action")) grouped.actions.push(text);
+        else if (section.includes("next") || section.includes("focus")) grouped.next.push(text);
+      });
+      return grouped;
+    }
+
+    async function loadAiInsights() {
+      const params = new URLSearchParams(window.location.search);
+      const requested = String(params.get("report") || "").toLowerCase();
+      aiContext.reportKey = requested || REPORT_KEY_BY_BRAND[state.brand] || "islq2";
+      aiInsightSource.textContent = "Loading insights…";
+      try {
+        const url = `${REPORT_ENDPOINT}?report=${encodeURIComponent(aiContext.reportKey)}&nocache=1`;
+        const response = await fetch(url, { cache: "default" });
+        if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
+        const json = await response.json();
+        aiContext.insights = summarizeInsights(json.insights);
+        aiInsightSource.textContent = `Using report: ${aiContext.reportKey.toUpperCase()}`;
+      } catch (error) {
+        console.error("AI insight load failed", error);
+        aiContext.insights = null;
+        aiInsightSource.textContent = "Insights unavailable (using general guidance)";
+      }
+    }
+
+    function buildAiFeedback(postText) {
+      const cleanPost = String(postText || "").trim();
+      if (!cleanPost) return "Send me a draft first and I’ll give direct feedback right away.";
+      const words = cleanPost.toLowerCase();
+      const insight = aiContext.insights;
+      const lines = ["Nice start — here’s my straight take:"];
+
+      if (!insight) {
+        lines.push("• Your message is clear. Tighten the opening line so the value is obvious in the first 8–10 words.");
+        lines.push("• Add one sharp CTA so readers know exactly what to do next.");
+        lines.push("• Keep this tone — confident, useful, and easy to scan.");
+        return lines.join("\n");
+      }
+
+      const workingText = insight.working.join(" ").toLowerCase();
+      const actionText = [...insight.actions, ...insight.next].join(" ").toLowerCase();
+      const notWorkingText = insight.notWorking.join(" ").toLowerCase();
+
+      let matched = 0;
+      const keywordHints = ["job", "hiring", "team", "culture", "candidate", "client", "tips", "video", "cta", "apply"];
+      keywordHints.forEach((keyword) => {
+        if (words.includes(keyword) && (workingText.includes(keyword) || actionText.includes(keyword))) matched += 1;
+      });
+
+      if (matched > 0) {
+        lines.push("• You’re aligned with what’s working in the report. Good direction — keep leaning into this theme.");
+      } else {
+        lines.push("• This draft could align more tightly with the strongest report themes. Pull in one proven angle from what’s already working.");
+      }
+
+      if (notWorkingText && keywordHints.some((keyword) => words.includes(keyword) && notWorkingText.includes(keyword))) {
+        lines.push("• Watch-out: part of this topic showed up under what’s not working. Keep it, but make it more specific and benefit-led.");
+      } else {
+        lines.push("• No red flags against the ‘not working’ themes. Nice.");
+      }
+
+      const topAction = insight.actions[0] || insight.next[0];
+      if (topAction) {
+        lines.push(`• Next improvement: ${topAction}`);
+      }
+
+      lines.push("• Final polish: shorten one sentence, keep one concrete proof point, and end with a clear ask.");
+      return lines.join("\n");
+    }
+
     function syncPriorityVisibility() {
       const [p1, p2, p3] = state.data[state.brand].priorities.map((item) => String(item || "").trim());
       const showSecond = Boolean(p1 || p2 || p3);
@@ -1410,7 +1526,7 @@ function renderRecurringTasks() {
     }
 
     buttons.forEach((btn) => btn.addEventListener("click", () => { state.brand = btn.dataset.brand; state.selectedDay = "Monday"; state.selectedPostIndex = 0; state.selectedProjectIndex = null;
-      state.selectedRecurringIndex = null; state.selectedTodoIndex = null; closeProjectEditor(); closeRecurringEditor(); closeTodoEditor(); render(); }));
+      state.selectedRecurringIndex = null; state.selectedTodoIndex = null; closeProjectEditor(); closeRecurringEditor(); closeTodoEditor(); render(); loadAiInsights(); }));
     document.querySelector(".toggle").addEventListener("keydown", (event) => {
       const index = Array.from(buttons).findIndex((button) => button.dataset.brand === state.brand);
       if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
@@ -1830,8 +1946,19 @@ function renderRecurringTasks() {
       renderCalendar();
     });
 
+    aiReviewBtn.addEventListener("click", () => {
+      aiBotOutput.textContent = buildAiFeedback(aiPostInput.value);
+    });
+
+    aiPostInput.addEventListener("keydown", (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        aiBotOutput.textContent = buildAiFeedback(aiPostInput.value);
+      }
+    });
+
     load();
     render();
+    loadAiInsights();
     setInterval(() => {
       weekBadge.textContent = `Week of ${formatWeekOf()}`;
       renderCalendar();
