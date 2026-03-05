@@ -274,9 +274,6 @@
           <div class="meta-row">
             <span class="week-badge" id="weekBadge">Week of --</span>
             <div class="meta-actions">
-              <button id="exportData" type="button" class="subtle-btn">Export backup</button>
-              <button id="importData" type="button" class="subtle-btn">Import backup</button>
-              <input id="importFile" type="file" accept="application/json" hidden />
               <button id="clearWeek" type="button" class="subtle-btn">Reset week</button>
               <button id="undoReset" type="button" class="subtle-btn" hidden>Undo reset</button>
               <span id="saveState" class="saved-text">Saved</span>
@@ -555,8 +552,7 @@
   <script>
     const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday"];
     const STORAGE_KEY = "weekly-planner-v5";
-    const BACKUP_KEY = "weekly-planner-v5-last-good";
-    const EXPORT_VERSION = 1;
+    const BRANDS = ["is", "as", "ad"];
 
     const calendar = document.getElementById("calendar");
     const weekBadge = document.getElementById("weekBadge");
@@ -577,9 +573,6 @@
     const statusPicker = document.getElementById("statusPicker");
     const clearWeekBtn = document.getElementById("clearWeek");
     const undoResetBtn = document.getElementById("undoReset");
-    const exportDataBtn = document.getElementById("exportData");
-    const importDataBtn = document.getElementById("importData");
-    const importFileInput = document.getElementById("importFile");
     const priorityItem2 = document.getElementById("priorityItem2");
     const priorityItem3 = document.getElementById("priorityItem3");
     const platformPicker = document.getElementById("platformPicker");
@@ -752,11 +745,62 @@
       }
     }
 
+    function normalizeSharedBrand(source) {
+      const projects = Array.isArray(source.projects) ? source.projects.map((project) => ({
+        id: String((project && project.id) || makeId("project")),
+        name: String((project && project.name) || ""),
+        status: normalizeProjectStatus((project && project.status) || "in progress"),
+        deadline: String((project && project.deadline) || ""),
+        todos: Array.isArray(project && project.todos) && project.todos.length ? project.todos.map((todo) => ({ text: String((todo && todo.text) || ""), done: Boolean(todo && todo.done) })) : [{ text: "", done: false }]
+      })) : [];
+      const projectIds = new Set(projects.map((project) => project.id));
+      const todos = Array.isArray(source.todos) ? source.todos : [];
+      if (todos.length === 0) todos.push({ text: "", done: false, priority: "medium", projectId: "" });
+      const recurringTasks = Array.isArray(source.recurringTasks) ? source.recurringTasks : [];
+      if (recurringTasks.length === 0) recurringTasks.push({ text: "", done: false, frequency: "weekly", dueDate: "", timePeriod: "anytime", status: "in progress" });
+      return {
+        notes: String(source.notes || ""),
+        todos: todos.map((todo) => ({
+          text: String((todo && todo.text) || ""),
+          done: Boolean(todo && todo.done),
+          priority: normalizeTodoPriority(todo && todo.priority),
+          projectId: projectIds.has(String(todo && todo.projectId || "")) ? String(todo && todo.projectId || "") : ""
+        })),
+        recurringTasks: recurringTasks.map((task) => ({
+          text: String((task && task.text) || ""),
+          done: Boolean(task && task.done),
+          frequency: normalizeRecurringFrequency(task && task.frequency),
+          dueDate: String((task && task.dueDate) || ""),
+          timePeriod: normalizeRecurringPeriod(task && task.timePeriod),
+          status: normalizeRecurringStatus(task && task.status)
+        })),
+        projects
+      };
+    }
+
+    function normalizeWeeklyBrand(source) {
+      const priorities = Array.isArray(source.priorities) ? source.priorities.slice(0, 3) : listItems(source.priorities).slice(0, 3);
+      while (priorities.length < 3) priorities.push("");
+      return { priorities, posts: normalizePosts(source.posts) };
+    }
+
     function persist() {
       const existing = readSavedState();
-      existing[getWeekKey()] = state.data;
-      localStorage.setItem(BACKUP_KEY, JSON.stringify(existing));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+      const weekKey = getWeekKey();
+      const shared = existing.shared && typeof existing.shared === "object" ? existing.shared : {};
+      const weeks = existing.weeks && typeof existing.weeks === "object" ? existing.weeks : {};
+      const weekData = weeks[weekKey] && typeof weeks[weekKey] === "object" ? weeks[weekKey] : {};
+
+      BRANDS.forEach((brand) => {
+        const brandState = state.data[brand] || emptyBrandState();
+        const normalizedShared = normalizeSharedBrand(brandState);
+        const normalizedWeekly = normalizeWeeklyBrand(brandState);
+        shared[brand] = normalizedShared;
+        weekData[brand] = normalizedWeekly;
+      });
+
+      weeks[weekKey] = weekData;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ shared, weeks }));
       setSavedLabel("Saved");
     }
 
@@ -770,94 +814,22 @@
       if (!Object.keys(parsed).length) return;
       try {
         const weekKey = getWeekKey();
-        const parsedState = parsed[weekKey] || parsed;
-        ["is", "as", "ad"].forEach((brand) => {
-          const source = parsedState[brand] || {};
-          const priorities = Array.isArray(source.priorities) ? source.priorities.slice(0, 3) : listItems(source.priorities).slice(0, 3);
-          while (priorities.length < 3) priorities.push("");
-          const projects = Array.isArray(source.projects) ? source.projects.map((project) => ({
-            id: String((project && project.id) || makeId("project")),
-            name: String((project && project.name) || ""),
-            status: normalizeProjectStatus((project && project.status) || "in progress"),
-            deadline: String((project && project.deadline) || ""),
-            todos: Array.isArray(project && project.todos) && project.todos.length ? project.todos.map((todo) => ({ text: String((todo && todo.text) || ""), done: Boolean(todo && todo.done) })) : [{ text: "", done: false }]
-          })) : [];
-          const projectIds = new Set(projects.map((project) => project.id));
-          const todos = Array.isArray(source.todos) ? source.todos : [];
-          if (todos.length === 0) todos.push({ text: "", done: false, priority: "medium", projectId: "" });
-          const recurringTasks = Array.isArray(source.recurringTasks) ? source.recurringTasks : [];
-          if (recurringTasks.length === 0) recurringTasks.push({ text: "", done: false, frequency: "weekly", dueDate: "", timePeriod: "anytime", status: "in progress" });
+        const sharedRoot = parsed.shared && typeof parsed.shared === "object" ? parsed.shared : null;
+        const weekRoot = parsed.weeks && parsed.weeks[weekKey] && typeof parsed.weeks[weekKey] === "object" ? parsed.weeks[weekKey] : null;
+        const legacyState = (!sharedRoot && !weekRoot) ? (parsed[weekKey] || parsed) : null;
+
+        BRANDS.forEach((brand) => {
+          const sharedSource = sharedRoot ? (sharedRoot[brand] || {}) : (legacyState ? legacyState[brand] || {} : {});
+          const weeklySource = weekRoot ? (weekRoot[brand] || {}) : (legacyState ? legacyState[brand] || {} : {});
           state.data[brand] = {
             ...emptyBrandState(),
-            ...source,
-            priorities,
-            todos: todos.map((todo) => ({
-              text: String((todo && todo.text) || ""),
-              done: Boolean(todo && todo.done),
-              priority: normalizeTodoPriority(todo && todo.priority),
-              projectId: projectIds.has(String(todo && todo.projectId || "")) ? String(todo && todo.projectId || "") : ""
-            })),
-            recurringTasks: recurringTasks.map((task) => ({
-              text: String((task && task.text) || ""),
-              done: Boolean(task && task.done),
-              frequency: normalizeRecurringFrequency(task && task.frequency),
-              dueDate: String((task && task.dueDate) || ""),
-              timePeriod: normalizeRecurringPeriod(task && task.timePeriod),
-              status: normalizeRecurringStatus(task && task.status)
-            })),
-            projects,
-            posts: normalizePosts(source.posts)
+            ...normalizeSharedBrand(sharedSource),
+            ...normalizeWeeklyBrand(weeklySource)
           };
         });
       } catch {
         console.warn("Unable to parse saved social plan data.");
       }
-    }
-
-    function exportBackup() {
-      const payload = {
-        type: "weekly-planner-backup",
-        version: EXPORT_VERSION,
-        exportedAt: new Date().toISOString(),
-        storageKey: STORAGE_KEY,
-        data: readSavedState()
-      };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `weekly-planner-backup-${timestamp}.json`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
-      setSavedLabel("Backup exported");
-      setTimeout(() => setSavedLabel("Saved"), 1800);
-    }
-
-    function importBackupFile(file) {
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const parsed = JSON.parse(String(reader.result || "{}"));
-          const importedData = parsed && parsed.type === "weekly-planner-backup" && parsed.data && typeof parsed.data === "object"
-            ? parsed.data
-            : parsed;
-          if (!importedData || typeof importedData !== "object") throw new Error("Invalid backup data");
-          localStorage.setItem(BACKUP_KEY, JSON.stringify(readSavedState()));
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(importedData));
-          load();
-          render();
-          setSavedLabel("Backup imported");
-          setTimeout(() => setSavedLabel("Saved"), 1800);
-          window.alert("Backup imported. This is the easiest way to move data between desktop and mobile.");
-        } catch {
-          window.alert("Could not import that file. Please choose a valid planner backup JSON.");
-        }
-      };
-      reader.readAsText(file);
     }
 
     function openEditor(day, postIndex = null) {
@@ -1649,10 +1621,14 @@ function renderRecurringTasks() {
     });
 
     clearWeekBtn.addEventListener("click", () => {
-      const confirmed = window.confirm("Reset all data for this brand and week? You can undo once immediately after reset.");
+      const confirmed = window.confirm("Reset priorities and calendar posts for this brand and week? You can undo once immediately after reset.");
       if (!confirmed) return;
-      resetSnapshot = JSON.parse(JSON.stringify(state.data[state.brand]));
-      state.data[state.brand] = emptyBrandState();
+      resetSnapshot = {
+        priorities: [...state.data[state.brand].priorities],
+        posts: JSON.parse(JSON.stringify(state.data[state.brand].posts || {}))
+      };
+      state.data[state.brand].priorities = ["", "", ""];
+      state.data[state.brand].posts = {};
       state.selectedDay = "Monday";
       state.selectedProjectIndex = null;
       state.selectedRecurringIndex = null;
@@ -1667,25 +1643,12 @@ function renderRecurringTasks() {
 
     undoResetBtn.addEventListener("click", () => {
       if (!resetSnapshot) return;
-      state.data[state.brand] = resetSnapshot;
+      state.data[state.brand].priorities = [...(resetSnapshot.priorities || ["", "", ""])];
+      state.data[state.brand].posts = JSON.parse(JSON.stringify(resetSnapshot.posts || {}));
       resetSnapshot = null;
       undoResetBtn.hidden = true;
       persist();
       render();
-    });
-
-    exportDataBtn.addEventListener("click", () => {
-      exportBackup();
-    });
-
-    importDataBtn.addEventListener("click", () => {
-      importFileInput.click();
-    });
-
-    importFileInput.addEventListener("change", (event) => {
-      const [file] = event.target.files || [];
-      importBackupFile(file);
-      event.target.value = "";
     });
 
     closeModal.addEventListener("click", () => {
