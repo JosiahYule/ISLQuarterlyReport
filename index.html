@@ -3257,7 +3257,14 @@ async function init(){
   try{
     RAW = await loadReport();
     const prevKey = previousReportKey(RAW.__reportKey || DEFAULT_REPORT);
-    const PREV = prevKey ? await loadReportByKey(prevKey) : null;
+    let PREV = null;
+    if (prevKey){
+      try{
+        PREV = await loadReportByKey(prevKey);
+      }catch(err){
+        console.warn(`Previous report (${prevKey}) could not be loaded. Falling back to provided deltas.`, err);
+      }
+    }
 
     renderHeader(RAW);
     renderSummary(RAW.summaryBullets);
