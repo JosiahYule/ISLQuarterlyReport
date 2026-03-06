@@ -2046,10 +2046,21 @@ const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)
 const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbwB-RGI1lVHrUE03PkkSEYbLuiTLxE4phMBBOm81diNJtSPyUWGoB_bOlkgFIoVF4yzLQ/exec";
 const DEFAULT_REPORT = "islq3";
 
+async function loadReport(){
+  const res = await fetch(
+    `${REPORT_ENDPOINT}?report=${encodeURIComponent(DEFAULT_REPORT)}&t=${Date.now()}`,
+    { cache: "no-store" }
+  );
+  if(!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+  const json = await res.json();
+  json.__reportKey = DEFAULT_REPORT;
+  return json;
+}
+
 const REPORT_LABELS = {
   islq1: { quarter: "Q1", range: "Sep–Nov 2025" },
   islq2: { quarter: "Q2", range: "Dec–Feb 2026" },
-  islq3: { quarter: "Q3", range: "Mar-May 2026" },
+  islq3: { quarter: "Q3", range: "Mar–May 2026" },
 };
 
 // ---------- helpers ----------
