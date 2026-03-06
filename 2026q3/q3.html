@@ -2048,7 +2048,7 @@ const DEFAULT_REPORT = "islq3";
 
 async function loadReport(){
   const res = await fetch(
-    `${REPORT_ENDPOINT}?report=${encodeURIComponent(DEFAULT_REPORT)}&t=${Date.now()}`,
+    `${REPORT_ENDPOINT}?report=${encodeURIComponent(DEFAULT_REPORT)}&nocache=1&t=${Date.now()}`,
     { cache: "no-store" }
   );
   if(!res.ok) throw new Error(`Fetch failed: ${res.status}`);
