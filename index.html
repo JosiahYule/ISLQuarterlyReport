@@ -1766,9 +1766,9 @@
         </button>
 
         <div class="pill-menu" id="quarterMenu" role="menu" aria-label="Choose quarter">
-          <a class="pill-item" role="menuitem" href="/q1.html">Q1 • Sep–Nov 2025</a>
+          <a class="pill-item" role="menuitem" href="/?report=islq1">Q1 • Sep–Nov 2025</a>
           <a class="pill-item" role="menuitem" href="/?report=islq2">Q2 • Dec–Feb 2026</a>
-          <a class="pill-item" role="menuitem" href="/q3.html">Q3 • Mar–May 2026</a>
+          <a class="pill-item" role="menuitem" href="/?report=islq3">Q3 • Mar–May 2026</a>
           <a class="pill-item" role="menuitem" href="/web/">Website • Q2 • Dec–Feb 2026</a>
         </div>
       </div>
@@ -2045,7 +2045,7 @@ let reachChart = null;
 let engChart = null;
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbxYvOvx6CIxqkyc8R1EnoDS3a7dXISab5SYFlgIQRyveNToBfbT1G57dtM1rXTv9Ybu/exec";
+const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbwB-RGI1lVHrUE03PkkSEYbLuiTLxE4phMBBOm81diNJtSPyUWGoB_bOlkgFIoVF4yzLQ/exec";
 const DEFAULT_REPORT = "islq2";
 
 const REPORT_LABELS = {
@@ -2053,6 +2053,24 @@ const REPORT_LABELS = {
   islq2: { quarter: "Q2", range: "Dec–Feb 2026" },
   islq3: { quarter: "Q3", range: "Mar–May 2026" },
 };
+
+async function loadReport(){
+  const params = new URLSearchParams(window.location.search);
+  const reportKey = String(params.get("report") || DEFAULT_REPORT).toLowerCase();
+  const url = `${REPORT_ENDPOINT}?report=${encodeURIComponent(reportKey)}&nocache=1&t=${Date.now()}`;
+  const res = await fetch(url, { cache: "no-store" });
+
+  if(!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+
+  const json = await res.json();
+
+  if (json && json.error) {
+    throw new Error(json.message || "Endpoint returned error");
+  }
+
+  json.__reportKey = reportKey;
+  return json;
+}
 
 // ---------- helpers ----------
 const $ = (id) => document.getElementById(id);
