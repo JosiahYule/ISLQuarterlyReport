@@ -70,7 +70,7 @@
     .hero{padding:1.6rem 1.6rem 1.2rem;margin-bottom:1rem;position:relative;overflow:hidden}
     .hero::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--accent))}
     .hero-grid{display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:end}
-    .hero-copy h1{margin:0;font-family:var(--font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.1;letter-spacing:-.01em}
+    .hero-copy h1{margin:0;font-family:var(--font-display);font-size:clamp(2.45rem,5vw,3.65rem);line-height:1.04;letter-spacing:-.01em;font-style:italic}
     .meta-row{margin-top:1rem}
     .subtle-btn,#clearWeek{border:1px solid color-mix(in srgb, var(--primary) 45%, white);background:transparent;color:var(--primary);padding:.62rem 1rem;border-radius:2rem;font:inherit;font-size:.8rem;font-weight:500;cursor:pointer;transition:var(--trans)}
     .subtle-btn:hover,#clearWeek:hover{background:color-mix(in srgb, var(--primary) 12%, white)}
@@ -90,21 +90,70 @@
     .calendar-filter,input,select,textarea{width:100%;background:var(--cream);border:1.5px solid var(--border);border-radius:.75rem;padding:.75rem .9rem;font-family:var(--font-body);font-size:.88rem;color:var(--ink)}
     .calendar-filter{width:180px;min-width:180px;max-width:180px;}
 
-    .calendar-board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.8rem}
-    .day{border:1px solid var(--border);border-radius:.95rem;background:#fff;padding:.7rem;display:grid;gap:.6rem;align-content:start;min-height:180px}
+    .calendar-board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+    .day{border:1px solid var(--border);border-radius:18px;padding:12px;background:rgba(255,255,255,.5);display:flex;flex-direction:column;gap:10px;min-height:184px;transition:var(--trans)}
+    .day.active{border-color:color-mix(in srgb, var(--primary) 50%, white);box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--primary) 35%, white)}
+    .day.today{border-color:color-mix(in srgb, var(--primary) 65%, white);background:color-mix(in srgb, var(--primary) 14%, white)}
     .day h3{margin:0;font-family:var(--font-display);font-size:1rem}
-    .day-head{display:flex;justify-content:space-between;align-items:center;gap:.65rem}
-    .day-name{font-weight:600;letter-spacing:.03em}
-    .day-date{font-size:.82rem;color:var(--ink-muted)}
-    .post-tile,.todo-item,.project-tile,.recurring-tile{border:1px solid var(--border);border-radius:.9rem;background:var(--white);padding:.7rem;box-shadow:0 4px 14px rgba(26,74,46,.06)}
-    .post-tile:hover,.todo-item:hover,.project-tile:hover,.recurring-tile:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(26,74,46,.12)}
+    .day-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:2px}
+    .day-name{font-weight:700;letter-spacing:.04em;font-size:.92rem;text-transform:uppercase;color:var(--ink-mid);padding-right:.45rem}
+    .day-date{font-size:.8rem;color:var(--ink-muted);white-space:nowrap;padding-left:.45rem}
+    .day-posts{display:grid;gap:8px;min-height:0}
+    .post-tile-wrap{position:relative}
+    .post-tile{width:100%;border:1px solid var(--border);border-radius:13px;padding:11px;background:rgba(255,255,255,.82);text-align:left;display:grid;gap:8px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.04);transition:var(--trans)}
+    .post-tile:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(0,0,0,.08)}
+    .post-tile-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+    .post-title{font-size:.88rem;font-weight:700;line-height:1.35;word-break:break-word}
+    .platform-icons{display:flex;gap:6px;align-items:center;justify-content:flex-end;color:var(--ink-muted);font-size:.74rem}
+    .platform-icon{width:15px;height:15px;display:inline-block;color:var(--ink-muted)}
+    .post-badges{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+    .post-status{font-size:.67rem;padding:4px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;background:color-mix(in srgb, var(--primary) 14%, white);color:var(--primary)}
+    .post-meta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.75rem;color:var(--ink-muted);flex-wrap:wrap}
+    .post-goals{display:flex;gap:6px;flex-wrap:wrap}
+    .post-goal{font-size:.68rem;padding:3px 8px;border-radius:999px;background:var(--cream);color:var(--ink-mid);border:1px solid var(--border)}
+    .post-actions{position:absolute;left:10px;bottom:10px;display:flex;gap:6px;opacity:0;pointer-events:none;transition:var(--trans)}
+    .post-tile-wrap:hover .post-actions,.post-tile-wrap:focus-within .post-actions{opacity:1;pointer-events:auto}
+    .post-action{border:1px solid var(--border);background:rgba(255,255,255,.92);color:var(--ink-mid);width:26px;height:26px;border-radius:6px;display:grid;place-items:center;font-size:.82rem;line-height:1;cursor:pointer;transition:var(--trans)}
+    .post-action:hover{background:#fff;border-color:color-mix(in srgb, var(--primary) 35%, white);color:var(--primary)}
+    .post-delete:hover{border-color:#ef4444;color:#b91c1c}
 
     .new-task-btn,.project-add{border:1px dashed color-mix(in srgb, var(--primary) 48%, white);background:color-mix(in srgb, var(--primary) 10%, white);color:var(--primary);padding:.7rem 1rem;border-radius:.85rem;font:inherit;font-weight:600;cursor:pointer}
-    .todo-list,.project-grid,.recurring-board{display:grid;gap:.8rem}
+    .todo-list,.project-grid,.recurring-board{display:grid;gap:12px}
+    .todo-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:12px;padding:12px 13px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.86);box-shadow:0 4px 12px rgba(0,0,0,.04);cursor:pointer}
+    .todo-item input[type='checkbox']{width:auto;accent-color:var(--primary)}
+    .todo-item.done .todo-name{text-decoration:line-through;color:#94a3b8}
+    .todo-name{font-size:.95rem;line-height:1.35;word-break:break-word;padding-right:.6rem}
+    .todo-priority-badge{font-size:.67rem;padding:4px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;background:var(--cream);border:1px solid var(--border)}
+    .todo-priority-badge.high{background:#fee2e2;color:#991b1b}
+    .todo-priority-badge.medium{background:#fef3c7;color:#92400e}
+    .todo-priority-badge.low{background:#dcfce7;color:#166534}
     .project-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .project-tile{min-height:148px;border-radius:16px;border:1px solid var(--border);background:rgba(255,255,255,.88);display:grid;align-content:space-between;gap:10px;padding:14px;text-align:left;cursor:pointer;transition:var(--trans)}
+    .project-tile:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(0,0,0,.08)}
+    .project-name{font-weight:700;font-size:.95rem;line-height:1.35;word-break:break-word}
+    .project-status{justify-self:start;font-size:.67rem;padding:4px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;background:var(--cream);border:1px solid var(--border)}
+    .project-status[data-state='in progress']{background:#ffedd5;color:#9a3412}
+    .project-status[data-state='completed']{background:#dcfce7;color:#166534}
+    .project-status[data-state='strategizing']{background:#dbeafe;color:#1d4ed8}
+    .project-status[data-state='on hold']{background:#fef9c3;color:#854d0e}
+    .project-status[data-state='not started']{background:#e2e8f0;color:#334155}
+    .linked-task-list{display:grid;gap:8px}
+    .linked-task{display:flex;justify-content:space-between;gap:8px;padding:8px 9px;border:1px dashed var(--border);border-radius:10px;font-size:.82rem;background:rgba(248,250,252,.72)}
+    .linked-task span:last-child{font-weight:700}
+    .due-badge{justify-self:start;font-size:.63rem;padding:3px 8px;background:#fee2e2;color:#991b1b;text-transform:uppercase;border-radius:999px}
+    .due-badge.week{background:#fef3c7;color:#92400e}
     .recurring-section{margin-top:1rem}
     .recurring-board{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-    .recurring-tile{min-height:132px;display:grid;gap:8px;padding:12px}
+    .recurring-tile{min-height:132px;border-radius:16px;border:1px solid var(--border);padding:12px;text-align:left;display:grid;gap:8px;background:rgba(255,255,255,.88)}
+    .recurring-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+    .recurring-name{font-weight:700;font-size:.92rem;line-height:1.35;word-break:break-word;flex:1}
+    .recurring-meta-line{display:flex;align-items:center;justify-content:flex-end;gap:7px;color:var(--ink-muted);font-size:.75rem;white-space:nowrap;margin-left:auto}
+    .recurring-meta-chip{font-weight:600}
+    .recurring-meta-divider{opacity:.5}
+    .recurring-status{justify-self:start;font-size:.66rem;padding:4px 9px;text-transform:uppercase;letter-spacing:.04em;background:#e2e8f0;color:#334155;border-radius:999px}
+    .recurring-status[data-state='in progress']{background:#ffedd5;color:#9a3412}
+    .recurring-status[data-state='done']{background:#dcfce7;color:#166534}
+    .recurring-status[data-state='on hold']{background:#fef9c3;color:#854d0e}
 
     .badge,.priority-badge,.status-badge,.due-badge,.project-status-option,.recurring-status,.tag-chip,.status-tag,.tag,.platform-badge,.post-type-tag{border-radius:999px;padding:.25rem .62rem;font-size:.67rem;letter-spacing:.05em;text-transform:uppercase;border:1px solid transparent}
     .status-badge,.project-status-option.active,.status-tag.active,.toggle button.active{background:var(--primary);color:#fff}
@@ -171,7 +220,7 @@
     <section class="hero glass" id="plannerContent" role="tabpanel" aria-label="Planner content">
       <div class="hero-grid">
         <div class="hero-copy">
-          <h1>Weekly tracker</h1>
+          <h1>Weekly tracker.</h1>
           <div class="meta-row">
             <div class="meta-actions">
               <button id="undoReset" type="button" class="subtle-btn" hidden>Undo reset</button>
