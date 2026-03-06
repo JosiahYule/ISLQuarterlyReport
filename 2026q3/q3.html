@@ -2276,6 +2276,41 @@ async function loadReport(){
   return json;
 }
 
+async function loadReportByKey(reportKey){
+  if (!reportKey) return null;
+  const url = `${REPORT_ENDPOINT}?report=${encodeURIComponent(reportKey)}&nocache=1&t=${Date.now()}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+
+  const json = await res.json();
+  if (json && json.error) throw new Error(json.message || "Endpoint returned error");
+
+  json.__reportKey = reportKey;
+  return json;
+}
+
+function previousReportKey(currentKey){
+  const m = String(currentKey || "").match(/^(.*?)(\d+)$/i);
+  if (!m) return null;
+  const num = Number(m[2]);
+  if (!Number.isFinite(num) || num <= 1) return null;
+  return `${m[1]}${num - 1}`;
+}
+
+function formatAutoDelta(currentValue, previousValue){
+  const cur = toNumber(currentValue);
+  const prev = toNumber(previousValue);
+  if (!isNum(cur) || !isNum(prev) || prev === 0) return null;
+
+  const changePct = ((cur - prev) / Math.abs(prev)) * 100;
+  if (!Number.isFinite(changePct)) return null;
+  if (Math.abs(changePct) < 0.005) return "0%";
+
+  const arrow = changePct >= 0 ? "▲" : "▼";
+  const fixed = Math.abs(changePct).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1");
+  return `${arrow} ${fixed}%`;
+}
+
 // ---------- header labels ----------
 function renderHeader(meta){
   const key = meta.__reportKey || DEFAULT_REPORT;
@@ -2325,8 +2360,9 @@ function renderSummary(bullets){
 }
 
 // ---------- quarter totals ----------
-function renderQuarterTotals(rows){
+function renderQuarterTotals(rows, previousRows){
   const data = Array.isArray(rows) ? rows : [];
+  const prevData = Array.isArray(previousRows) ? previousRows : [];
 
   const map = {};
   for (const r of data){
@@ -2334,6 +2370,14 @@ function renderQuarterTotals(rows){
     const nk = normalizeFieldKey(rawField);
     if (!nk) continue;
     map[nk] = r;
+  }
+
+  const prevMap = {};
+  for (const r of prevData){
+    const rawField = r.field ?? r.Field ?? r.name ?? r.Name ?? "";
+    const nk = normalizeFieldKey(rawField);
+    if (!nk) continue;
+    prevMap[nk] = r;
   }
 
   const findRow = (needles) => {
@@ -2381,9 +2425,12 @@ function renderQuarterTotals(rows){
     }
 
     if (dEl){
-      dEl.textContent = row ? deltaText(row.delta) : "—";
+      const rowField = row?.field ?? row?.Field ?? row?.name ?? row?.Name ?? "";
+      const prevRow = prevMap[normalizeFieldKey(rowField)] || null;
+      const autoDelta = row && prevRow ? formatAutoDelta(row.value, prevRow.value) : null;
+      dEl.textContent = autoDelta ?? (row ? deltaText(row.delta) : "—");
       dEl.classList.remove("positive","negative");
-      const cls = row ? parseDeltaToClass(row.delta) : "";
+      const cls = parseDeltaToClass(autoDelta ?? row?.delta);
       if (cls) dEl.classList.add(cls);
     }
   };
@@ -2462,11 +2509,12 @@ function buildOrUpdateChart(which, canvasId, labels, values, typeOverride=null){
 }
 
 // ---------- platform breakdown ----------
-function renderPlatformBreakdown(rows){
+function renderPlatformBreakdown(rows, previousRows){
   const grid = $("platformGrid");
   if (!grid) return;
 
   const data = Array.isArray(rows) ? rows : [];
+  const prevData = Array.isArray(previousRows) ? previousRows : [];
   if (!data.length){
     grid.innerHTML = `<div style="color:var(--muted);font-size:13px;">No platform breakdown rows found.</div>`;
     return;
@@ -2478,6 +2526,13 @@ function renderPlatformBreakdown(rows){
   const kEngRate   = pickKey(sample, ["Engagement Rate","Post Engagement Rate","Post ER","ER"]);
   const kReach     = pickKey(sample, ["Page Reach","Reach"]);
   const kClicks    = pickKey(sample, ["Page Clicks","Clicks","Page Click"]);
+
+  const prevByPlatform = {};
+  prevData.forEach((row) => {
+    const pKey = pickKey(row, ["Platform","platform","Network","Channel"]);
+    const name = String(row[pKey] ?? "").trim().toLowerCase();
+    if (name) prevByPlatform[name] = row;
+  });
 
   function findDeltaKeyForMetric(row, metricKey, metricNeedles){
     if (!row) return null;
@@ -2518,14 +2573,16 @@ function renderPlatformBreakdown(rows){
     return null;
   }
 
-  const deltaChip = (val) => {
-    const txt = deltaText(val);
-    const cls = parseDeltaToClass(val);
+  const deltaChip = (val, autoVal = null) => {
+    const resolved = autoVal ?? val;
+    const txt = deltaText(resolved);
+    const cls = parseDeltaToClass(resolved);
     return `<span class="delta ${cls}">${escHtml(txt)}</span>`;
   };
 
   grid.innerHTML = data.map(row => {
     const name = String(row[kPlatform] ?? "Platform").trim();
+    const prevRow = prevByPlatform[name.toLowerCase()] || null;
     const badge = name.slice(0,1).toUpperCase();
 
     const kFollowersD = findDeltaKeyForMetric(row, kFollowers, ["followers"]);
@@ -2535,6 +2592,16 @@ function renderPlatformBreakdown(rows){
 
     const kReachD     = findDeltaKeyForMetric(row, kReach, ["reach","page reach"]);
     const kClicksD    = findDeltaKeyForMetric(row, kClicks, ["clicks","page clicks"]);
+
+    const prevFollowers = prevRow ? prevRow[pickKey(prevRow, ["Followers"])] : null;
+    const prevEngRate = prevRow ? prevRow[pickKey(prevRow, ["Engagement Rate","Post Engagement Rate","Post ER","ER"])] : null;
+    const prevReach = prevRow ? prevRow[pickKey(prevRow, ["Page Reach","Reach"])] : null;
+    const prevClicks = prevRow ? prevRow[pickKey(prevRow, ["Page Clicks","Clicks","Page Click"])] : null;
+
+    const autoFollowersD = formatAutoDelta(row[kFollowers], prevFollowers);
+    const autoEngRateD = formatAutoDelta(row[kEngRate], prevEngRate);
+    const autoReachD = formatAutoDelta(row[kReach], prevReach);
+    const autoClicksD = formatAutoDelta(row[kClicks], prevClicks);
 
     return `
       <div class="platform">
@@ -2550,7 +2617,7 @@ function renderPlatformBreakdown(rows){
             <span class="pstat-label">Followers</span>
             <div class="pstat-row">
               <strong>${escHtml(fmtInt(row[kFollowers]))}</strong>
-              ${deltaChip(kFollowersD ? row[kFollowersD] : null)}
+              ${deltaChip(kFollowersD ? row[kFollowersD] : null, autoFollowersD)}
             </div>
           </div>
 
@@ -2558,7 +2625,7 @@ function renderPlatformBreakdown(rows){
             <span class="pstat-label">Post Engagement Rate</span>
             <div class="pstat-row">
               <strong>${escHtml(fmtPct(row[kEngRate]))}</strong>
-              ${deltaChip(kEngRateD ? row[kEngRateD] : null)}
+              ${deltaChip(kEngRateD ? row[kEngRateD] : null, autoEngRateD)}
             </div>
           </div>
 
@@ -2566,7 +2633,7 @@ function renderPlatformBreakdown(rows){
             <span class="pstat-label">Page Reach</span>
             <div class="pstat-row">
               <strong>${escHtml(fmtInt(row[kReach]))}</strong>
-              ${deltaChip(kReachD ? row[kReachD] : null)}
+              ${deltaChip(kReachD ? row[kReachD] : null, autoReachD)}
             </div>
           </div>
 
@@ -2574,7 +2641,7 @@ function renderPlatformBreakdown(rows){
             <span class="pstat-label">Page Clicks</span>
             <div class="pstat-row">
               <strong>${escHtml(fmtInt(row[kClicks]))}</strong>
-              ${deltaChip(kClicksD ? row[kClicksD] : null)}
+              ${deltaChip(kClicksD ? row[kClicksD] : null, autoClicksD)}
             </div>
           </div>
         </div>
@@ -3194,11 +3261,13 @@ function hideLoadingOverlay(){
 async function init(){
   try{
     RAW = await loadReport();
+    const prevKey = previousReportKey(RAW.__reportKey || DEFAULT_REPORT);
+    const PREV = prevKey ? await loadReportByKey(prevKey) : null;
 
     renderHeader(RAW);
     renderSummary(RAW.summaryBullets);
-    renderQuarterTotals(RAW.quarterTotals);
-    renderPlatformBreakdown(RAW.platformBreakdown);
+    renderQuarterTotals(RAW.quarterTotals, PREV?.quarterTotals);
+    renderPlatformBreakdown(RAW.platformBreakdown, PREV?.platformBreakdown);
     renderTopPosts(RAW.topPosts);
 
     ALL_POSTS = normalizeAllPostsRows(RAW.allPosts);
