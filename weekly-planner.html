@@ -135,6 +135,40 @@
     .todo-delete,.icon-delete-btn{border:1px solid var(--border);background:rgba(255,255,255,.96);color:var(--ink-muted);width:30px;height:30px;border-radius:9px;display:grid;place-items:center;cursor:pointer;transition:var(--trans);padding:0}
     .todo-delete:hover,.icon-delete-btn:hover{background:#fff;color:#c2410c;border-color:#fdba74;transform:translateY(-1px)}
     .icon-delete-btn{width:auto;min-width:30px;padding:.35rem .55rem;display:inline-flex;gap:.35rem;align-items:center;font-size:.8rem;font-weight:500}
+    .project-todos{display:grid;gap:.6rem}
+    .project-todo-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:.55rem}
+    .project-todo-item input[type='checkbox']{width:auto;margin:0;accent-color:var(--primary)}
+    .project-todo-item input[type='text']{width:100%}
+    .project-todo-item.done input[type='text']{text-decoration:line-through;color:#94a3b8}
+    .project-actions{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-top:.2rem}
+    .project-action-btn{width:100%;display:inline-flex;justify-content:center;align-items:center;gap:.4rem;padding:.62rem .85rem;border-style:solid;background:transparent;font-size:.9rem;font-weight:600}
+    .project-action-btn svg{flex-shrink:0}
+
+    .theme-toggle-fab{position:fixed;right:1.2rem;bottom:1.2rem;z-index:35;border:1px solid color-mix(in srgb, var(--primary) 45%, white);background:rgba(255,253,249,.95);color:var(--ink);border-radius:999px;padding:.58rem .9rem;display:inline-flex;align-items:center;gap:.45rem;font:inherit;font-size:.82rem;font-weight:600;cursor:pointer;box-shadow:0 10px 22px rgba(0,0,0,.12);backdrop-filter:blur(6px);transition:var(--trans)}
+    .theme-toggle-fab:hover{transform:translateY(-1px);background:#fff}
+
+    body.dark-mode{
+      --cream:#121314;
+      --white:#1a1d20;
+      --ink:#eceff3;
+      --ink-mid:#d2d7de;
+      --ink-muted:#97a3b2;
+      --border:#334155;
+      --shadow:0 24px 64px rgba(0,0,0,.45),0 4px 12px rgba(0,0,0,.3);
+      --soft-shadow:0 10px 28px rgba(0,0,0,.32);
+    }
+    body.dark-mode .topbar{background:rgba(25,28,32,.9)}
+    body.dark-mode .day,
+    body.dark-mode .post-tile,
+    body.dark-mode .todo-item,
+    body.dark-mode .project-tile,
+    body.dark-mode .recurring-tile,
+    body.dark-mode .modal-card,
+    body.dark-mode .linked-task,
+    body.dark-mode .todo-delete,
+    body.dark-mode .icon-delete-btn,
+    body.dark-mode .theme-toggle-fab{background:rgba(21,24,28,.92)}
+    body.dark-mode .modal{background:rgba(0,0,0,.6)}
     .project-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
     .project-tile{min-height:148px;border-radius:16px;border:1px solid var(--border);background:rgba(255,253,249,.88);display:grid;align-content:space-between;gap:10px;padding:14px;text-align:left;cursor:pointer;transition:var(--trans);font-family:var(--font-body)}
     .project-tile:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(0,0,0,.08)}
@@ -222,6 +256,8 @@
       .calendar-controls{gap:.5rem}
       .calendar-filter{width:calc(50% - .25rem);min-width:0;max-width:none}
       .calendar-board,.recurring-board{grid-template-columns:1fr}
+      .project-actions{grid-template-columns:1fr}
+      .theme-toggle-fab{right:.8rem;bottom:.8rem}
     }
 </style>
 </head>
@@ -518,13 +554,17 @@
           <div class="field-group full">
             <label>Project to do list</label>
             <div class="project-todos" id="projectTodoList"></div>
-            <button type="button" class="new-task-btn" id="newProjectTaskBtn">New project task</button>
-            <button type="button" class="icon-delete-btn" id="deleteProjectBtn" aria-label="Delete project"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false"><path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm1 6h2v8h-2V9Zm4 0h2v8h-2V9ZM8 9h2v8H8V9Zm-1 12h10a2 2 0 0 0 2-2V7H5v12a2 2 0 0 0 2 2Z" fill="currentColor"/></svg><span>Delete project</span></button>
+            <div class="project-actions">
+              <button type="button" class="new-task-btn project-action-btn" id="newProjectTaskBtn">New project task</button>
+              <button type="button" class="new-task-btn project-action-btn" id="deleteProjectBtn" aria-label="Delete project"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false"><path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm1 6h2v8h-2V9Zm4 0h2v8h-2V9ZM8 9h2v8H8V9Zm-1 12h10a2 2 0 0 0 2-2V7H5v12a2 2 0 0 0 2 2Z" fill="currentColor"/></svg><span>Delete project</span></button>
+            </div>
           </div>
         </div>
       </section>
     </div>
   </main>
+
+  <button type="button" id="themeToggle" class="theme-toggle-fab" aria-pressed="false" aria-label="Toggle dark mode"><span id="themeToggleIcon" aria-hidden="true">🌙</span><span id="themeToggleLabel">Dark mode</span></button>
 
   <script>
     const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday"];
@@ -570,6 +610,10 @@
     const calendarAddBtn = document.getElementById("calendarAddBtn");
     const calendarPlatformFilter = document.getElementById("calendarPlatformFilter");
     const calendarStatusFilter = document.getElementById("calendarStatusFilter");
+    const themeToggle = document.getElementById("themeToggle");
+    const themeToggleLabel = document.getElementById("themeToggleLabel");
+    const themeToggleIcon = document.getElementById("themeToggleIcon");
+    const THEME_STORAGE_KEY = "weekly-planner-theme";
 
 
     const fields = {
@@ -821,6 +865,19 @@
       } catch {
         console.warn("Unable to parse saved social plan data.");
       }
+    }
+
+    function applyTheme(theme) {
+      const isDark = theme === "dark";
+      document.body.classList.toggle("dark-mode", isDark);
+      themeToggle.setAttribute("aria-pressed", String(isDark));
+      themeToggleLabel.textContent = isDark ? "Light mode" : "Dark mode";
+      themeToggleIcon.textContent = isDark ? "☀️" : "🌙";
+    }
+
+    function loadThemePreference() {
+      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+      applyTheme(savedTheme === "dark" ? "dark" : "light");
     }
 
     function openEditor(day, postIndex = null) {
@@ -1804,6 +1861,13 @@ function renderRecurringTasks() {
       renderCalendar();
     });
 
+    themeToggle.addEventListener("click", () => {
+      const nextTheme = document.body.classList.contains("dark-mode") ? "light" : "dark";
+      applyTheme(nextTheme);
+      localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+    });
+
+    loadThemePreference();
     load();
     render();
     setInterval(() => {
