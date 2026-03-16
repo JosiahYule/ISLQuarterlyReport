@@ -257,6 +257,58 @@
     .platform-chip[data-platform='Instagram']{color:#c13584}
     .platform-chip.active{background:var(--primary);color:#fff;border-color:transparent;box-shadow:0 8px 16px color-mix(in srgb, var(--primary) 28%, transparent)}
 
+    /* ── Top grid ─────────────────────────────────────────── */
+    .top-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start}
+    .day-cal-controls{display:flex;align-items:center;gap:.45rem}
+    .day-cal-label{font-size:.8rem;font-weight:600;color:var(--ink-mid);white-space:nowrap;min-width:64px;text-align:center}
+    .day-cal-total{font-size:.72rem;color:var(--ink-muted);padding-left:.15rem}
+    /* ── Time grid ─────────────────────────────────────────── */
+    .time-grid-wrap{overflow-y:auto;max-height:520px;border:1px solid var(--border);border-radius:.75rem;background:rgba(255,255,255,.35)}
+    .time-grid{position:relative;user-select:none}
+    .time-line{position:absolute;left:0;right:0;pointer-events:none}
+    .time-line.hour-line{border-top:1px solid var(--border)}
+    .time-line.half-line{border-top:1px dashed color-mix(in srgb,var(--border) 55%,transparent)}
+    .time-line.quarter-line{border-top:1px dashed color-mix(in srgb,var(--border) 22%,transparent)}
+    .time-label{position:absolute;left:4px;top:0;transform:translateY(-50%);font-size:.62rem;color:var(--ink-muted);font-weight:500;white-space:nowrap;pointer-events:none}
+    .time-drop-zone{position:absolute;left:44px;right:0;top:0;bottom:0;cursor:crosshair;z-index:1}
+    .time-now-line{position:absolute;left:0;right:0;height:2px;background:#ef4444;z-index:5;pointer-events:none}
+    .time-now-line::before{content:'';position:absolute;left:42px;top:-4px;width:8px;height:8px;background:#ef4444;border-radius:50%}
+    /* ── Blocks ────────────────────────────────────────────── */
+    .cal-block{position:absolute;left:48px;right:4px;border-radius:8px;padding:4px 8px 10px;font-size:.75rem;cursor:grab;box-shadow:0 2px 8px rgba(0,0,0,.1);z-index:2;overflow:hidden;transition:box-shadow .15s,transform .1s;min-height:20px}
+    .cal-block:hover{box-shadow:0 4px 16px rgba(0,0,0,.18);transform:translateX(-1px)}
+    .cal-block.is-dragging{opacity:.7;cursor:grabbing;z-index:10;box-shadow:0 8px 24px rgba(0,0,0,.22)}
+    .cal-block-title{font-weight:600;line-height:1.25;word-break:break-word}
+    .cal-block-meta{font-size:.65rem;opacity:.7;margin-top:2px}
+    .cal-block-resize{position:absolute;bottom:0;left:0;right:0;height:8px;cursor:ns-resize;border-radius:0 0 8px 8px}
+    .cal-block-resize:hover{background:rgba(0,0,0,.07)}
+    /* ── Ghost ─────────────────────────────────────────────── */
+    .cal-ghost{position:absolute;left:48px;right:4px;border-radius:8px;background:color-mix(in srgb,var(--primary) 12%,white);border:2px dashed color-mix(in srgb,var(--primary) 55%,white);pointer-events:none;z-index:6;display:flex;align-items:center;justify-content:center}
+    .cal-ghost-label{font-size:.72rem;font-weight:600;color:var(--primary);white-space:nowrap}
+    /* ── Block colours ──────────────────────────────────────── */
+    .cal-block-blue{background:#dbeafe;color:#1e40af;border-left:3px solid #3b82f6}
+    .cal-block-green{background:#dcfce7;color:#166534;border-left:3px solid #22c55e}
+    .cal-block-amber{background:#fef3c7;color:#92400e;border-left:3px solid #f59e0b}
+    .cal-block-red{background:#fee2e2;color:#991b1b;border-left:3px solid #ef4444}
+    .cal-block-purple{background:#ede9fe;color:#5b21b6;border-left:3px solid #8b5cf6}
+    .cal-block-slate{background:#e2e8f0;color:#334155;border-left:3px solid #64748b}
+    /* ── Colour picker ──────────────────────────────────────── */
+    .block-color-picker{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .color-chip{width:24px;height:24px;border-radius:50%;border:2.5px solid transparent;cursor:pointer;transition:transform .15s,border-color .15s;flex-shrink:0}
+    .color-chip:hover{transform:scale(1.2)}
+    .color-chip.active{border-color:var(--ink)}
+    .color-chip-blue{background:#3b82f6}.color-chip-green{background:#22c55e}.color-chip-amber{background:#f59e0b}.color-chip-red{background:#ef4444}.color-chip-purple{background:#8b5cf6}.color-chip-slate{background:#64748b}
+    /* ── Block modal ────────────────────────────────────────── */
+    .block-modal-card{width:min(480px,100%)}
+    /* ── Dark mode: day planner ─────────────────────────────── */
+    body.dark-mode .time-grid-wrap{background:rgba(15,17,21,.55)}
+    body.dark-mode .cal-block-blue{background:#1e3a5f;color:#93c5fd}
+    body.dark-mode .cal-block-green{background:#14532d;color:#86efac}
+    body.dark-mode .cal-block-amber{background:#451a03;color:#fcd34d}
+    body.dark-mode .cal-block-red{background:#450a0a;color:#fca5a5}
+    body.dark-mode .cal-block-purple{background:#2e1065;color:#c4b5fd}
+    body.dark-mode .cal-block-slate{background:#1e293b;color:#cbd5e1}
+    body.dark-mode .cal-ghost{background:color-mix(in srgb,var(--primary) 22%,#1a1d20)}
+
     @media (max-width:1100px){
       .calendar-board{grid-template-columns:repeat(3,minmax(0,1fr))}
       .project-grid{grid-template-columns:1fr}
@@ -266,6 +318,7 @@
       .topbar{padding:.8rem}
       .calendar-board{grid-template-columns:repeat(2,minmax(0,1fr))}
       .work-grid{grid-template-columns:1fr}
+      .top-grid{grid-template-columns:1fr}
       .fields{grid-template-columns:1fr}
       .hero-grid{grid-template-columns:1fr}
       #clearWeek{justify-self:start}
@@ -302,6 +355,7 @@
     </header>
 
 
+    <div class="top-grid">
     <section class="panel glass">
       <div class="panel-head">
         <h2>Priorities</h2>
@@ -315,6 +369,24 @@
         </ul>
       </div>
     </section>
+
+    <section class="panel glass">
+      <div class="panel-head">
+        <h2>Day Planner</h2>
+        <div class="day-cal-controls">
+          <button type="button" id="dayCalPrev" class="section-add" aria-label="Previous day">‹</button>
+          <span id="dayCalLabel" class="day-cal-label">Today</span>
+          <button type="button" id="dayCalNext" class="section-add" aria-label="Next day">›</button>
+          <span id="dayCalTotal" class="day-cal-total"></span>
+        </div>
+      </div>
+      <div class="panel-content" id="dailyCalContent">
+        <div class="time-grid-wrap" id="timeGridWrap">
+          <div class="time-grid" id="timeGrid"></div>
+        </div>
+      </div>
+    </section>
+    </div>
 
     <section class="main-grid">
       <section class="panel glass">
@@ -527,6 +599,56 @@
         </div>
       </section>
     </div>
+
+    <div class="modal" id="blockModal" aria-hidden="true">
+      <section class="modal-card block-modal-card" role="dialog" aria-modal="true" aria-labelledby="blockModalTitle">
+        <div class="modal-head">
+          <h2 id="blockModalTitle">Time block</h2>
+          <button type="button" class="close-btn" id="closeBlockModal" aria-label="Close block editor">×</button>
+        </div>
+        <div class="fields">
+          <div class="field-group full">
+            <label for="blockTitle">Title</label>
+            <input id="blockTitle" type="text" placeholder="What are you working on?" />
+          </div>
+          <div class="field-group">
+            <label for="blockStart">Start time</label>
+            <input id="blockStart" type="time" />
+          </div>
+          <div class="field-group">
+            <label for="blockDuration">Duration</label>
+            <select id="blockDuration">
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+              <option value="60">1 hour</option>
+              <option value="90">1.5 hours</option>
+              <option value="120">2 hours</option>
+              <option value="180">3 hours</option>
+              <option value="240">4 hours</option>
+            </select>
+          </div>
+          <div class="field-group full">
+            <label>Colour</label>
+            <div class="block-color-picker" id="blockColorPicker">
+              <button type="button" class="color-chip color-chip-blue" data-color="blue" aria-label="Blue" title="Blue"></button>
+              <button type="button" class="color-chip color-chip-green" data-color="green" aria-label="Green" title="Green"></button>
+              <button type="button" class="color-chip color-chip-amber" data-color="amber" aria-label="Amber" title="Amber"></button>
+              <button type="button" class="color-chip color-chip-red" data-color="red" aria-label="Red" title="Red"></button>
+              <button type="button" class="color-chip color-chip-purple" data-color="purple" aria-label="Purple" title="Purple"></button>
+              <button type="button" class="color-chip color-chip-slate" data-color="slate" aria-label="Slate" title="Slate"></button>
+            </div>
+          </div>
+          <div class="field-group full">
+            <label for="blockNote">Note</label>
+            <textarea id="blockNote" rows="2" placeholder="Any notes..."></textarea>
+          </div>
+          <div class="field-group full" style="display:flex;justify-content:flex-end">
+            <button type="button" class="subtle-btn" id="deleteBlockBtn">Delete block</button>
+          </div>
+        </div>
+      </section>
+    </div>
   </main>
 
   <button type="button" id="themeToggle" class="theme-toggle-fab" aria-pressed="false" aria-label="Toggle dark mode"><span id="themeToggleIcon" aria-hidden="true">🌙</span><span id="themeToggleLabel">Dark mode</span></button>
@@ -535,6 +657,12 @@
     const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday"];
     const STORAGE_KEY = "weekly-planner-v5";
     const BRANDS = ["is", "as", "ad"];
+    const DAY_CAL_START_MIN = 7 * 60;   // 7:00 AM
+    const DAY_CAL_END_MIN   = 20 * 60;  // 8:00 PM
+    const PX_PER_MIN        = 1;        // 1px = 1 min → 60px/hour
+    const SNAP_MIN          = 15;       // snap to 15-min grid
+    const BLOCK_COLORS      = ["blue","green","amber","red","purple","slate"];
+    const DEFAULT_BLOCK_COLOR = "blue";
 
     const calendar = document.getElementById("calendar");
     const weekBadge = document.getElementById("weekBadge");
@@ -610,7 +738,8 @@
         todos: [{ text: "", done: false, priority: "medium", projectId: "" }],
         recurringTasks: [{ text: "", done: false, frequency: "weekly", dueDate: "", timePeriod: "anytime", status: "in progress" }],
         projects: [],
-        posts: {}
+        posts: {},
+        daySchedule: {}
       };
     }
 
@@ -627,9 +756,11 @@
         as: { priorities: null, todos: null, projects: null, recurring: true },
         ad: { priorities: null, todos: null, projects: null, recurring: true }
       },
+      dayCalDate: null,
       quarter: null,
       filters: { platform: "all", status: "all" }
     };
+    let selectedBlockIdx = null;
     let restoreFocusTo = null;
 
     function weekContext(date = new Date()) {
@@ -752,8 +883,23 @@
           timePeriod: normalizeRecurringPeriod(task && task.timePeriod),
           status: normalizeRecurringStatus(task && task.status)
         })),
-        projects
+        projects,
+        daySchedule: normalizeDaySchedule(source.daySchedule)
       };
+    }
+
+    function normalizeDaySchedule(raw) {
+      if (!raw || typeof raw !== "object") return {};
+      return Object.fromEntries(Object.entries(raw).map(([k, arr]) => [k,
+        Array.isArray(arr) ? arr.map((b) => ({
+          id: String(b.id || makeId("block")),
+          title: String(b.title || ""),
+          startMin: (typeof b.startMin === "number") ? b.startMin : 9 * 60,
+          durationMin: (typeof b.durationMin === "number" && b.durationMin >= 15) ? b.durationMin : 60,
+          color: BLOCK_COLORS.includes(b.color) ? b.color : DEFAULT_BLOCK_COLOR,
+          note: String(b.note || "")
+        })) : []
+      ]));
     }
 
     function normalizeWeeklyBrand(source) {
@@ -887,6 +1033,272 @@
       if (normalized === "facebook") return "platform-facebook";
       if (normalized === "instagram") return "platform-instagram";
       return "";
+    }
+
+    /* ────────── Day Planner helpers ────────── */
+    function getTodayKey() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    }
+
+    function minToY(min) { return (min - DAY_CAL_START_MIN) * PX_PER_MIN; }
+
+    function yToSnappedMin(y) {
+      const raw = y / PX_PER_MIN + DAY_CAL_START_MIN;
+      return Math.max(DAY_CAL_START_MIN, Math.min(DAY_CAL_END_MIN - SNAP_MIN, Math.round(raw / SNAP_MIN) * SNAP_MIN));
+    }
+
+    function fmtMin(min) {
+      const h = Math.floor(min / 60), m = min % 60;
+      const h12 = h % 12 || 12, ampm = h < 12 ? "am" : "pm";
+      return m === 0 ? `${h12}${ampm}` : `${h12}:${String(m).padStart(2,"0")}${ampm}`;
+    }
+
+    function fmtDur(min) {
+      if (min < 60) return `${min}m`;
+      const h = Math.floor(min / 60), m = min % 60;
+      return m ? `${h}h ${m}m` : `${h}h`;
+    }
+
+    function fmtDayLabel(key) {
+      if (!key) return "Today";
+      const [y, mo, d] = key.split("-").map(Number);
+      const date = new Date(y, mo - 1, d);
+      const today = new Date(); today.setHours(0,0,0,0);
+      const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+      const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+      if (date.toDateString() === today.toDateString()) return "Today";
+      if (date.toDateString() === tomorrow.toDateString()) return "Tomorrow";
+      if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
+      return date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+    }
+
+    function shiftDayCalDate(delta) {
+      const key = state.dayCalDate || getTodayKey();
+      const [y, mo, d] = key.split("-").map(Number);
+      const date = new Date(y, mo - 1, d);
+      date.setDate(date.getDate() + delta);
+      state.dayCalDate = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+      renderDailyCalendar();
+    }
+
+    function getDaySchedule() {
+      const bd = state.data[state.brand];
+      if (!bd.daySchedule || typeof bd.daySchedule !== "object") bd.daySchedule = {};
+      const key = state.dayCalDate || getTodayKey();
+      if (!Array.isArray(bd.daySchedule[key])) bd.daySchedule[key] = [];
+      return bd.daySchedule[key];
+    }
+
+    /* ────────── Day Planner render ────────── */
+    function renderDailyCalendar() {
+      const timeGrid = document.getElementById("timeGrid");
+      if (!timeGrid) return;
+      const key = state.dayCalDate || getTodayKey();
+      document.getElementById("dayCalLabel").textContent = fmtDayLabel(key);
+      const blocks = getDaySchedule();
+      const totalMin = blocks.reduce((s, b) => s + (b.durationMin || 0), 0);
+      document.getElementById("dayCalTotal").textContent = totalMin > 0 ? `${fmtDur(totalMin)} planned` : "";
+
+      timeGrid.innerHTML = "";
+      const totalH = (DAY_CAL_END_MIN - DAY_CAL_START_MIN) * PX_PER_MIN;
+      timeGrid.style.height = totalH + "px";
+
+      // Time lines + labels
+      for (let min = DAY_CAL_START_MIN; min <= DAY_CAL_END_MIN; min += 15) {
+        const isHour = min % 60 === 0, isHalf = !isHour && min % 30 === 0;
+        const line = document.createElement("div");
+        line.className = `time-line ${isHour ? "hour-line" : isHalf ? "half-line" : "quarter-line"}`;
+        line.style.top = minToY(min) + "px";
+        if (min % 30 === 0 && min < DAY_CAL_END_MIN) {
+          const lbl = document.createElement("span");
+          lbl.className = "time-label";
+          lbl.textContent = fmtMin(min);
+          line.appendChild(lbl);
+        }
+        timeGrid.appendChild(line);
+      }
+
+      // Current time
+      if (key === getTodayKey()) {
+        const now = new Date();
+        const nowMin = now.getHours() * 60 + now.getMinutes();
+        if (nowMin >= DAY_CAL_START_MIN && nowMin < DAY_CAL_END_MIN) {
+          const nowEl = document.createElement("div");
+          nowEl.className = "time-now-line";
+          nowEl.style.top = minToY(nowMin) + "px";
+          timeGrid.appendChild(nowEl);
+        }
+      }
+
+      // Drop zone
+      const dropZone = document.createElement("div");
+      dropZone.className = "time-drop-zone";
+      setupDragCreate(dropZone, timeGrid);
+      timeGrid.appendChild(dropZone);
+
+      // Blocks
+      blocks.forEach((block, idx) => {
+        if (!block || block.startMin == null) return;
+        timeGrid.appendChild(createCalBlock(block, idx, timeGrid));
+      });
+    }
+
+    function createCalBlock(block, idx, timeGrid) {
+      const el = document.createElement("div");
+      const color = BLOCK_COLORS.includes(block.color) ? block.color : DEFAULT_BLOCK_COLOR;
+      el.className = `cal-block cal-block-${color}`;
+      const top = minToY(block.startMin);
+      const blockH = Math.max(16, (block.durationMin || 30) * PX_PER_MIN);
+      el.style.top = top + "px";
+      el.style.height = blockH + "px";
+      const endMin = block.startMin + (block.durationMin || 30);
+      el.innerHTML = `<div class="cal-block-title">${escapeHtml(block.title || "Untitled")}</div>${blockH > 32 ? `<div class="cal-block-meta">${fmtMin(block.startMin)} – ${fmtMin(endMin)} · ${fmtDur(block.durationMin || 30)}</div>` : ""}<div class="cal-block-resize"></div>`;
+      const resizeHandle = el.querySelector(".cal-block-resize");
+
+      // Drag to move (or click to edit)
+      el.addEventListener("mousedown", (e) => {
+        if (e.target === resizeHandle) return;
+        e.stopPropagation(); e.preventDefault();
+        let dragMoved = false, ghost = null, newStartMin = block.startMin;
+        const gridRect = timeGrid.getBoundingClientRect();
+        const clickY = e.clientY - gridRect.top;
+        const clickOffset = clickY - top;
+        const onMove = (ev) => {
+          const curY = ev.clientY - gridRect.top;
+          if (!dragMoved && Math.abs(curY - clickY) < 6) return;
+          dragMoved = true;
+          el.classList.add("is-dragging");
+          if (!ghost) {
+            ghost = document.createElement("div");
+            ghost.className = "cal-ghost";
+            ghost.style.height = blockH + "px";
+            const lbl = document.createElement("span"); lbl.className = "cal-ghost-label";
+            ghost.appendChild(lbl);
+            timeGrid.appendChild(ghost);
+          }
+          const maxTop = (DAY_CAL_END_MIN - DAY_CAL_START_MIN - (block.durationMin || 30)) * PX_PER_MIN;
+          const newTop = Math.max(0, Math.min(maxTop, curY - clickOffset));
+          newStartMin = yToSnappedMin(newTop);
+          ghost.style.top = minToY(newStartMin) + "px";
+          ghost.querySelector(".cal-ghost-label").textContent = `${fmtMin(newStartMin)} · ${fmtDur(block.durationMin || 30)}`;
+        };
+        const onUp = () => {
+          document.removeEventListener("mousemove", onMove);
+          document.removeEventListener("mouseup", onUp);
+          el.classList.remove("is-dragging");
+          if (ghost) { ghost.remove(); ghost = null; }
+          if (!dragMoved) { openBlockEditor(idx); }
+          else { block.startMin = newStartMin; persist(); renderDailyCalendar(); }
+        };
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup", onUp);
+      });
+
+      // Resize
+      resizeHandle.addEventListener("mousedown", (e) => {
+        e.stopPropagation(); e.preventDefault();
+        const startY = e.clientY, startDur = block.durationMin || 30;
+        let newDur = startDur;
+        const onMove = (ev) => {
+          const dy = ev.clientY - startY;
+          newDur = Math.max(SNAP_MIN, Math.min(DAY_CAL_END_MIN - block.startMin,
+            Math.round((startDur + dy / PX_PER_MIN) / SNAP_MIN) * SNAP_MIN));
+          el.style.height = Math.max(16, newDur * PX_PER_MIN) + "px";
+          const metaEl = el.querySelector(".cal-block-meta");
+          if (metaEl) metaEl.textContent = `${fmtMin(block.startMin)} – ${fmtMin(block.startMin + newDur)} · ${fmtDur(newDur)}`;
+        };
+        const onUp = () => {
+          document.removeEventListener("mousemove", onMove);
+          document.removeEventListener("mouseup", onUp);
+          block.durationMin = newDur; persist(); renderDailyCalendar();
+        };
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup", onUp);
+      });
+
+      return el;
+    }
+
+    function setupDragCreate(dropZone, timeGrid) {
+      dropZone.addEventListener("mousedown", (e) => {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        const gridRect = timeGrid.getBoundingClientRect();
+        const startY = e.clientY - gridRect.top;
+        const startMin = yToSnappedMin(startY);
+        let endMin = startMin + SNAP_MIN;
+        const ghost = document.createElement("div");
+        ghost.className = "cal-ghost";
+        ghost.style.top = minToY(startMin) + "px";
+        ghost.style.height = SNAP_MIN * PX_PER_MIN + "px";
+        const lbl = document.createElement("span"); lbl.className = "cal-ghost-label";
+        lbl.textContent = `${fmtMin(startMin)} · ${fmtDur(SNAP_MIN)}`;
+        ghost.appendChild(lbl);
+        timeGrid.appendChild(ghost);
+        const onMove = (ev) => {
+          const curY = ev.clientY - gridRect.top;
+          endMin = yToSnappedMin(curY);
+          const dur = Math.max(SNAP_MIN, endMin - startMin);
+          ghost.style.height = dur * PX_PER_MIN + "px";
+          lbl.textContent = `${fmtMin(startMin)} · ${fmtDur(dur)}`;
+        };
+        const onUp = () => {
+          document.removeEventListener("mousemove", onMove);
+          document.removeEventListener("mouseup", onUp);
+          ghost.remove();
+          const dur = Math.max(SNAP_MIN, endMin - startMin);
+          const blocks = getDaySchedule();
+          blocks.push({ id: makeId("block"), title: "", startMin, durationMin: dur, color: DEFAULT_BLOCK_COLOR, note: "" });
+          persist(); renderDailyCalendar();
+          openBlockEditor(blocks.length - 1);
+        };
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup", onUp);
+      });
+    }
+
+    /* ────────── Block editor ────────── */
+    function openBlockEditor(idx) {
+      selectedBlockIdx = idx;
+      const block = getDaySchedule()[idx];
+      if (!block) return;
+      document.getElementById("blockTitle").value = block.title || "";
+      const h = Math.floor(block.startMin / 60), m = block.startMin % 60;
+      document.getElementById("blockStart").value = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+      const durOpts = [15,30,45,60,90,120,180,240];
+      const closest = durOpts.reduce((p,c) => Math.abs(c-(block.durationMin||60)) < Math.abs(p-(block.durationMin||60)) ? c : p);
+      document.getElementById("blockDuration").value = String(closest);
+      document.getElementById("blockNote").value = block.note || "";
+      document.querySelectorAll(".color-chip").forEach(c => c.classList.toggle("active", c.dataset.color === (block.color || DEFAULT_BLOCK_COLOR)));
+      const blockModal = document.getElementById("blockModal");
+      blockModal.classList.add("open");
+      blockModal.setAttribute("aria-hidden","false");
+      setTimeout(() => document.getElementById("blockTitle").focus(), 0);
+    }
+
+    function closeBlockEditor() {
+      const bm = document.getElementById("blockModal");
+      bm.classList.remove("open");
+      bm.setAttribute("aria-hidden","true");
+    }
+
+    function saveBlock() {
+      const blocks = getDaySchedule();
+      if (selectedBlockIdx == null || !blocks[selectedBlockIdx]) return;
+      const block = blocks[selectedBlockIdx];
+      block.title = document.getElementById("blockTitle").value.trim();
+      const sv = document.getElementById("blockStart").value;
+      if (sv) {
+        const [bh, bm] = sv.split(":").map(Number);
+        const ns = bh * 60 + bm;
+        if (ns >= DAY_CAL_START_MIN && ns < DAY_CAL_END_MIN) block.startMin = ns;
+      }
+      const nd = parseInt(document.getElementById("blockDuration").value, 10);
+      if (nd >= 15) block.durationMin = nd;
+      block.note = document.getElementById("blockNote").value.trim();
+      persist();
+      renderDailyCalendar();
     }
 
     function renderStats() {
@@ -1410,6 +1822,7 @@
       weekBadge.textContent = `Week of ${formatWeekOf()}`;
       renderStats();
       renderCalendar();
+      renderDailyCalendar();
     }
 
     function bindPostInput(input, key) {
@@ -1801,6 +2214,42 @@
       localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
     });
 
+    // Day planner nav
+    document.getElementById("dayCalPrev").addEventListener("click", () => shiftDayCalDate(-1));
+    document.getElementById("dayCalNext").addEventListener("click", () => shiftDayCalDate(1));
+
+    // Block modal
+    const blockModal = document.getElementById("blockModal");
+    document.getElementById("closeBlockModal").addEventListener("click", () => { saveBlock(); closeBlockEditor(); });
+    blockModal.addEventListener("click", (e) => { if (e.target === blockModal) { saveBlock(); closeBlockEditor(); } });
+    blockModal.addEventListener("keydown", (e) => {
+      trapFocus(e, blockModal.querySelector(".modal-card"), () => { saveBlock(); closeBlockEditor(); });
+    });
+    document.getElementById("deleteBlockBtn").addEventListener("click", () => {
+      const blocks = getDaySchedule();
+      if (selectedBlockIdx != null && blocks[selectedBlockIdx]) {
+        blocks.splice(selectedBlockIdx, 1);
+        persist(); renderDailyCalendar();
+      }
+      closeBlockEditor();
+    });
+    document.getElementById("blockColorPicker").addEventListener("click", (e) => {
+      const chip = e.target.closest(".color-chip");
+      if (!chip || !chip.dataset.color) return;
+      const blocks = getDaySchedule();
+      const block = blocks[selectedBlockIdx];
+      if (!block) return;
+      block.color = chip.dataset.color;
+      document.querySelectorAll(".color-chip").forEach(c => c.classList.toggle("active", c.dataset.color === block.color));
+      persist(); renderDailyCalendar();
+    });
+    ["blockTitle","blockStart","blockDuration","blockNote"].forEach((id) => {
+      const el = document.getElementById(id);
+      el.addEventListener("input", saveBlock);
+      el.addEventListener("change", saveBlock);
+    });
+
+    state.dayCalDate = getTodayKey();
     loadThemePreference();
     load();
     render();
