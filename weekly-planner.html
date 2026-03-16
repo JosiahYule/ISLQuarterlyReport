@@ -257,20 +257,18 @@
     .platform-chip[data-platform='Instagram']{color:#c13584}
     .platform-chip.active{background:var(--primary);color:#fff;border-color:transparent;box-shadow:0 8px 16px color-mix(in srgb, var(--primary) 28%, transparent)}
 
-    /* ── Top grid ─────────────────────────────────────────── */
-    .top-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start}
-    .day-cal-controls{display:flex;align-items:center;gap:.45rem}
+.day-cal-controls{display:flex;align-items:center;gap:.45rem}
     .day-cal-label{font-size:.8rem;font-weight:600;color:var(--ink-mid);white-space:nowrap;min-width:64px;text-align:center}
     .day-cal-total{font-size:.72rem;color:var(--ink-muted);padding-left:.15rem}
     /* ── Time grid ─────────────────────────────────────────── */
-    .time-grid-wrap{overflow-y:auto;max-height:520px;border:1px solid var(--border);border-radius:.75rem;background:rgba(255,255,255,.35)}
+    .time-grid-wrap{overflow-y:auto;max-height:380px;border:1px solid var(--border);border-radius:.75rem;background:rgba(255,255,255,.35)}
     .time-grid{position:relative;user-select:none}
     .time-line{position:absolute;left:0;right:0;pointer-events:none}
     .time-line.hour-line{border-top:1px solid var(--border)}
     .time-line.half-line{border-top:1px dashed color-mix(in srgb,var(--border) 55%,transparent)}
     .time-line.quarter-line{border-top:1px dashed color-mix(in srgb,var(--border) 22%,transparent)}
     .time-label{position:absolute;left:4px;top:0;transform:translateY(-50%);font-size:.62rem;color:var(--ink-muted);font-weight:500;white-space:nowrap;pointer-events:none}
-    .time-drop-zone{position:absolute;left:44px;right:0;top:0;bottom:0;cursor:crosshair;z-index:1}
+    .time-drop-zone{position:absolute;left:44px;right:0;top:0;bottom:0;cursor:default;z-index:1}
     .time-now-line{position:absolute;left:0;right:0;height:2px;background:#ef4444;z-index:5;pointer-events:none}
     .time-now-line::before{content:'';position:absolute;left:42px;top:-4px;width:8px;height:8px;background:#ef4444;border-radius:50%}
     /* ── Blocks ────────────────────────────────────────────── */
@@ -318,8 +316,7 @@
       .topbar{padding:.8rem}
       .calendar-board{grid-template-columns:repeat(2,minmax(0,1fr))}
       .work-grid{grid-template-columns:1fr}
-      .top-grid{grid-template-columns:1fr}
-      .fields{grid-template-columns:1fr}
+.fields{grid-template-columns:1fr}
       .hero-grid{grid-template-columns:1fr}
       #clearWeek{justify-self:start}
     }
@@ -346,29 +343,9 @@
       </div>
       <div class="topbar-right">
         <span class="week-badge" id="weekBadge">Week of --</span>
-        <div class="toggle" role="tablist" aria-label="Staffing brand toggle">
-        <button type="button" role="tab" aria-selected="true" aria-controls="plannerContent" tabindex="0" data-brand="is" class="active">IS</button>
-        <button type="button" role="tab" aria-selected="false" aria-controls="plannerContent" tabindex="-1" data-brand="as">AS</button>
-        <button type="button" role="tab" aria-selected="false" aria-controls="plannerContent" tabindex="-1" data-brand="ad">AD</button>
-        </div>
       </div>
     </header>
 
-
-    <div class="top-grid">
-    <section class="panel glass">
-      <div class="panel-head">
-        <h2>Priorities</h2>
-        <button type="button" class="section-add" id="prioritiesToggle" aria-expanded="false" aria-label="Toggle priorities section">+</button>
-      </div>
-      <div class="panel-content collapsed" id="prioritiesContent">
-        <ul class="priority-list">
-          <li><input id="priority1" type="text" placeholder="Priority 1" /></li>
-          <li id="priorityItem2" class="hidden"><input id="priority2" type="text" placeholder="Priority 2" /></li>
-          <li id="priorityItem3" class="hidden"><input id="priority3" type="text" placeholder="Priority 3" /></li>
-        </ul>
-      </div>
-    </section>
 
     <section class="panel glass">
       <div class="panel-head">
@@ -386,13 +363,19 @@
         </div>
       </div>
     </section>
-    </div>
 
     <section class="main-grid">
       <section class="panel glass">
         <div class="panel-head">
           <h2>Calendar</h2>
-          <button type="button" class="section-add calendar-add" id="calendarAddBtn" aria-label="Add post">+</button>
+          <div style="display:flex;align-items:center;gap:.65rem">
+            <div class="toggle" role="tablist" aria-label="Staffing brand toggle">
+              <button type="button" role="tab" aria-selected="true" aria-controls="plannerContent" tabindex="0" data-brand="is" class="active">IS</button>
+              <button type="button" role="tab" aria-selected="false" aria-controls="plannerContent" tabindex="-1" data-brand="as">AS</button>
+              <button type="button" role="tab" aria-selected="false" aria-controls="plannerContent" tabindex="-1" data-brand="ad">AD</button>
+            </div>
+            <button type="button" class="section-add calendar-add" id="calendarAddBtn" aria-label="Add post">+</button>
+          </div>
         </div>
         <div class="calendar-controls">
           <select id="calendarPlatformFilter" class="calendar-filter" aria-label="Filter by platform">
@@ -436,16 +419,31 @@
           <div class="project-grid" id="projectGrid"></div>
         </div>
       </section>
-      <section class="panel glass">
-        <div class="panel-head">
-          <h2>To Do List</h2>
-          <button type="button" class="section-add" id="todosToggle" aria-expanded="false" aria-label="Toggle to do section">+</button>
-        </div>
-        <div class="panel-content collapsed" id="todosContent">
-          <div class="todo-list" id="todoList"></div>
-          <button type="button" class="new-task-btn" id="newTaskBtn">New task</button>
-        </div>
-      </section>
+      <div style="display:flex;flex-direction:column;gap:1rem">
+        <section class="panel glass">
+          <div class="panel-head">
+            <h2>To Do List</h2>
+            <button type="button" class="section-add" id="todosToggle" aria-expanded="false" aria-label="Toggle to do section">+</button>
+          </div>
+          <div class="panel-content collapsed" id="todosContent">
+            <div class="todo-list" id="todoList"></div>
+            <button type="button" class="new-task-btn" id="newTaskBtn">New task</button>
+          </div>
+        </section>
+        <section class="panel glass">
+          <div class="panel-head">
+            <h2>Priorities</h2>
+            <button type="button" class="section-add" id="prioritiesToggle" aria-expanded="false" aria-label="Toggle priorities section">+</button>
+          </div>
+          <div class="panel-content collapsed" id="prioritiesContent">
+            <ul class="priority-list">
+              <li><input id="priority1" type="text" placeholder="Priority 1" /></li>
+              <li id="priorityItem2" class="hidden"><input id="priority2" type="text" placeholder="Priority 2" /></li>
+              <li id="priorityItem3" class="hidden"><input id="priority3" type="text" placeholder="Priority 3" /></li>
+            </ul>
+          </div>
+        </section>
+      </div>
     </section>
 
     <div class="modal" id="editorModal" aria-hidden="true">
@@ -745,6 +743,7 @@
 
     const state = {
       brand: "is",
+      calBrand: "is",
       selectedDay: "Monday",
       selectedPostIndex: 0,
       selectedProjectIndex: null,
@@ -794,7 +793,7 @@
     function setSavedLabel() {}
 
     function dayPosts(day = state.selectedDay) {
-      const posts = state.data[state.brand].posts;
+      const posts = state.data[state.calBrand].posts;
       const existing = posts[day];
       if (Array.isArray(existing)) return existing;
       if (existing && typeof existing === "object") {
@@ -1787,9 +1786,9 @@
       document.documentElement.style.setProperty("--accent", currentBrand.accent);
       brandSubtitle.textContent = currentBrand.subtitle;
       brandMark.textContent = currentBrand.mark;
-      buttons.forEach((btn) => btn.classList.toggle("active", btn.dataset.brand === state.brand));
       buttons.forEach((btn) => {
-        const isActive = btn.dataset.brand === state.brand;
+        const isActive = btn.dataset.brand === state.calBrand;
+        btn.classList.toggle("active", isActive);
         btn.setAttribute("aria-selected", isActive ? "true" : "false");
         btn.setAttribute("tabindex", isActive ? "0" : "-1");
       });
@@ -1835,10 +1834,19 @@
       });
     }
 
-    buttons.forEach((btn) => btn.addEventListener("click", () => { state.brand = btn.dataset.brand; state.selectedDay = "Monday"; state.selectedPostIndex = 0; state.selectedProjectIndex = null;
-      state.selectedRecurringIndex = null; state.selectedTodoIndex = null; closeProjectEditor(); closeTodoEditor(); render(); }));
+    buttons.forEach((btn) => btn.addEventListener("click", () => {
+      state.calBrand = btn.dataset.brand;
+      state.selectedDay = "Monday"; state.selectedPostIndex = 0;
+      buttons.forEach((b) => {
+        const active = b.dataset.brand === state.calBrand;
+        b.classList.toggle("active", active);
+        b.setAttribute("aria-selected", active ? "true" : "false");
+        b.setAttribute("tabindex", active ? "0" : "-1");
+      });
+      renderCalendar();
+    }));
     document.querySelector(".toggle").addEventListener("keydown", (event) => {
-      const index = Array.from(buttons).findIndex((button) => button.dataset.brand === state.brand);
+      const index = Array.from(buttons).findIndex((button) => button.dataset.brand === state.calBrand);
       if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
       event.preventDefault();
       let nextIndex = index;
