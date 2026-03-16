@@ -141,7 +141,7 @@
 
     .new-task-btn,.project-add{border:1px dashed color-mix(in srgb, var(--primary) 48%, white);background:color-mix(in srgb, var(--primary) 10%, white);color:var(--primary);padding:.7rem 1rem;border-radius:.85rem;font:inherit;font-weight:600;cursor:pointer}
     #newTaskBtn,.project-add{justify-self:start;align-self:start;width:auto;padding:.5rem .85rem;border-style:solid;background:transparent;font-weight:500;font-size:.82rem;opacity:.9}
-    .todo-list,.project-grid,.recurring-board{display:grid;gap:12px}
+    .todo-list,.project-grid{display:grid;gap:12px}
     #todosContent{display:grid;grid-template-columns:1fr;gap:12px}
     .todo-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:12px;padding:12px 13px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.86);box-shadow:0 4px 12px rgba(0,0,0,.04);cursor:pointer}
     .todo-item input[type='checkbox']{width:auto;accent-color:var(--primary)}
@@ -181,7 +181,7 @@
     body.dark-mode .post-tile,
     body.dark-mode .todo-item,
     body.dark-mode .project-tile,
-    body.dark-mode .recurring-tile,
+    body.dark-mode .recurring-row,
     body.dark-mode .modal-card,
     body.dark-mode .linked-task,
     body.dark-mode .todo-delete,
@@ -205,18 +205,20 @@
     .linked-task span:last-child{font-weight:700}
     .due-badge{justify-self:start;align-self:flex-start;display:inline-flex;width:fit-content;font-size:.63rem;padding:3px 8px;background:#fee2e2;color:#991b1b;text-transform:uppercase;border-radius:999px}
     .due-badge.week{background:#fef3c7;color:#92400e}
-    .recurring-section{margin-top:1rem}
-    .recurring-board{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-    .recurring-tile{min-height:132px;border-radius:16px;border:1px solid var(--border);padding:12px;text-align:left;display:flex;flex-direction:column;gap:8px;background:rgba(255,253,249,.88);font-family:var(--font-body)}
-    .recurring-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-    .recurring-name{font-weight:700;font-size:.92rem;line-height:1.35;word-break:break-word;flex:1}
-    .recurring-meta-line{display:flex;align-items:center;justify-content:flex-end;gap:7px;color:var(--ink-muted);font-size:.75rem;white-space:nowrap;margin-left:auto}
-    .recurring-meta-chip{font-weight:600}
-    .recurring-meta-divider{opacity:.5}
-    .recurring-status{align-self:flex-start;display:inline-flex;align-items:center;line-height:1;font-size:.64rem;padding:4px 8px;text-transform:uppercase;letter-spacing:.04em;background:#e2e8f0;color:#334155;border-radius:999px;margin-top:auto}
-    .recurring-status[data-state='in progress']{background:#ffedd5;color:#9a3412}
-    .recurring-status[data-state='done']{background:#dcfce7;color:#166534}
-    .recurring-status[data-state='on hold']{background:#fef9c3;color:#854d0e}
+    .recurring-list{display:grid;gap:6px}
+    .recurring-row{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--border);border-radius:10px;background:rgba(255,253,249,.88);transition:var(--trans)}
+    .recurring-row:hover{border-color:color-mix(in srgb, var(--primary) 30%, white)}
+    .recurring-row.done .recurring-name-edit{text-decoration:line-through;opacity:.45}
+    .recurring-check{width:15px;height:15px;flex-shrink:0;cursor:pointer;accent-color:var(--primary)}
+    .recurring-name-edit{flex:1;font:inherit;font-size:.88rem;font-weight:500;color:var(--ink);background:transparent;border:none;outline:none;min-width:0;cursor:text;border-radius:4px;padding:1px 4px;transition:background .15s}
+    .recurring-name-edit:focus{background:rgba(255,255,255,.7);outline:2px solid color-mix(in srgb, var(--primary) 40%, transparent);outline-offset:0}
+    .recurring-name-edit:empty::before{content:attr(data-placeholder);color:var(--ink-muted);pointer-events:none}
+    .recurring-freq-badge{flex-shrink:0;padding:3px 9px;border-radius:999px;font:inherit;font-size:.67rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;background:color-mix(in srgb, var(--primary) 12%, white);color:var(--primary);border:1px solid color-mix(in srgb, var(--primary) 20%, white);cursor:pointer;transition:var(--trans)}
+    .recurring-freq-badge:hover{background:color-mix(in srgb, var(--primary) 22%, white)}
+    .recurring-del-btn{flex-shrink:0;width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:var(--ink-muted);display:grid;place-items:center;cursor:pointer;opacity:0;transition:var(--trans)}
+    .recurring-row:hover .recurring-del-btn,.recurring-row:focus-within .recurring-del-btn{opacity:1}
+    .recurring-del-btn:hover{background:#fee2e2;color:#b91c1c}
+    .recurring-empty{color:var(--ink-muted);font-size:.82rem;padding:10px 2px;text-align:center;opacity:.8}
 
     .badge,.priority-badge,.status-badge,.due-badge,.project-status-option,.tag-chip,.status-tag,.tag,.platform-badge,.post-type-tag{border-radius:999px;padding:.25rem .62rem;font-size:.67rem;letter-spacing:.05em;text-transform:uppercase;border:1px solid transparent}
     .status-badge,.project-status-option.active,.status-tag.active,.toggle button.active{background:var(--primary);color:#fff}
@@ -257,7 +259,6 @@
 
     @media (max-width:1100px){
       .calendar-board{grid-template-columns:repeat(3,minmax(0,1fr))}
-      .recurring-board{grid-template-columns:repeat(2,minmax(0,1fr))}
       .project-grid{grid-template-columns:1fr}
     }
     @media (max-width:820px){
@@ -274,7 +275,7 @@
       .toggle button{flex:1}
       .calendar-controls{gap:.5rem}
       .calendar-filter{width:calc(50% - .25rem);min-width:0;max-width:none}
-      .calendar-board,.recurring-board{grid-template-columns:1fr}
+      .calendar-board{grid-template-columns:1fr}
       .project-actions{grid-template-columns:1fr}
       .theme-toggle-fab{right:.8rem;bottom:.8rem}
     }
@@ -340,12 +341,17 @@
       </section>
     </section>
 
-    <section class="panel glass recurring-section">
+    <section class="panel glass" style="margin-top:1rem">
       <div class="panel-head">
         <h2>Recurring Tasks</h2>
-        <button type="button" class="section-add calendar-add" id="recurringAddBtn" aria-label="Add recurring task">+</button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button type="button" class="section-add calendar-add" id="recurringAddBtn" aria-label="Add recurring task">+</button>
+          <button type="button" class="section-add" id="recurringToggle" aria-expanded="true" aria-label="Toggle recurring tasks section"></button>
+        </div>
       </div>
-      <div class="recurring-board" id="recurringList"></div>
+      <div class="panel-content" id="recurringContent">
+        <div class="recurring-list" id="recurringList"></div>
+      </div>
     </section>
 
     <section class="work-grid">
@@ -484,53 +490,6 @@
       </section>
     </div>
 
-    <div class="modal" id="recurringModal" aria-hidden="true">
-      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="recurringEditorTitle">
-        <div class="modal-head">
-          <h2 id="recurringEditorTitle">Recurring task details</h2>
-          <button type="button" class="close-btn" id="closeRecurringModal" aria-label="Close recurring task editor">×</button>
-        </div>
-        <div class="fields">
-          <div class="field-group full">
-            <label for="recurringName">Task name</label>
-            <input id="recurringName" type="text" placeholder="Weekly pipeline review" />
-          </div>
-          <div class="field-group">
-            <label for="recurringTimePeriod">Time period</label>
-            <select id="recurringTimePeriod">
-              <option value="anytime">Anytime</option>
-              <option value="morning">Morning</option>
-              <option value="afternoon">Afternoon</option>
-              <option value="evening">Evening</option>
-            </select>
-          </div>
-          <div class="field-group">
-            <label for="recurringStatus">Status</label>
-            <select id="recurringStatus">
-              <option value="in progress">In progress</option>
-              <option value="done">Done</option>
-              <option value="on hold">On hold</option>
-            </select>
-          </div>
-          <div class="field-group">
-            <label for="recurringFrequency">Repeat</label>
-            <select id="recurringFrequency">
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="bi-weekly">Bi-weekly</option>
-              <option value="monthly">Monthly</option>
-            </select>
-          </div>
-          <div class="field-group">
-            <label for="recurringDueDate">Due date</label>
-            <input id="recurringDueDate" type="date" />
-          </div>
-          <div class="field-group full">
-            <button type="button" class="icon-delete-btn" id="deleteRecurringTaskBtn" aria-label="Delete recurring task"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false"><path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm1 6h2v8h-2V9Zm4 0h2v8h-2V9ZM8 9h2v8H8V9Zm-1 12h10a2 2 0 0 0 2-2V7H5v12a2 2 0 0 0 2 2Z" fill="currentColor"/></svg><span>Delete task</span></button>
-          </div>
-        </div>
-      </section>
-    </div>
 
     <div class="modal" id="projectModal" aria-hidden="true">
       <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="projectEditorTitle">
@@ -588,9 +547,8 @@
     const todoModal = document.getElementById("todoModal");
     const closeTodoModal = document.getElementById("closeTodoModal");
     const deleteTodoTaskBtn = document.getElementById("deleteTodoTaskBtn");
-    const recurringModal = document.getElementById("recurringModal");
-    const closeRecurringModal = document.getElementById("closeRecurringModal");
-    const deleteRecurringTaskBtn = document.getElementById("deleteRecurringTaskBtn");
+    const recurringToggle = document.getElementById("recurringToggle");
+    const recurringContent = document.getElementById("recurringContent");
     const buttons = document.querySelectorAll(".toggle button");
     const statusPicker = document.getElementById("statusPicker");
     const priorityItem2 = document.getElementById("priorityItem2");
@@ -635,11 +593,6 @@
       kpiTarget: document.getElementById("kpiTarget"),
       projectName: document.getElementById("projectName"),
       projectDeadline: document.getElementById("projectDeadline"),
-      recurringName: document.getElementById("recurringName"),
-      recurringTimePeriod: document.getElementById("recurringTimePeriod"),
-      recurringStatus: document.getElementById("recurringStatus"),
-      recurringFrequency: document.getElementById("recurringFrequency"),
-      recurringDueDate: document.getElementById("recurringDueDate"),
       todoName: document.getElementById("todoName"),
       todoPriority: document.getElementById("todoPriority"),
       todoProject: document.getElementById("todoProject")
@@ -670,9 +623,9 @@
       selectedTodoIndex: null,
       data: { is: emptyBrandState(), as: emptyBrandState(), ad: emptyBrandState() },
       panelOpen: {
-        is: { priorities: null, todos: null, projects: null },
-        as: { priorities: null, todos: null, projects: null },
-        ad: { priorities: null, todos: null, projects: null }
+        is: { priorities: null, todos: null, projects: null, recurring: true },
+        as: { priorities: null, todos: null, projects: null, recurring: true },
+        ad: { priorities: null, todos: null, projects: null, recurring: true }
       },
       quarter: null,
       filters: { platform: "all", status: "all" }
@@ -1187,61 +1140,84 @@
       document.getElementById("todoEditorTitle").textContent = `To do details • ${todo.text || `Task ${state.selectedTodoIndex + 1}`}`;
     }
 
-function renderRecurringTasks() {
-      const recurringTasks = state.data[state.brand].recurringTasks || [];
-      recurringList.innerHTML = "";
-      recurringTasks.forEach((task, index) => {
-        const tile = document.createElement("button");
-        tile.type = "button";
-        tile.className = "recurring-tile" + (task.done ? " done" : "");
-        const status = normalizeRecurringStatus(task.status);
-        const dueState = withinCurrentWeek(task.dueDate);
-        const dueMarkup = dueState === "overdue"
-          ? '<span class="due-badge">Overdue</span>'
-          : dueState === "week"
-            ? '<span class="due-badge week">Due this week</span>'
-            : "";
-        tile.innerHTML = `<span class="recurring-head"><span class="recurring-name">${escapeHtml(task.text || `Recurring Task ${index + 1}`)}</span><span class="recurring-meta-line"><span class="recurring-meta-chip">${escapeHtml(titleCase(normalizeRecurringFrequency(task.frequency)))}</span></span></span>${dueMarkup}<span class="recurring-status" data-state="${escapeHtml(status)}">${escapeHtml(titleCase(status))}</span>`;
-        tile.addEventListener("click", () => openRecurringEditor(index));
-        recurringList.appendChild(tile);
-      });
-    }
-
     function recurringTaskList() {
       const recurringTasks = state.data[state.brand].recurringTasks;
       return Array.isArray(recurringTasks) ? recurringTasks : [];
     }
 
-    function currentRecurringTask() {
-      const recurringTasks = recurringTaskList();
-      if (state.selectedRecurringIndex == null || !recurringTasks[state.selectedRecurringIndex]) return null;
-      return recurringTasks[state.selectedRecurringIndex];
-    }
+    function closeRecurringEditor() { /* no-op: recurring editor is now inline */ }
 
-    function openRecurringEditor(index) {
-      restoreFocusTo = document.activeElement;
-      state.selectedRecurringIndex = index;
-      recurringModal.classList.add("open");
-      recurringModal.setAttribute("aria-hidden", "false");
-      renderRecurringDetails();
-      setTimeout(() => fields.recurringName.focus(), 0);
-    }
+    function renderRecurringTasks() {
+      const tasks = recurringTaskList();
+      recurringList.innerHTML = "";
+      const FREQ_CYCLE = ["daily", "weekly", "bi-weekly", "monthly"];
 
-    function closeRecurringEditor() {
-      recurringModal.classList.remove("open");
-      recurringModal.setAttribute("aria-hidden", "true");
-      if (restoreFocusTo && typeof restoreFocusTo.focus === "function") restoreFocusTo.focus();
-    }
+      if (tasks.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "recurring-empty";
+        empty.textContent = "No recurring tasks — click + to add one";
+        recurringList.appendChild(empty);
+        return;
+      }
 
-    function renderRecurringDetails() {
-      const task = currentRecurringTask();
-      if (!task) return;
-      fields.recurringName.value = task.text || "";
-      fields.recurringTimePeriod.value = normalizeRecurringPeriod(task.timePeriod);
-      fields.recurringStatus.value = normalizeRecurringStatus(task.status);
-      fields.recurringFrequency.value = normalizeRecurringFrequency(task.frequency);
-      fields.recurringDueDate.value = task.dueDate || "";
-      document.getElementById("recurringEditorTitle").textContent = `Recurring task details • ${task.text || `Task ${state.selectedRecurringIndex + 1}`}`;
+      tasks.forEach((task, index) => {
+        if (!task) return;
+        const row = document.createElement("div");
+        row.className = "recurring-row" + (task.done ? " done" : "");
+
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.className = "recurring-check";
+        cb.checked = !!task.done;
+        cb.setAttribute("aria-label", "Mark complete for this period");
+        cb.addEventListener("change", () => {
+          task.done = cb.checked;
+          row.classList.toggle("done", task.done);
+          persist();
+        });
+
+        const nameEl = document.createElement("span");
+        nameEl.className = "recurring-name-edit";
+        nameEl.contentEditable = "plaintext-only";
+        nameEl.textContent = task.text || "";
+        nameEl.dataset.placeholder = "Task name";
+        nameEl.setAttribute("role", "textbox");
+        nameEl.setAttribute("aria-label", "Task name");
+        nameEl.addEventListener("blur", () => { task.text = nameEl.textContent.trim(); persist(); });
+        nameEl.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") { e.preventDefault(); nameEl.blur(); }
+          if (e.key === "Escape") { nameEl.textContent = task.text || ""; nameEl.blur(); }
+        });
+
+        const freqBtn = document.createElement("button");
+        freqBtn.type = "button";
+        freqBtn.className = "recurring-freq-badge";
+        freqBtn.textContent = titleCase(normalizeRecurringFrequency(task.frequency));
+        freqBtn.title = "Click to change frequency";
+        freqBtn.addEventListener("click", () => {
+          const current = normalizeRecurringFrequency(task.frequency);
+          task.frequency = FREQ_CYCLE[(FREQ_CYCLE.indexOf(current) + 1) % FREQ_CYCLE.length];
+          freqBtn.textContent = titleCase(task.frequency);
+          persist();
+        });
+
+        const delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.className = "recurring-del-btn";
+        delBtn.setAttribute("aria-label", "Delete task");
+        delBtn.innerHTML = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+        delBtn.addEventListener("click", () => {
+          tasks.splice(index, 1);
+          persist();
+          renderRecurringTasks();
+        });
+
+        row.appendChild(cb);
+        row.appendChild(nameEl);
+        row.appendChild(freqBtn);
+        row.appendChild(delBtn);
+        recurringList.appendChild(row);
+      });
     }
 
     function hasPriorityContent() {
@@ -1380,10 +1356,12 @@ function renderRecurringTasks() {
       const prioritiesOpen = panelState.priorities == null ? hasPriorityContent() : panelState.priorities;
       const todosOpen = panelState.todos == null ? hasTodoContent() : panelState.todos;
       const projectsOpen = panelState.projects == null ? hasProjectsContent() : panelState.projects;
+      const recurringOpen = panelState.recurring == null ? true : panelState.recurring;
 
       updatePanelSection(prioritiesContent, prioritiesToggle, prioritiesOpen);
       updatePanelSection(todosContent, todosToggle, todosOpen);
       updatePanelSection(projectsContent, projectsToggle, projectsOpen);
+      updatePanelSection(recurringContent, recurringToggle, recurringOpen);
     }
 
     function render() {
@@ -1414,7 +1392,6 @@ function renderRecurringTasks() {
       renderTodos();
       renderProjects();
       if (projectModal.classList.contains("open")) renderProjectDetails();
-      if (recurringModal.classList.contains("open")) renderRecurringDetails();
       if (todoModal.classList.contains("open")) renderTodoDetails();
 
       const post = editorModal.classList.contains("open") ? currentPost(false) : {};
@@ -1446,7 +1423,7 @@ function renderRecurringTasks() {
     }
 
     buttons.forEach((btn) => btn.addEventListener("click", () => { state.brand = btn.dataset.brand; state.selectedDay = "Monday"; state.selectedPostIndex = 0; state.selectedProjectIndex = null;
-      state.selectedRecurringIndex = null; state.selectedTodoIndex = null; closeProjectEditor(); closeRecurringEditor(); closeTodoEditor(); render(); }));
+      state.selectedRecurringIndex = null; state.selectedTodoIndex = null; closeProjectEditor(); closeTodoEditor(); render(); }));
     document.querySelector(".toggle").addEventListener("keydown", (event) => {
       const index = Array.from(buttons).findIndex((button) => button.dataset.brand === state.brand);
       if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
@@ -1557,40 +1534,19 @@ function renderRecurringTasks() {
     });
 
     recurringAddBtn.addEventListener("click", () => {
-      setSavedLabel("Saving...");
       state.data[state.brand].recurringTasks.push({ text: "", done: false, frequency: "weekly", dueDate: "", timePeriod: "anytime", status: "in progress" });
-      renderRecurringTasks();
+      state.panelOpen[state.brand].recurring = true;
       persist();
-      openRecurringEditor(state.data[state.brand].recurringTasks.length - 1);
+      renderSectionToggles();
+      renderRecurringTasks();
+      const nameEls = recurringList.querySelectorAll(".recurring-name-edit");
+      if (nameEls.length > 0) setTimeout(() => nameEls[nameEls.length - 1].focus(), 0);
     });
 
-    [fields.recurringName, fields.recurringTimePeriod, fields.recurringStatus, fields.recurringFrequency, fields.recurringDueDate].forEach((input) => {
-      input.addEventListener("input", () => {
-        const task = currentRecurringTask();
-        if (!task) return;
-        setSavedLabel("Saving...");
-        task.text = fields.recurringName.value;
-        task.timePeriod = normalizeRecurringPeriod(fields.recurringTimePeriod.value);
-        task.status = normalizeRecurringStatus(fields.recurringStatus.value);
-        task.frequency = normalizeRecurringFrequency(fields.recurringFrequency.value);
-        task.dueDate = fields.recurringDueDate.value;
-        persist();
-        renderRecurringTasks();
-        renderRecurringDetails();
-      });
-      input.addEventListener("change", () => input.dispatchEvent(new Event("input", { bubbles: true })));
-    });
-
-    deleteRecurringTaskBtn.addEventListener("click", () => {
-      const list = recurringTaskList();
-      if (state.selectedRecurringIndex == null || !list[state.selectedRecurringIndex]) return;
-      setSavedLabel("Saving...");
-      list.splice(state.selectedRecurringIndex, 1);
-      if (list.length === 0) list.push({ text: "", done: false, frequency: "weekly", dueDate: "", timePeriod: "anytime", status: "in progress" });
-      state.selectedRecurringIndex = Math.min(state.selectedRecurringIndex, list.length - 1);
-      persist();
-      renderRecurringTasks();
-      closeRecurringEditor();
+    recurringToggle.addEventListener("click", () => {
+      const panelState = state.panelOpen[state.brand];
+      panelState.recurring = !(panelState.recurring == null ? true : panelState.recurring);
+      renderSectionToggles();
     });
 
     prioritiesToggle.addEventListener("click", () => {
@@ -1775,14 +1731,6 @@ function renderRecurringTasks() {
       }
     });
 
-    closeRecurringModal.addEventListener("click", () => {
-      closeRecurringEditor();
-    });
-    recurringModal.addEventListener("click", (event) => {
-      if (event.target === recurringModal) {
-        closeRecurringEditor();
-      }
-    });
 
     function trapFocus(event, modalCard, onClose) {
       if (event.key === "Escape") {
@@ -1820,12 +1768,6 @@ function renderRecurringTasks() {
       });
     });
 
-    recurringModal.addEventListener("keydown", (event) => {
-      const card = recurringModal.querySelector(".modal-card");
-      trapFocus(event, card, () => {
-        closeRecurringEditor();
-      });
-    });
 
     todoModal.addEventListener("keydown", (event) => {
       const card = todoModal.querySelector(".modal-card");
