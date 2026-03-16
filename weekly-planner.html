@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.3/lib/msal-browser.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
 
@@ -2278,18 +2278,29 @@
     const GRAPH_CLIENT_ID = "5308f317-6b10-4859-97fe-2a17898b255f";
     const GRAPH_SCOPES    = ["Calendars.ReadWrite", "User.Read"];
 
-    function initMsal() {
-      if (typeof msal === "undefined") return;
-      msalApp = new msal.PublicClientApplication({
-        auth: {
-          clientId: GRAPH_CLIENT_ID,
-          authority: "https://login.microsoftonline.com/common",
-          redirectUri: window.location.href.split("?")[0].split("#")[0]
-        },
-        cache: { cacheLocation: "sessionStorage" }
-      });
-      msalApp.handleRedirectPromise().catch(() => {});
-      updateOutlookAuthUI();
+    async function initMsal() {
+      if (typeof msal === "undefined") {
+        console.warn("MSAL not loaded — Outlook sync unavailable");
+        return;
+      }
+      try {
+        msalApp = new msal.PublicClientApplication({
+          auth: {
+            clientId: GRAPH_CLIENT_ID,
+            authority: "https://login.microsoftonline.com/common",
+            redirectUri: window.location.href.split("?")[0].split("#")[0]
+          },
+          cache: { cacheLocation: "localStorage" },
+          system: { allowNativeBroker: false }
+        });
+        // handleRedirectPromise processes the auth code when Microsoft
+        // redirects back to this page after loginRedirect()
+        const result = await msalApp.handleRedirectPromise();
+        if (result) console.log("MSAL redirect handled, account:", result.account?.username);
+        updateOutlookAuthUI();
+      } catch (err) {
+        console.error("MSAL init failed:", err);
+      }
     }
 
     function getGraphAccount() {
@@ -2312,27 +2323,38 @@
       try {
         const r = await msalApp.acquireTokenSilent({ scopes: GRAPH_SCOPES, account });
         return r.accessToken;
-      } catch {
+      } catch (silentErr) {
         try {
-          const r = await msalApp.acquireTokenPopup({ scopes: GRAPH_SCOPES, account });
-          return r.accessToken;
-        } catch { return null; }
+          await msalApp.acquireTokenRedirect({ scopes: GRAPH_SCOPES, account });
+          return null; // page will redirect; caller won't get a token this time
+        } catch (redirectErr) {
+          console.error("Token acquisition failed:", redirectErr);
+          return null;
+        }
       }
     }
 
     async function outlookSignIn() {
-      if (!msalApp) return;
+      if (!msalApp) {
+        alert("Outlook sync isn't available — the Microsoft sign-in library failed to load. Check the browser console for details.");
+        return;
+      }
       try {
-        await msalApp.loginPopup({ scopes: GRAPH_SCOPES });
-        updateOutlookAuthUI();
-      } catch {}
+        // Redirect flow: navigates away to Microsoft login, then back
+        await msalApp.loginRedirect({ scopes: GRAPH_SCOPES });
+      } catch (err) {
+        console.error("Outlook sign-in failed:", err);
+        alert(`Sign-in failed: ${err.message || err.errorCode || err}`);
+      }
     }
 
     async function outlookSignOut() {
       if (!msalApp) return;
       const account = getGraphAccount();
       if (!account) return;
-      try { await msalApp.logoutPopup({ account }); } catch {}
+      try { await msalApp.logoutRedirect({ account }); } catch (err) {
+        console.error("Sign-out failed:", err);
+      }
       outlookEvents = [];
       updateOutlookAuthUI();
       renderDailyCalendar();
