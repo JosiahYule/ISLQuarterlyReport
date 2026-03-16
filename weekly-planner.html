@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
 
@@ -297,6 +298,19 @@
     .color-chip-blue{background:#3b82f6}.color-chip-green{background:#22c55e}.color-chip-amber{background:#f59e0b}.color-chip-red{background:#ef4444}.color-chip-purple{background:#8b5cf6}.color-chip-slate{background:#64748b}
     /* ── Block modal ────────────────────────────────────────── */
     .block-modal-card{width:min(480px,100%)}
+    /* ── Outlook event blocks ───────────────────────────────── */
+    .cal-block-outlook{background:rgba(0,120,212,.09);border-left:3px solid #0078d4;color:#003a6e;cursor:default;z-index:1}
+    .cal-block-outlook:hover{transform:none;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+    /* ── Push-to-Outlook button ─────────────────────────────── */
+    .cal-push-btn{position:absolute;top:3px;right:6px;width:20px;height:20px;border-radius:4px;border:none;background:transparent;color:inherit;font-size:.75rem;opacity:0;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;transition:opacity .15s,background .15s;flex-shrink:0}
+    .cal-block:hover .cal-push-btn{opacity:.65}
+    .cal-push-btn:hover{opacity:1 !important;background:rgba(0,0,0,.08)}
+    .cal-push-btn.synced{color:#16a34a}
+    /* ── Outlook auth controls ──────────────────────────────── */
+    .ms-auth-btn{display:inline-flex;align-items:center;gap:.35rem;padding:.28rem .65rem;border:1px solid color-mix(in srgb,var(--primary) 38%,white);background:color-mix(in srgb,var(--primary) 8%,white);color:var(--primary);border-radius:999px;font:inherit;font-size:.7rem;font-weight:600;cursor:pointer;transition:var(--trans);white-space:nowrap}
+    .ms-auth-btn:hover{background:color-mix(in srgb,var(--primary) 14%,white)}
+    .ms-signout-btn{font-size:.65rem;background:transparent;border:none;color:var(--ink-muted);cursor:pointer;padding:0;text-decoration:underline}
+    body.dark-mode .cal-block-outlook{background:rgba(0,120,212,.18);color:#90caf9}
     /* ── Dark mode: day planner ─────────────────────────────── */
     body.dark-mode .time-grid-wrap{background:rgba(15,17,21,.55)}
     body.dark-mode .cal-block-blue{background:#1e3a5f;color:#93c5fd}
@@ -355,6 +369,12 @@
           <span id="dayCalLabel" class="day-cal-label">Today</span>
           <button type="button" id="dayCalNext" class="section-add" aria-label="Next day">›</button>
           <span id="dayCalTotal" class="day-cal-total"></span>
+          <button type="button" id="msSignInBtn" class="ms-auth-btn">
+            <svg width="12" height="12" viewBox="0 0 21 21" fill="none" aria-hidden="true"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
+            Sync Outlook
+          </button>
+          <button type="button" id="msSyncBtn" class="ms-auth-btn" style="display:none">↻ Refresh</button>
+          <button type="button" id="msSignOutBtn" class="ms-signout-btn" style="display:none">Sign out</button>
         </div>
       </div>
       <div class="panel-content" id="dailyCalContent">
@@ -760,6 +780,8 @@
       filters: { platform: "all", status: "all" }
     };
     let selectedBlockIdx = null;
+    let outlookEvents = [];
+    let msalApp = null;
     let restoreFocusTo = null;
 
     function weekContext(date = new Date()) {
@@ -896,7 +918,8 @@
           startMin: (typeof b.startMin === "number") ? b.startMin : 9 * 60,
           durationMin: (typeof b.durationMin === "number" && b.durationMin >= 15) ? b.durationMin : 60,
           color: BLOCK_COLORS.includes(b.color) ? b.color : DEFAULT_BLOCK_COLOR,
-          note: String(b.note || "")
+          note: String(b.note || ""),
+          ...(b.outlookEventId ? { outlookEventId: String(b.outlookEventId) } : {})
         })) : []
       ]));
     }
@@ -1078,7 +1101,9 @@
       const date = new Date(y, mo - 1, d);
       date.setDate(date.getDate() + delta);
       state.dayCalDate = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+      outlookEvents = [];
       renderDailyCalendar();
+      if (getGraphAccount()) fetchOutlookEventsForDay(state.dayCalDate);
     }
 
     function getDaySchedule() {
@@ -1136,10 +1161,27 @@
       setupDragCreate(dropZone, timeGrid);
       timeGrid.appendChild(dropZone);
 
-      // Blocks
+      // Manual blocks
       blocks.forEach((block, idx) => {
         if (!block || block.startMin == null) return;
         timeGrid.appendChild(createCalBlock(block, idx, timeGrid));
+      });
+
+      // Outlook events (read-only, behind manual blocks)
+      outlookEvents.forEach((ev) => {
+        const startMin = graphDtToMin(ev.start);
+        const endMin   = graphDtToMin(ev.end);
+        if (startMin == null || endMin == null) return;
+        const clampStart = Math.max(startMin, DAY_CAL_START_MIN);
+        const clampEnd   = Math.min(endMin,   DAY_CAL_END_MIN);
+        if (clampEnd <= clampStart) return;
+        const dur = clampEnd - clampStart;
+        const oEl = document.createElement("div");
+        oEl.className = "cal-block cal-block-outlook";
+        oEl.style.top    = minToY(clampStart) + "px";
+        oEl.style.height = Math.max(16, dur * PX_PER_MIN) + "px";
+        oEl.innerHTML = `<div class="cal-block-title">${escapeHtml(ev.subject || "Busy")}</div>${dur > 30 ? `<div class="cal-block-meta">${fmtMin(clampStart)} – ${fmtMin(clampEnd)}</div>` : ""}`;
+        timeGrid.appendChild(oEl);
       });
     }
 
@@ -1152,7 +1194,17 @@
       el.style.top = top + "px";
       el.style.height = blockH + "px";
       const endMin = block.startMin + (block.durationMin || 30);
-      el.innerHTML = `<div class="cal-block-title">${escapeHtml(block.title || "Untitled")}</div>${blockH > 32 ? `<div class="cal-block-meta">${fmtMin(block.startMin)} – ${fmtMin(endMin)} · ${fmtDur(block.durationMin || 30)}</div>` : ""}<div class="cal-block-resize"></div>`;
+      const synced = !!block.outlookEventId;
+      el.innerHTML = `<div class="cal-block-title" style="padding-right:${getGraphAccount() ? "20px" : "0"}">${escapeHtml(block.title || "Untitled")}</div>${blockH > 32 ? `<div class="cal-block-meta">${fmtMin(block.startMin)} – ${fmtMin(endMin)} · ${fmtDur(block.durationMin || 30)}</div>` : ""}<div class="cal-block-resize"></div>`;
+      if (getGraphAccount()) {
+        const pushBtn = document.createElement("button");
+        pushBtn.type = "button";
+        pushBtn.className = "cal-push-btn" + (synced ? " synced" : "");
+        pushBtn.title = synced ? "Update in Outlook" : "Save to Outlook";
+        pushBtn.textContent = synced ? "✓" : "☁";
+        pushBtn.addEventListener("click", (e) => { e.stopPropagation(); pushBlockToOutlook(idx); });
+        el.appendChild(pushBtn);
+      }
       const resizeHandle = el.querySelector(".cal-block-resize");
 
       // Drag to move (or click to edit)
@@ -2222,6 +2274,133 @@
       localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
     });
 
+    /* ─────────── Microsoft Graph / Outlook ─────────── */
+    const GRAPH_CLIENT_ID = "5308f317-6b10-4859-97fe-2a17898b255f";
+    const GRAPH_SCOPES    = ["Calendars.ReadWrite", "User.Read"];
+
+    function initMsal() {
+      if (typeof msal === "undefined") return;
+      msalApp = new msal.PublicClientApplication({
+        auth: {
+          clientId: GRAPH_CLIENT_ID,
+          authority: "https://login.microsoftonline.com/common",
+          redirectUri: window.location.href.split("?")[0].split("#")[0]
+        },
+        cache: { cacheLocation: "sessionStorage" }
+      });
+      msalApp.handleRedirectPromise().catch(() => {});
+      updateOutlookAuthUI();
+    }
+
+    function getGraphAccount() {
+      if (!msalApp) return null;
+      const accounts = msalApp.getAllAccounts();
+      return accounts.length ? accounts[0] : null;
+    }
+
+    function updateOutlookAuthUI() {
+      const signedIn = !!getGraphAccount();
+      document.getElementById("msSignInBtn").style.display  = signedIn ? "none" : "";
+      document.getElementById("msSyncBtn").style.display    = signedIn ? "" : "none";
+      document.getElementById("msSignOutBtn").style.display = signedIn ? "" : "none";
+      if (signedIn) fetchOutlookEventsForDay(state.dayCalDate || getTodayKey());
+    }
+
+    async function getGraphToken() {
+      const account = getGraphAccount();
+      if (!account) return null;
+      try {
+        const r = await msalApp.acquireTokenSilent({ scopes: GRAPH_SCOPES, account });
+        return r.accessToken;
+      } catch {
+        try {
+          const r = await msalApp.acquireTokenPopup({ scopes: GRAPH_SCOPES, account });
+          return r.accessToken;
+        } catch { return null; }
+      }
+    }
+
+    async function outlookSignIn() {
+      if (!msalApp) return;
+      try {
+        await msalApp.loginPopup({ scopes: GRAPH_SCOPES });
+        updateOutlookAuthUI();
+      } catch {}
+    }
+
+    async function outlookSignOut() {
+      if (!msalApp) return;
+      const account = getGraphAccount();
+      if (!account) return;
+      try { await msalApp.logoutPopup({ account }); } catch {}
+      outlookEvents = [];
+      updateOutlookAuthUI();
+      renderDailyCalendar();
+    }
+
+    async function fetchOutlookEventsForDay(dateKey) {
+      const token = await getGraphToken();
+      if (!token || !dateKey) return;
+      const [y, mo, d] = dateKey.split("-").map(Number);
+      const start = new Date(y, mo - 1, d, 0, 0, 0).toISOString();
+      const end   = new Date(y, mo - 1, d, 23, 59, 59).toISOString();
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      try {
+        const resp = await fetch(
+          `https://graph.microsoft.com/v1.0/me/calendarView?startDateTime=${encodeURIComponent(start)}&endDateTime=${encodeURIComponent(end)}&$select=subject,start,end,id&$top=50&$orderby=start/dateTime`,
+          { headers: { "Authorization": `Bearer ${token}`, "Prefer": `outlook.timezone="${tz}"` } }
+        );
+        if (!resp.ok) return;
+        const data = await resp.json();
+        outlookEvents = data.value || [];
+        renderDailyCalendar();
+      } catch {}
+    }
+
+    function graphDtToMin(dtObj) {
+      if (!dtObj || !dtObj.dateTime) return null;
+      const m = dtObj.dateTime.match(/T(\d{2}):(\d{2})/);
+      return m ? parseInt(m[1]) * 60 + parseInt(m[2]) : null;
+    }
+
+    async function pushBlockToOutlook(blockIdx) {
+      const token = await getGraphToken();
+      if (!token) return;
+      const block = getDaySchedule()[blockIdx];
+      if (!block) return;
+      const dateKey = state.dayCalDate || getTodayKey();
+      const [y, mo, d] = dateKey.split("-").map(Number);
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const toStr = (min) => {
+        const h = Math.floor(min / 60), m = min % 60;
+        return `${y}-${String(mo).padStart(2,"0")}-${String(d).padStart(2,"0")}T${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:00`;
+      };
+      const payload = {
+        subject: block.title || "Time block",
+        body: { contentType: "text", content: block.note || "" },
+        start: { dateTime: toStr(block.startMin), timeZone: tz },
+        end:   { dateTime: toStr(block.startMin + (block.durationMin || 60)), timeZone: tz }
+      };
+      try {
+        const isUpdate = !!block.outlookEventId;
+        const url    = isUpdate ? `https://graph.microsoft.com/v1.0/me/events/${block.outlookEventId}` : "https://graph.microsoft.com/v1.0/me/events";
+        const method = isUpdate ? "PATCH" : "POST";
+        const resp = await fetch(url, {
+          method,
+          headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (resp.status === 404) { block.outlookEventId = null; return pushBlockToOutlook(blockIdx); }
+        if (!resp.ok) return;
+        const event = await resp.json();
+        block.outlookEventId = event.id;
+        persist();
+        renderDailyCalendar();
+        fetchOutlookEventsForDay(dateKey);
+      } catch {}
+    }
+    /* ─────────────────────────────────────────────────── */
+
     // Day planner nav
     document.getElementById("dayCalPrev").addEventListener("click", () => shiftDayCalDate(-1));
     document.getElementById("dayCalNext").addEventListener("click", () => shiftDayCalDate(1));
@@ -2257,10 +2436,15 @@
       el.addEventListener("change", saveBlock);
     });
 
+    document.getElementById("msSignInBtn").addEventListener("click", outlookSignIn);
+    document.getElementById("msSyncBtn").addEventListener("click", () => fetchOutlookEventsForDay(state.dayCalDate || getTodayKey()));
+    document.getElementById("msSignOutBtn").addEventListener("click", outlookSignOut);
+
     state.dayCalDate = getTodayKey();
     loadThemePreference();
     load();
     render();
+    initMsal();
     setInterval(() => {
       weekBadge.textContent = `Week of ${formatWeekOf()}`;
       renderCalendar();
