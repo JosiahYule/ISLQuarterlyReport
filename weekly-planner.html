@@ -96,7 +96,7 @@
     .calendar-board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
     .day{border:1px solid var(--border);border-radius:18px;padding:12px;background:rgba(255,255,255,.5);display:flex;flex-direction:column;gap:10px;min-height:184px;transition:var(--trans)}
     .day.active{border-color:color-mix(in srgb, var(--primary) 50%, white);box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--primary) 35%, white)}
-    .day.today{border-color:color-mix(in srgb, var(--primary) 65%, white);background:color-mix(in srgb, var(--primary) 14%, white)}
+    .day.today{border-color:var(--primary);background:color-mix(in srgb, var(--primary) 9%, white)}
     .day h3{margin:0;font-family:var(--font-display);font-size:1rem}
     .day-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:2px}
     .day-name{font-weight:700;letter-spacing:.04em;font-size:.92rem;text-transform:uppercase;color:var(--ink-mid);padding-right:.45rem}
@@ -119,6 +119,25 @@
     .post-action{border:1px solid var(--border);background:rgba(255,255,255,.92);color:var(--ink-mid);width:26px;height:26px;border-radius:6px;display:grid;place-items:center;font-size:.82rem;line-height:1;cursor:pointer;transition:var(--trans)}
     .post-action:hover{background:#fff;border-color:color-mix(in srgb, var(--primary) 35%, white);color:var(--primary)}
     .post-delete:hover{border-color:#ef4444;color:#b91c1c}
+    /* ── Today badge ──────────────────────────────────────────── */
+    .day-today-badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;font-size:.6rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:var(--primary);color:#fff;vertical-align:middle;margin-left:6px}
+    /* ── Post tile platform accent borders + icon colors ──────── */
+    .post-tile.platform-linkedin{border-left:3px solid #0a66c2}
+    .post-tile.platform-facebook{border-left:3px solid #1877f2}
+    .post-tile.platform-instagram{border-left:3px solid #c13584}
+    .post-tile.platform-linkedin .platform-icon{color:#0a66c2}
+    .post-tile.platform-facebook .platform-icon{color:#1877f2}
+    .post-tile.platform-instagram .platform-icon{color:#c13584}
+    /* ── Project progress bar ─────────────────────────────────── */
+    .project-progress-wrap{height:4px;border-radius:99px;background:var(--border);overflow:hidden;margin-top:8px}
+    .project-progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--primary),color-mix(in srgb, var(--primary) 60%, white));transition:width .4s cubic-bezier(.4,0,.2,1)}
+    .project-progress-label{font-size:.65rem;color:var(--ink-muted);margin-top:3px}
+    /* ── Panel chevron animation ──────────────────────────────── */
+    .panel-chevron{display:block;transition:transform .25s cubic-bezier(.4,0,.2,1)}
+    .section-add.panel-open .panel-chevron{transform:rotate(180deg)}
+    /* ── Empty states ─────────────────────────────────────────── */
+    .day-empty{display:flex;align-items:center;justify-content:center;min-height:52px;padding:14px 8px;color:var(--ink-muted);font-size:.77rem;text-align:center;border:1.5px dashed var(--border);border-radius:10px;line-height:1.4}
+    .todo-empty{color:var(--ink-muted);font-size:.82rem;padding:10px 2px;text-align:center;opacity:.8}
 
     .new-task-btn,.project-add{border:1px dashed color-mix(in srgb, var(--primary) 48%, white);background:color-mix(in srgb, var(--primary) 10%, white);color:var(--primary);padding:.7rem 1rem;border-radius:.85rem;font:inherit;font-weight:600;cursor:pointer}
     #newTaskBtn,.project-add{justify-self:start;align-self:start;width:auto;padding:.5rem .85rem;border-style:solid;background:transparent;font-weight:500;font-size:.82rem;opacity:.9}
@@ -281,19 +300,6 @@
       </div>
     </header>
 
-    <section class="hero glass" id="plannerContent" role="tabpanel" aria-label="Planner content">
-      <div class="hero-grid">
-        <div class="hero-copy">
-          <h1>Weekly tracker.</h1>
-          <div class="meta-row">
-            <div class="meta-actions">
-              <button id="undoReset" type="button" class="subtle-btn" hidden>Undo reset</button>
-            </div>
-          </div>
-        </div>
-        <button id="clearWeek" type="button" class="subtle-btn hero-reset">Reset</button>
-      </div>
-    </section>
 
     <section class="panel glass">
       <div class="panel-head">
@@ -587,8 +593,6 @@
     const deleteRecurringTaskBtn = document.getElementById("deleteRecurringTaskBtn");
     const buttons = document.querySelectorAll(".toggle button");
     const statusPicker = document.getElementById("statusPicker");
-    const clearWeekBtn = document.getElementById("clearWeek");
-    const undoResetBtn = document.getElementById("undoReset");
     const priorityItem2 = document.getElementById("priorityItem2");
     const priorityItem3 = document.getElementById("priorityItem3");
     const platformPicker = document.getElementById("platformPicker");
@@ -673,7 +677,6 @@
       quarter: null,
       filters: { platform: "all", status: "all" }
     };
-    let resetSnapshot = null;
     let restoreFocusTo = null;
 
     function weekContext(date = new Date()) {
@@ -985,7 +988,7 @@
         const dayDateLabel = dayDate ? dayDate.toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "";
         const todayLabel = day === activeWeekday ? ' aria-current="date"' : "";
         dayCard.className = "day" + (day === state.selectedDay ? " active" : "") + (day === activeWeekday ? " today" : "");
-        dayCard.innerHTML = `<div class="day-head"><span class="day-name"${todayLabel}>${day}</span><span class="day-date">${dayDateLabel}</span></div>`;
+        dayCard.innerHTML = `<div class="day-head"><span class="day-name"${todayLabel}>${day}${day === activeWeekday ? '<span class="day-today-badge">Today</span>' : ''}</span><span class="day-date">${dayDateLabel}</span></div>`;
 
         dayCard.addEventListener("dragover", (event) => {
           event.preventDefault();
@@ -1066,6 +1069,14 @@
           postsContainer.appendChild(wrap);
         });
 
+        if (!postsContainer.hasChildNodes()) {
+          const allPosts = dayPosts(day).filter(p => p && String(p.postTitle || "").trim());
+          const emptyEl = document.createElement("div");
+          emptyEl.className = "day-empty";
+          emptyEl.textContent = allPosts.length > 0 ? "No posts match the current filter" : "No posts scheduled";
+          postsContainer.appendChild(emptyEl);
+        }
+
         dayCard.appendChild(postsContainer);
 
         calendar.appendChild(dayCard);
@@ -1134,6 +1145,12 @@
         });
         todoList.appendChild(row);
       });
+      if (!todoList.hasChildNodes()) {
+        const empty = document.createElement("div");
+        empty.className = "todo-empty";
+        empty.textContent = "No tasks yet";
+        todoList.appendChild(empty);
+      }
     }
 
     function currentTodoTask() {
@@ -1304,6 +1321,10 @@ function renderRecurringTasks() {
         tile.className = "project-tile" + (index === state.selectedProjectIndex && projectModal.classList.contains("open") ? " active" : "");
         const status = normalizeProjectStatus(project.status);
         const linkedTodos = (state.data[state.brand].todos || []).filter((todo) => todo && todo.projectId === project.id && String(todo.text || "").trim());
+        const doneCount = linkedTodos.filter(t => t.done).length;
+        const totalTasks = linkedTodos.length;
+        const progressPct = totalTasks > 0 ? Math.round((doneCount / totalTasks) * 100) : null;
+        const progressMarkup = progressPct !== null ? `<div class="project-progress-wrap"><div class="project-progress-fill" style="width:${progressPct}%"></div></div><div class="project-progress-label">${doneCount} / ${totalTasks} tasks done</div>` : "";
         const linkedMarkup = linkedTodos.length ? `<div class="linked-task-list">${linkedTodos.map((todo) => `<div class="linked-task"><span>${escapeHtml(todo.text)}</span><span>${escapeHtml(titleCase(normalizeTodoPriority(todo.priority)))}</span></div>`).join("")}</div>` : "";
         const dueState = withinCurrentWeek(project.deadline);
         const dueMarkup = dueState === "overdue"
@@ -1312,7 +1333,7 @@ function renderRecurringTasks() {
             ? '<span class="due-badge week">Due this week</span>'
             : "";
         const deadlineText = project.deadline ? new Date(`${project.deadline}T00:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "No date";
-        tile.innerHTML = `<span class="project-head"><span class="project-name">${escapeHtml(project.name || `Project ${index + 1}`)}</span><span class="project-deadline">${escapeHtml(deadlineText)}</span></span><span class="project-status" data-state="${escapeHtml(status)}">${escapeHtml(titleCase(status))}</span>${dueMarkup}${linkedMarkup}`;
+        tile.innerHTML = `<span class="project-head"><span class="project-name">${escapeHtml(project.name || `Project ${index + 1}`)}</span><span class="project-deadline">${escapeHtml(deadlineText)}</span></span><span class="project-status" data-state="${escapeHtml(status)}">${escapeHtml(titleCase(status))}</span>${dueMarkup}${progressMarkup}${linkedMarkup}`;
         tile.addEventListener("click", () => {
           openProjectEditor(index);
         });
@@ -1349,7 +1370,8 @@ function renderRecurringTasks() {
 
     function updatePanelSection(contentEl, buttonEl, isOpen) {
       contentEl.classList.toggle("collapsed", !isOpen);
-      buttonEl.textContent = isOpen ? "−" : "+";
+      buttonEl.innerHTML = '<svg class="panel-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>';
+      buttonEl.classList.toggle("panel-open", isOpen);
       buttonEl.setAttribute("aria-expanded", isOpen ? "true" : "false");
     }
 
@@ -1701,36 +1723,6 @@ function renderRecurringTasks() {
       render();
     });
 
-    clearWeekBtn.addEventListener("click", () => {
-      const confirmed = window.confirm("Reset priorities and calendar posts for this brand and week? You can undo once immediately after reset.");
-      if (!confirmed) return;
-      resetSnapshot = {
-        priorities: [...state.data[state.brand].priorities],
-        posts: JSON.parse(JSON.stringify(state.data[state.brand].posts || {}))
-      };
-      state.data[state.brand].priorities = ["", "", ""];
-      state.data[state.brand].posts = {};
-      state.selectedDay = "Monday";
-      state.selectedProjectIndex = null;
-      state.selectedRecurringIndex = null;
-      state.selectedTodoIndex = null;
-      closeProjectEditor();
-      closeRecurringEditor();
-      closeTodoEditor();
-      persist();
-      render();
-      undoResetBtn.hidden = false;
-    });
-
-    undoResetBtn.addEventListener("click", () => {
-      if (!resetSnapshot) return;
-      state.data[state.brand].priorities = [...(resetSnapshot.priorities || ["", "", ""])];
-      state.data[state.brand].posts = JSON.parse(JSON.stringify(resetSnapshot.posts || {}));
-      resetSnapshot = null;
-      undoResetBtn.hidden = true;
-      persist();
-      render();
-    });
 
     closeModal.addEventListener("click", () => {
       editorModal.classList.remove("open");
