@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Integrated Staffing – Performance Trends &amp; Projections</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    :root {
+      --isl-navy:#003D72;
+      --isl-primary:#00549A;
+      --isl-accent:#0070CA;
+      --isl-accent-bright:#4DA3E8;
+      --bg:#FAFBFC;
+      --card:#FFFFFF;
+      --border:rgba(0,0,0,.06);
+      --text:#0B1220;
+      --muted:#64748B;
+      --success:#10B981;
+      --warning:#F59E0B;
+      --danger:#EF4444;
+      --purple:#7C3AED;
+      --radius-xl:24px;
+      --radius-lg:16px;
+      --radius-md:12px;
+      --font:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;
+      --transition:all 0.2s cubic-bezier(0.4,0,0.2,1);
+      --shadow:0 2px 8px rgba(0,0,0,.04),0 12px 24px rgba(0,0,0,.06);
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:var(--font);color:var(--text);background:linear-gradient(180deg,#f7f9fc 0%,#f3f7fb 100%);min-height:100vh;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+    /* Loading */
+    .loading-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 20% 10%,rgba(255,255,255,.85),rgba(244,248,252,.78) 45%,rgba(235,242,249,.8) 100%);backdrop-filter:blur(12px) saturate(140%);z-index:2000;transition:opacity .35s ease,visibility .35s ease}
+    .loading-overlay.is-hidden{opacity:0;visibility:hidden;pointer-events:none}
+    .loading-card{display:flex;flex-direction:column;align-items:center;gap:14px;padding:22px 28px;border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.94),rgba(255,255,255,.82));border:1px solid rgba(255,255,255,.85);box-shadow:0 20px 45px rgba(3,31,64,.14)}
+    .spinner{width:40px;height:40px;border:3px solid rgba(0,84,154,.12);border-top-color:rgba(0,112,202,.7);border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-text{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#4b627a}
+
+    /* Layout */
+    .container{max-width:1240px;margin:0 auto;padding:32px 24px 64px}
+
+    /* Topbar */
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:24px;padding:16px 0}
+    .brand{display:flex;align-items:center;gap:14px;min-width:0}
+    .brand-mark{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));box-shadow:0 4px 12px rgba(0,84,154,.2),inset 0 1px 0 rgba(255,255,255,.2);display:grid;place-items:center;font-size:20px;font-weight:600;color:#fff;text-decoration:none;transition:var(--transition)}
+    .brand-mark:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,84,154,.25)}
+    .brand-text{display:flex;flex-direction:column;line-height:1.3}
+    .brand-text strong{font-size:15px;letter-spacing:.05em;text-transform:uppercase;font-weight:400}
+    .brand-text span{font-size:13px;color:var(--muted);font-weight:400}
+
+    .pill-wrap{position:relative}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;background:var(--card);border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.06);font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;cursor:pointer;font-family:var(--font);transition:var(--transition)}
+    .pill:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);transform:translateY(-1px)}
+    .pill-dot{width:8px;height:8px;border-radius:99px;background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));flex-shrink:0}
+    .pill-caret{font-size:11px;color:var(--muted)}
+    .pill-menu{position:absolute;right:0;top:calc(100% + 8px);background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:0 8px 32px rgba(0,0,0,.12);min-width:220px;overflow:hidden;opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .18s ease,visibility .18s ease,transform .18s ease;z-index:100}
+    .pill-menu.is-open{opacity:1;visibility:visible;transform:translateY(0)}
+    .pill-item{display:block;padding:10px 16px;font-size:13px;font-weight:500;color:var(--text);text-decoration:none;transition:background .14s ease}
+    .pill-item:hover{background:rgba(0,84,154,.05)}
+    .pill-item.active{background:rgba(0,84,154,.08);color:var(--isl-primary);font-weight:600}
+
+    /* Refresh bar */
+    .refresh-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:12px 20px;border-radius:var(--radius-md);background:var(--card);border:1px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,.04);margin-bottom:28px;font-size:13px;color:var(--muted)}
+    .refresh-bar strong{color:var(--text)}
+    .refresh-bar-left{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+    .live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--success);margin-right:6px;animation:pulse 2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+    .refresh-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;background:rgba(0,84,154,.08);border:1px solid rgba(0,84,154,.15);font-size:12px;font-weight:600;color:var(--isl-primary);cursor:pointer;font-family:var(--font);transition:var(--transition)}
+    .refresh-btn:hover{background:rgba(0,84,154,.14)}
+    .refresh-btn:disabled{opacity:.5;cursor:not-allowed}
+
+    /* Error banner */
+    .error-banner{padding:12px 20px;border-radius:var(--radius-md);background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);color:#B91C1C;font-size:13px;margin-bottom:20px;display:none}
+    .error-banner.is-visible{display:block}
+
+    /* Hero */
+    .hero{position:relative;overflow:hidden;isolation:isolate;padding:36px 40px;border-radius:var(--radius-xl);background:linear-gradient(135deg,var(--isl-navy),var(--isl-accent));color:#fff;margin-bottom:36px}
+    .hero::before{content:"";position:absolute;width:280px;height:280px;border-radius:50%;top:-110px;right:-70px;background:radial-gradient(circle,rgba(255,255,255,.15),transparent 65%);pointer-events:none;z-index:0}
+    .hero h1{font-size:clamp(22px,4vw,30px);font-weight:700;letter-spacing:-.02em;margin-bottom:10px;position:relative;z-index:1}
+    .hero p{font-size:15px;opacity:.85;max-width:560px;position:relative;z-index:1}
+    .hero-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;position:relative;z-index:1}
+    .hero-chip{padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);font-size:12px;font-weight:500}
+
+    /* Sections */
+    .section{margin-bottom:48px}
+    .section-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+    .section-title h2{font-size:22px;font-weight:700;letter-spacing:-.02em}
+    .section-title p{font-size:14px;color:var(--muted);margin-top:4px}
+    .section-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;background:var(--card);border:1px solid var(--border);font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;align-self:flex-start}
+
+    /* Projection cards */
+    .proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+    .proj-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.04);transition:var(--transition)}
+    .proj-card:hover{box-shadow:var(--shadow);transform:translateY(-2px)}
+    .proj-card-label{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+    .proj-headline{font-size:28px;font-weight:700;letter-spacing:-.03em;color:var(--isl-primary);line-height:1.1;margin-bottom:2px}
+    .proj-headline-sub{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+    .proj-bar-wrap{height:4px;border-radius:99px;background:rgba(0,84,154,.1);margin:10px 0 4px;overflow:hidden}
+    .proj-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--isl-primary),var(--isl-accent-bright));transition:width .6s cubic-bezier(.4,0,.2,1)}
+    .proj-bar-label{font-size:11px;color:var(--muted);margin-bottom:12px}
+    .proj-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:5px 0;border-top:1px solid rgba(0,0,0,.05)}
+    .proj-row-label{color:var(--muted)}
+    .proj-row-value{font-weight:600}
+    .proj-row-value.pace{color:var(--warning)}
+    .proj-row-value.trend{color:var(--purple)}
+    .proj-row-value.na{color:var(--muted);font-weight:400;font-style:italic}
+    .proj-no-data{font-size:13px;color:var(--muted);font-style:italic}
+
+    /* Charts */
+    .charts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(480px,1fr));gap:20px}
+    .chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+    .chart-card-title{font-size:14px;font-weight:600;margin-bottom:4px}
+    .chart-card-sub{font-size:12px;color:var(--muted);margin-bottom:16px}
+    .chart-wrap{position:relative;height:220px}
+
+    /* Legend */
+    .chart-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
+    .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+    .legend-swatch{width:20px;height:3px;border-radius:99px;flex-shrink:0}
+    .legend-swatch.solid{background:rgba(0,84,154,.85)}
+    .legend-swatch.pace{background:rgba(245,158,11,.85);border-top:2px dashed rgba(245,158,11,.85);height:0}
+    .legend-swatch.trend{background:rgba(124,58,237,.85);border-top:2px dashed rgba(124,58,237,.85);height:0}
+
+    /* Methodology */
+    .methodology-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px 28px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+    .methodology-card h3{font-size:15px;font-weight:600;margin-bottom:14px}
+    .methodology-card ul{padding-left:18px}
+    .methodology-card li{font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.55}
+    .methodology-card li strong{color:var(--text)}
+
+    /* Responsive */
+    @media(max-width:768px){
+      .container{padding:20px 16px 48px}
+      .hero{padding:24px 20px}
+      .topbar{flex-wrap:wrap}
+      .refresh-bar-left{gap:10px}
+    }
+    @media(max-width:600px){
+      .charts-grid{grid-template-columns:1fr}
+      .proj-grid{grid-template-columns:1fr}
+    }
+    @media(prefers-reduced-motion:reduce){
+      *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+    }
+  </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-card">
+    <div class="spinner"></div>
+    <p class="loading-text">Loading trends</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="brand">
+      <a class="brand-mark" href="/" aria-label="Back to quarterly report">IS</a>
+      <div class="brand-text">
+        <strong>Integrated Staffing</strong>
+        <span>Performance Trends &amp; Projections</span>
+      </div>
+    </div>
+    <div class="pill-wrap">
+      <button class="pill" id="navBtn" type="button" aria-haspopup="menu" aria-expanded="false">
+        <span class="pill-dot"></span>
+        <span>Navigate</span>
+        <span class="pill-caret">▾</span>
+      </button>
+      <div class="pill-menu" id="navMenu" role="menu">
+        <a class="pill-item" href="/?report=islq1" role="menuitem">Q1 &bull; Sep–Nov 2025</a>
+        <a class="pill-item" href="/?report=islq2" role="menuitem">Q2 &bull; Dec–Feb 2026</a>
+        <a class="pill-item" href="/?report=islq3" role="menuitem">Q3 &bull; Mar–May 2026</a>
+        <a class="pill-item" href="/web/" role="menuitem">Website Report</a>
+        <a class="pill-item active" href="/trends.html" role="menuitem">Trends &amp; Projections</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- REFRESH BAR -->
+  <div class="refresh-bar">
+    <div class="refresh-bar-left">
+      <span><span class="live-dot"></span>Auto-refreshes every 5 min</span>
+      <span>Last updated: <strong id="lastUpdatedEl">—</strong></span>
+      <span>Next refresh: <strong id="countdownEl">—</strong></span>
+    </div>
+    <button class="refresh-btn" id="refreshBtn" type="button">↻ Refresh now</button>
+  </div>
+
+  <!-- ERROR -->
+  <div class="error-banner" id="errorBanner"></div>
+
+  <!-- HERO -->
+  <section class="hero" aria-label="Trends header">
+    <h1>Performance Trends &amp; Projections</h1>
+    <p>Quarter-over-quarter trajectory for every key metric, plus projected Q3 finals based on current pace and historical trend.</p>
+    <div class="hero-meta">
+      <div class="hero-chip"><strong>Quarters:</strong> Q1 · Q2 · Q3</div>
+      <div class="hero-chip"><strong>Platforms:</strong> LinkedIn · Facebook · Instagram</div>
+      <div class="hero-chip" id="progressChip"><strong>Q3:</strong> calculating…</div>
+    </div>
+  </section>
+
+  <!-- PROJECTION CARDS -->
+  <section class="section" aria-label="Q3 projected finals">
+    <div class="section-header">
+      <div class="section-title">
+        <h2>Q3 Projected Finals</h2>
+        <p>Estimated end-of-quarter totals based on current pace and Q1→Q2 trend.</p>
+      </div>
+      <span class="section-badge">Q3 &bull; Mar–May 2026</span>
+    </div>
+    <div class="proj-grid" id="projGrid"></div>
+  </section>
+
+  <!-- TREND CHARTS -->
+  <section class="section" aria-label="Trend charts">
+    <div class="section-header">
+      <div class="section-title">
+        <h2>Quarterly Trends</h2>
+        <p>Quarter-over-quarter trajectory with projections extended to Q3 end.</p>
+      </div>
+      <span class="section-badge">Q1 → Q2 → Q3</span>
+    </div>
+    <div class="charts-grid" id="chartsGrid"></div>
+  </section>
+
+  <!-- METHODOLOGY -->
+  <section class="section" aria-label="Methodology">
+    <div class="methodology-card">
+      <h3>How Projections Work</h3>
+      <ul>
+        <li><strong>Pace projection (amber)</strong> — Scales Q3 actuals accumulated so far by the fraction of the quarter elapsed. If 14% of the quarter has passed and 8,450 impressions are recorded, the pace projection is 8,450 ÷ 0.14 ≈ 60,357. Applied to cumulative metrics only (impressions, reactions, link clicks, shares, comments, posts).</li>
+        <li><strong>Trend projection (purple)</strong> — Extends the linear trend from Q1 and Q2 forward. If Q1 = 62,690 and Q2 = 65,342, Q3 trend ≈ 67,994. Applied to all metrics.</li>
+        <li><strong>Followers</strong> — A snapshot metric (total at quarter end), not a cumulative total, so only the trend projection is shown.</li>
+        <li>Data is fetched live from Hootsuite via Google Apps Script and auto-refreshes every 5 minutes.</li>
+      </ul>
+    </div>
+  </section>
+
+</div><!-- /container -->
+
+<script>
+// ── Config ──────────────────────────────────────────────────────────────────
+const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbwB-RGI1lVHrUE03PkkSEYbLuiTLxE4phMBBOm81diNJtSPyUWGoB_bOlkgFIoVF4yzLQ/exec";
+const REFRESH_INTERVAL_SEC = 300;
+
+const QUARTERS = [
+  { key:"islq1", label:"Q1", rangeLabel:"Sep–Nov 2025", start:new Date("2025-09-01"), end:new Date("2025-12-01"), localFallback:"./2026q1/2026-q1.json" },
+  { key:"islq2", label:"Q2", rangeLabel:"Dec–Feb 2026", start:new Date("2025-12-01"), end:new Date("2026-03-01") },
+  { key:"islq3", label:"Q3", rangeLabel:"Mar–May 2026", start:new Date("2026-03-01"), end:new Date("2026-06-01"), isCurrent:true },
+];
+
+const METRICS = [
+  { id:"impressions",       label:"Impressions",          needles:["post impressions","impressions"],                                                          isPercent:false, isPace:true  },
+  { id:"reactions",         label:"Reactions",            needles:["reactions and likes","reactions & likes","reactions","likes"],                              isPercent:false, isPace:true  },
+  { id:"linkclicks",        label:"Link Clicks",          needles:["post link clicks","link clicks","clicks"],                                                  isPercent:false, isPace:true  },
+  { id:"shares",            label:"Shares",               needles:["post shares","shares"],                                                                     isPercent:false, isPace:true  },
+  { id:"comments",          label:"Comments",             needles:["comments and replies","comments & replies","comments","replies"],                           isPercent:false, isPace:true  },
+  { id:"posts",             label:"Posts Published",      needles:["posts"],                                                                                    isPercent:false, isPace:true  },
+  { id:"followers",         label:"Followers",            needles:["followers total","followers (total)","followers"],                                           isPercent:false, isPace:false },
+];
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+
+function nfk(s){ return String(s??"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim(); }
+
+function toNumber(v){
+  if(v===null||v===undefined) return null;
+  if(typeof v==="number") return Number.isFinite(v)?v:null;
+  const s=String(v).trim().replace(/,/g,"").replace(/\s+/g,"").replace(/%/g,"").replace(/[▲▼]/g,"").replace(/^\+/,"");
+  if(!s||s==="—"||s==="-") return null;
+  if(!/^-?\d+(\.\d+)?$/.test(s)) return null;
+  const n=Number(s);
+  return Number.isFinite(n)?n:null;
+}
+
+function fmt(v, isPercent){
+  const n=toNumber(v);
+  if(n===null) return "—";
+  if(isPercent) return `${n.toFixed(2)}%`;
+  return n>=1000?n.toLocaleString():String(Math.round(n));
+}
+
+function fmtApprox(n, isPercent){
+  if(n===null||!Number.isFinite(n)) return "—";
+  if(isPercent) return `${n.toFixed(2)}%`;
+  return `${Math.round(n).toLocaleString()}`;
+}
+
+// ── Quarter math ─────────────────────────────────────────────────────────────
+function completion(q){
+  const now=new Date();
+  if(now>=q.end) return 1;
+  if(now<q.start) return 0;
+  return (now-q.start)/(q.end-q.start);
+}
+
+function quarterComplete(q){ return new Date()>=q.end; }
+
+// ── Data extraction ───────────────────────────────────────────────────────────
+function extractFromRows(rows, metric){
+  if(!Array.isArray(rows)||!rows.length) return null;
+  const map={};
+  for(const r of rows){
+    const raw=r.field??r.Field??r.name??r.Name??"";
+    const k=nfk(raw);
+    if(k) map[k]=r.value??r.Value??null;
+  }
+  for(const n of metric.needles){
+    const k=nfk(n);
+    if(map[k]!==undefined) return toNumber(map[k]);
+  }
+  const keys=Object.keys(map);
+  for(const n of metric.needles){
+    const nl=nfk(n);
+    const hit=keys.find(k=>k.includes(nl));
+    if(hit!==undefined) return toNumber(map[hit]);
+  }
+  if(metric.extraMatch){
+    const hit=keys.find(metric.extraMatch);
+    if(hit!==undefined) return toNumber(map[hit]);
+  }
+  return null;
+}
+
+function extractFromOverall(overall, metric){
+  if(!overall||typeof overall!=="object"||Array.isArray(overall)) return null;
+  const direct={impressions:"impressions",reactions:"reactions",linkclicks:"linkclicks",shares:"shares",comments:"comments",posts:"posts",followers:"followers",avgengagementrate:"avgengagementrate"};
+  const k=direct[metric.id];
+  if(k&&overall[k]!==undefined) return toNumber(overall[k]);
+  return null;
+}
+
+function extractMetric(data, metric){
+  if(!data) return null;
+  if(data.quarterTotals){
+    const v=extractFromRows(data.quarterTotals,metric);
+    if(v!==null) return v;
+  }
+  if(data.overall){
+    const v=extractFromOverall(data.overall,metric);
+    if(v!==null) return v;
+  }
+  return null;
+}
+
+// ── Projections ───────────────────────────────────────────────────────────────
+function paceProject(current, comp){
+  if(current===null||!Number.isFinite(current)||comp<0.005) return null;
+  return current/comp;
+}
+
+function trendProject(q1v, q2v){
+  if(q1v===null||q2v===null) return null;
+  return q2v+(q2v-q1v); // linear extrapolation
+}
+
+// ── Fetching ──────────────────────────────────────────────────────────────────
+async function fetchQuarter(q){
+  try{
+    const url=`${REPORT_ENDPOINT}?report=${encodeURIComponent(q.key)}&nocache=1&t=${Date.now()}`;
+    const res=await fetch(url,{cache:"no-store"});
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json=await res.json();
+    if(json&&json.error) throw new Error(json.message||"Endpoint error");
+    return json;
+  }catch(err){
+    if(q.localFallback){
+      try{
+        const r2=await fetch(q.localFallback);
+        if(!r2.ok) throw new Error("Fallback failed");
+        return await r2.json();
+      }catch{ return null; }
+    }
+    return null;
+  }
+}
+
+// ── Render: projection cards ──────────────────────────────────────────────────
+function renderProjCards(qdata, q3comp, q3done){
+  const grid=$("projGrid");
+  if(!grid) return;
+  const [d1,d2,d3]=qdata;
+  const pct=(q3comp*100).toFixed(1);
+
+  grid.innerHTML=METRICS.map(m=>{
+    const q1v=extractMetric(d1,m);
+    const q2v=extractMetric(d2,m);
+    const q3v=extractMetric(d3,m);
+    const pace=m.isPace&&!q3done?paceProject(q3v,q3comp):null;
+    const trend=trendProject(q1v,q2v);
+    const headline=pace??trend;
+    const headlineSub=pace!==null?"Pace Projection":trend!==null?"Trend Projection":"Projected";
+
+    return `<div class="proj-card">
+      <div class="proj-card-label">${m.label}</div>
+      <div class="proj-headline">${headline!==null?fmtApprox(headline,m.isPercent):"—"}</div>
+      <div class="proj-headline-sub">${headlineSub}</div>
+      <div class="proj-bar-wrap"><div class="proj-bar-fill" style="width:${Math.min(100,q3comp*100).toFixed(1)}%"></div></div>
+      <div class="proj-bar-label">${pct}% of Q3 elapsed${q3done?" (complete)":""}</div>
+      <div class="proj-row"><span class="proj-row-label">Q3 to date</span><span class="proj-row-value">${fmt(q3v,m.isPercent)}</span></div>
+      ${pace!==null?`<div class="proj-row"><span class="proj-row-label">Pace projection</span><span class="proj-row-value pace">${fmtApprox(pace,m.isPercent)}</span></div>`:""}
+      ${trend!==null?`<div class="proj-row"><span class="proj-row-label">Trend projection</span><span class="proj-row-value trend">${fmtApprox(trend,m.isPercent)}</span></div>`:""}
+      <div class="proj-row"><span class="proj-row-label">Q1 actual</span><span class="proj-row-value">${fmt(q1v,m.isPercent)}</span></div>
+      <div class="proj-row"><span class="proj-row-label">Q2 actual</span><span class="proj-row-value">${fmt(q2v,m.isPercent)}</span></div>
+    </div>`;
+  }).join("");
+}
+
+// ── Render: trend charts ──────────────────────────────────────────────────────
+const chartInstances={};
+
+function renderCharts(qdata, q3comp, q3done){
+  const grid=$("chartsGrid");
+  if(!grid) return;
+  const [d1,d2,d3]=qdata;
+
+  // Build HTML shells
+  grid.innerHTML=METRICS.map(m=>`
+    <div class="chart-card">
+      <div class="chart-card-title">${m.label}</div>
+      <div class="chart-card-sub">${!q3done?"Blue = Q1 & Q2 actuals · Amber dashed = pace projection · Purple dashed = trend projection":"Quarter-over-quarter trajectory"}</div>
+      <div class="chart-wrap"><canvas id="chart-${m.id}"></canvas></div>
+      <div class="chart-legend" id="legend-${m.id}"></div>
+    </div>
+  `).join("");
+
+  // Build each chart after Chart.js is ready
+  function buildAll(){
+    for(const m of METRICS){
+      const q1v=extractMetric(d1,m);
+      const q2v=extractMetric(d2,m);
+      const q3v=extractMetric(d3,m);
+      const pace=m.isPace&&!q3done?paceProject(q3v,q3comp):null;
+      const trend=trendProject(q1v,q2v);
+
+      const hasProj=(pace!==null||trend!==null)&&!q3done;
+
+      const labels=hasProj
+        ?[`Q1 • Sep–Nov`,`Q2 • Dec–Feb`,`Q3 • projected`]
+        :[`Q1 • Sep–Nov`,`Q2 • Dec–Feb`,`Q3 • Mar–May`];
+
+      const datasets=[{
+        label:"Actual",
+        data:hasProj?[q1v,q2v,null]:[q1v,q2v,q3v],
+        borderColor:"rgba(0,84,154,.85)",
+        backgroundColor:"rgba(0,84,154,.07)",
+        borderWidth:2.5,
+        pointRadius:hasProj?[5,5,0]:[5,5,5],
+        pointBackgroundColor:"rgba(0,84,154,.9)",
+        fill:true,
+        tension:0.25,
+        spanGaps:false,
+      }];
+
+      if(pace!==null){
+        datasets.push({
+          label:"Pace Projection",
+          data:[null,q2v,pace],
+          borderColor:"rgba(245,158,11,.85)",
+          backgroundColor:"transparent",
+          borderWidth:2,
+          borderDash:[6,4],
+          pointRadius:[0,0,7],
+          pointBackgroundColor:["transparent","transparent","rgba(245,158,11,.9)"],
+          pointStyle:["circle","circle","circle"],
+          fill:false,
+          tension:0,
+          spanGaps:false,
+        });
+      }
+
+      if(trend!==null){
+        datasets.push({
+          label:"Trend Projection",
+          data:[null,q2v,trend],
+          borderColor:"rgba(124,58,237,.8)",
+          backgroundColor:"transparent",
+          borderWidth:2,
+          borderDash:[3,4],
+          pointRadius:[0,0,7],
+          pointBackgroundColor:["transparent","transparent","rgba(124,58,237,.9)"],
+          pointStyle:["circle","circle","triangle"],
+          fill:false,
+          tension:0,
+          spanGaps:false,
+        });
+      }
+
+      const canvas=document.getElementById(`chart-${m.id}`);
+      if(!canvas) continue;
+      if(chartInstances[m.id]) chartInstances[m.id].destroy();
+
+      chartInstances[m.id]=new Chart(canvas,{
+        type:"line",
+        data:{labels,datasets},
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          animation:{duration:600},
+          plugins:{
+            legend:{display:false},
+            tooltip:{
+              callbacks:{
+                label(ctx){
+                  const v=ctx.parsed.y;
+                  if(v===null||v===undefined) return null;
+                  return `${ctx.dataset.label}: ${fmt(v,m.isPercent)}`;
+                }
+              }
+            }
+          },
+          scales:{
+            x:{grid:{color:"rgba(0,0,0,.04)"},ticks:{font:{size:11},color:"#64748B"}},
+            y:{beginAtZero:false,grid:{color:"rgba(0,0,0,.04)"},ticks:{font:{size:11},color:"#64748B",callback:v=>m.isPercent?`${v.toFixed(1)}%`:v>=1000?v.toLocaleString():v}},
+          }
+        }
+      });
+
+      // Legend
+      const legendEl=document.getElementById(`legend-${m.id}`);
+      if(legendEl){
+        const items=[`<div class="legend-item"><div class="legend-swatch solid"></div>Actual</div>`];
+        if(pace!==null) items.push(`<div class="legend-item"><div class="legend-swatch pace"></div>Pace projection</div>`);
+        if(trend!==null) items.push(`<div class="legend-item"><div class="legend-swatch trend"></div>Trend projection</div>`);
+        legendEl.innerHTML=items.join("");
+      }
+    }
+  }
+
+  if(typeof Chart!=="undefined") buildAll();
+  else document.querySelector("script[src*='chart']").addEventListener("load",buildAll);
+}
+
+// ── Navigation menu ───────────────────────────────────────────────────────────
+function wireNav(){
+  const btn=$("navBtn"), menu=$("navMenu");
+  if(!btn||!menu) return;
+  btn.addEventListener("click",()=>{
+    const open=menu.classList.toggle("is-open");
+    btn.setAttribute("aria-expanded",String(open));
+  });
+  document.addEventListener("click",e=>{
+    if(!btn.contains(e.target)&&!menu.contains(e.target)){
+      menu.classList.remove("is-open");
+      btn.setAttribute("aria-expanded","false");
+    }
+  });
+}
+
+// ── Auto-refresh ──────────────────────────────────────────────────────────────
+let countdownSec=REFRESH_INTERVAL_SEC;
+let countdownTimer=null;
+
+function startCountdown(){
+  clearInterval(countdownTimer);
+  countdownSec=REFRESH_INTERVAL_SEC;
+  updateCountdown();
+  countdownTimer=setInterval(()=>{
+    countdownSec--;
+    updateCountdown();
+    if(countdownSec<=0){
+      clearInterval(countdownTimer);
+      doRefresh();
+    }
+  },1000);
+}
+
+function updateCountdown(){
+  const el=$("countdownEl");
+  if(!el) return;
+  const m=Math.floor(countdownSec/60), s=countdownSec%60;
+  el.textContent=`${m}:${String(s).padStart(2,"0")}`;
+}
+
+function setLastUpdated(){
+  const el=$("lastUpdatedEl");
+  if(el) el.textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+}
+
+// ── Main load + render ────────────────────────────────────────────────────────
+let isLoading=false;
+
+async function loadAndRender(){
+  if(isLoading) return;
+  isLoading=true;
+  const btn=$("refreshBtn");
+  if(btn) btn.disabled=true;
+
+  try{
+    const qdata=await Promise.all(QUARTERS.map(fetchQuarter));
+    const q3=QUARTERS[2];
+    const q3comp=completion(q3);
+    const q3done=quarterComplete(q3);
+
+    // Hero chip
+    const chip=$("progressChip");
+    if(chip){
+      const pct=(q3comp*100).toFixed(1);
+      chip.innerHTML=`<strong>Q3:</strong> ${pct}% elapsed${q3done?" (complete)":""}`;
+    }
+
+    // Error banner
+    const errBanner=$("errorBanner");
+    const missing=QUARTERS.filter((_,i)=>!qdata[i]).map(q=>q.label);
+    if(missing.length&&errBanner){
+      errBanner.textContent=`Could not load data for: ${missing.join(", ")}. Projections for those quarters will show as —.`;
+      errBanner.classList.add("is-visible");
+    }else if(errBanner){
+      errBanner.classList.remove("is-visible");
+    }
+
+    renderProjCards(qdata,q3comp,q3done);
+    renderCharts(qdata,q3comp,q3done);
+    setLastUpdated();
+  }catch(err){
+    const errBanner=$("errorBanner");
+    if(errBanner){
+      errBanner.textContent=`Error loading data: ${err.message}`;
+      errBanner.classList.add("is-visible");
+    }
+  }finally{
+    isLoading=false;
+    if(btn) btn.disabled=false;
+    const overlay=$("loadingOverlay");
+    if(overlay) overlay.classList.add("is-hidden");
+  }
+}
+
+async function doRefresh(){
+  await loadAndRender();
+  startCountdown();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+window.addEventListener("DOMContentLoaded",()=>{
+  wireNav();
+  const btn=$("refreshBtn");
+  if(btn) btn.addEventListener("click",doRefresh);
+  doRefresh();
+  startCountdown();
+});
+</script>
+</body>
+</html>
