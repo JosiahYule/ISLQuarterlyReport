@@ -108,7 +108,7 @@
     .proj-row-label{color:var(--muted)}
     .proj-row-value{font-weight:600}
     .proj-row-value.pace{color:var(--warning)}
-    .proj-row-value.trend{color:var(--purple)}
+    .proj-row-value.rate{color:var(--isl-accent);font-variant-numeric:tabular-nums}
     .proj-row-value.na{color:var(--muted);font-weight:400;font-style:italic}
     .proj-no-data{font-size:13px;color:var(--muted);font-style:italic}
 
@@ -125,7 +125,6 @@
     .legend-swatch{width:20px;height:3px;border-radius:99px;flex-shrink:0}
     .legend-swatch.solid{background:rgba(0,84,154,.85)}
     .legend-swatch.pace{background:rgba(245,158,11,.85);border-top:2px dashed rgba(245,158,11,.85);height:0}
-    .legend-swatch.trend{background:rgba(124,58,237,.85);border-top:2px dashed rgba(124,58,237,.85);height:0}
 
     /* Methodology */
     .methodology-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px 28px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
@@ -202,7 +201,7 @@
   <!-- HERO -->
   <section class="hero" aria-label="Trends header">
     <h1>Performance Trends &amp; Projections</h1>
-    <p>Quarter-over-quarter trajectory for every key metric, plus projected Q3 finals based on current pace and historical trend.</p>
+    <p>Quarter-over-quarter trajectory for every key metric, plus Q3 pace projections based on observed daily rate extrapolated to full quarter length.</p>
     <div class="hero-meta">
       <div class="hero-chip"><strong>Quarters:</strong> Q1 · Q2 · Q3</div>
       <div class="hero-chip"><strong>Platforms:</strong> LinkedIn · Facebook · Instagram</div>
@@ -215,7 +214,7 @@
     <div class="section-header">
       <div class="section-title">
         <h2>Q3 Projected Finals</h2>
-        <p>Estimated end-of-quarter totals based on current pace and Q1→Q2 trend.</p>
+        <p>Estimated end-of-quarter totals based on observed daily rate × total quarter days.</p>
       </div>
       <span class="section-badge">Q3 &bull; Mar–May 2026</span>
     </div>
@@ -239,9 +238,8 @@
     <div class="methodology-card">
       <h3>How Projections Work</h3>
       <ul>
-        <li><strong>Pace projection (amber)</strong> — Scales Q3 actuals accumulated so far by the fraction of the quarter elapsed. If 14% of the quarter has passed and 8,450 impressions are recorded, the pace projection is 8,450 ÷ 0.14 ≈ 60,357. Applied to cumulative metrics only (impressions, reactions, link clicks, shares, comments, posts).</li>
-        <li><strong>Trend projection (purple)</strong> — Extends the linear trend from Q1 and Q2 forward. If Q1 = 62,690 and Q2 = 65,342, Q3 trend ≈ 67,994. Applied to all metrics.</li>
-        <li><strong>Followers</strong> — A snapshot metric (total at quarter end), not a cumulative total, so only the trend projection is shown.</li>
+        <li><strong>Pace projection (amber)</strong> — Uses the formula <code>P = (V / D<sub>elapsed</sub>) × D<sub>total</sub></code>, where <em>V</em> is the cumulative total to date, <em>D<sub>elapsed</sub></em> is the number of calendar days since the quarter started, and <em>D<sub>total</sub></em> is the total calendar days in the quarter (92 for Q3 Mar–May). This yields the observed daily rate, then extrapolates it across the full quarter. For example: if 19 days have elapsed and 13,000 impressions are recorded, the daily rate is 13,000 ÷ 19 ≈ 684/day, and the projection is 684 × 92 ≈ 62,960. Each card also shows the Q2 daily rate (Q2 total ÷ 90 days) so you can directly compare velocity, independent of where the projected total lands.</li>
+        <li><strong>Followers</strong> — A snapshot metric (total at quarter end), not a cumulative count. No pace projection is shown; the card displays Q1 and Q2 actuals for reference.</li>
         <li>Data is fetched live from Hootsuite via Google Apps Script and auto-refreshes every 5 minutes.</li>
       </ul>
     </div>
@@ -356,14 +354,24 @@ function extractMetric(data, metric){
 }
 
 // ── Projections ───────────────────────────────────────────────────────────────
-function paceProject(current, comp){
-  if(current===null||!Number.isFinite(current)||comp<0.005) return null;
-  return current/comp;
+// Pace formula: P = (V_current / D_elapsed) × D_total
+//   where D_elapsed = calendar days since quarter start
+//         D_total   = total calendar days in the quarter
+function computePace(current, qStart, qEnd){
+  if(current===null||!Number.isFinite(current)) return null;
+  const now=new Date();
+  const dElapsed=(now-qStart)/86400000;
+  if(dElapsed<1) return null;
+  const dTotal=(qEnd-qStart)/86400000;
+  const dailyRate=current/dElapsed;
+  return { projected: dailyRate*dTotal, dailyRate, dElapsed, dTotal };
 }
 
-function trendProject(q1v, q2v){
-  if(q1v===null||q2v===null) return null;
-  return q2v+(q2v-q1v); // linear extrapolation
+// Q2 average daily rate for comparison
+function q2DailyRate(q2v, q2){
+  if(q2v===null||!Number.isFinite(q2v)) return null;
+  const dTotal=(q2.end-q2.start)/86400000;
+  return q2v/dTotal;
 }
 
 // ── Fetching ──────────────────────────────────────────────────────────────────
@@ -392,26 +400,30 @@ function renderProjCards(qdata, q3comp, q3done){
   const grid=$("projGrid");
   if(!grid) return;
   const [d1,d2,d3]=qdata;
+  const q3=QUARTERS[2]; const q2=QUARTERS[1];
   const pct=(q3comp*100).toFixed(1);
 
   grid.innerHTML=METRICS.map(m=>{
     const q1v=extractMetric(d1,m);
     const q2v=extractMetric(d2,m);
     const q3v=extractMetric(d3,m);
-    const pace=m.isPace&&!q3done?paceProject(q3v,q3comp):null;
-    const trend=trendProject(q1v,q2v);
-    const headline=pace??trend;
-    const headlineSub=pace!==null?"Pace Projection":trend!==null?"Trend Projection":"Projected";
+    const pace=m.isPace&&!q3done?computePace(q3v,q3.start,q3.end):null;
+    const q2Rate=m.isPace?q2DailyRate(q2v,q2):null;
+
+    const projected=pace?pace.projected:null;
+    const rateVsQ2=pace&&q2Rate?((pace.dailyRate-q2Rate)/q2Rate*100):null;
+    const rateArrow=rateVsQ2===null?"":rateVsQ2>=0?`▲ +${rateVsQ2.toFixed(1)}% vs Q2`:`▼ ${rateVsQ2.toFixed(1)}% vs Q2`;
 
     return `<div class="proj-card">
       <div class="proj-card-label">${m.label}</div>
-      <div class="proj-headline">${headline!==null?fmtApprox(headline,m.isPercent):"—"}</div>
-      <div class="proj-headline-sub">${headlineSub}</div>
+      <div class="proj-headline">${projected!==null?fmtApprox(projected,m.isPercent):"—"}</div>
+      <div class="proj-headline-sub">Pace Projection</div>
       <div class="proj-bar-wrap"><div class="proj-bar-fill" style="width:${Math.min(100,q3comp*100).toFixed(1)}%"></div></div>
-      <div class="proj-bar-label">${pct}% of Q3 elapsed${q3done?" (complete)":""}</div>
+      <div class="proj-bar-label">${pct}% of Q3 elapsed (${pace?Math.round(pace.dElapsed):0} of ${pace?Math.round(pace.dTotal):92} days)${q3done?" (complete)":""}</div>
       <div class="proj-row"><span class="proj-row-label">Q3 to date</span><span class="proj-row-value">${fmt(q3v,m.isPercent)}</span></div>
-      ${pace!==null?`<div class="proj-row"><span class="proj-row-label">Pace projection</span><span class="proj-row-value pace">${fmtApprox(pace,m.isPercent)}</span></div>`:""}
-      ${trend!==null?`<div class="proj-row"><span class="proj-row-label">Trend projection</span><span class="proj-row-value trend">${fmtApprox(trend,m.isPercent)}</span></div>`:""}
+      ${pace!==null?`<div class="proj-row"><span class="proj-row-label">Q3 daily rate</span><span class="proj-row-value rate">${m.isPercent?pace.dailyRate.toFixed(3)+"%":pace.dailyRate.toFixed(1)}/day</span></div>`:""}
+      ${pace!==null&&q2Rate!==null?`<div class="proj-row"><span class="proj-row-label">Q2 daily rate</span><span class="proj-row-value">${m.isPercent?q2Rate.toFixed(3)+"%":q2Rate.toFixed(1)}/day <span style="font-size:10px;font-weight:500;color:${rateVsQ2>=0?"var(--success)":"var(--danger)"}">${rateArrow}</span></span></div>`:""}
+      ${pace!==null?`<div class="proj-row"><span class="proj-row-label">Pace projection</span><span class="proj-row-value pace">${fmtApprox(projected,m.isPercent)}</span></div>`:""}
       <div class="proj-row"><span class="proj-row-label">Q1 actual</span><span class="proj-row-value">${fmt(q1v,m.isPercent)}</span></div>
       <div class="proj-row"><span class="proj-row-label">Q2 actual</span><span class="proj-row-value">${fmt(q2v,m.isPercent)}</span></div>
     </div>`;
@@ -430,7 +442,7 @@ function renderCharts(qdata, q3comp, q3done){
   grid.innerHTML=METRICS.map(m=>`
     <div class="chart-card">
       <div class="chart-card-title">${m.label}</div>
-      <div class="chart-card-sub">${!q3done?"Blue = Q1 & Q2 actuals · Amber dashed = pace projection · Purple dashed = trend projection":"Quarter-over-quarter trajectory"}</div>
+      <div class="chart-card-sub">${!q3done?"Blue = Q1 & Q2 actuals · Amber dashed = pace projection (daily rate × quarter days)":"Quarter-over-quarter trajectory"}</div>
       <div class="chart-wrap"><canvas id="chart-${m.id}"></canvas></div>
       <div class="chart-legend" id="legend-${m.id}"></div>
     </div>
@@ -438,14 +450,15 @@ function renderCharts(qdata, q3comp, q3done){
 
   // Build each chart after Chart.js is ready
   function buildAll(){
+    const q3=QUARTERS[2];
     for(const m of METRICS){
       const q1v=extractMetric(d1,m);
       const q2v=extractMetric(d2,m);
       const q3v=extractMetric(d3,m);
-      const pace=m.isPace&&!q3done?paceProject(q3v,q3comp):null;
-      const trend=trendProject(q1v,q2v);
+      const paceResult=m.isPace&&!q3done?computePace(q3v,q3.start,q3.end):null;
+      const pace=paceResult?paceResult.projected:null;
 
-      const hasProj=(pace!==null||trend!==null)&&!q3done;
+      const hasProj=pace!==null&&!q3done;
 
       const labels=hasProj
         ?[`Q1 • Sep–Nov`,`Q2 • Dec–Feb`,`Q3 • projected`]
@@ -475,23 +488,6 @@ function renderCharts(qdata, q3comp, q3done){
           pointRadius:[0,0,7],
           pointBackgroundColor:["transparent","transparent","rgba(245,158,11,.9)"],
           pointStyle:["circle","circle","circle"],
-          fill:false,
-          tension:0,
-          spanGaps:false,
-        });
-      }
-
-      if(trend!==null){
-        datasets.push({
-          label:"Trend Projection",
-          data:[null,q2v,trend],
-          borderColor:"rgba(124,58,237,.8)",
-          backgroundColor:"transparent",
-          borderWidth:2,
-          borderDash:[3,4],
-          pointRadius:[0,0,7],
-          pointBackgroundColor:["transparent","transparent","rgba(124,58,237,.9)"],
-          pointStyle:["circle","circle","triangle"],
           fill:false,
           tension:0,
           spanGaps:false,
@@ -533,7 +529,6 @@ function renderCharts(qdata, q3comp, q3done){
       if(legendEl){
         const items=[`<div class="legend-item"><div class="legend-swatch solid"></div>Actual</div>`];
         if(pace!==null) items.push(`<div class="legend-item"><div class="legend-swatch pace"></div>Pace projection</div>`);
-        if(trend!==null) items.push(`<div class="legend-item"><div class="legend-swatch trend"></div>Trend projection</div>`);
         legendEl.innerHTML=items.join("");
       }
     }
