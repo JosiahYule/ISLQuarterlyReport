@@ -298,41 +298,13 @@
     }
 
     /* ============= QUARTER DROPDOWN MENU ============= */
-    .pill-wrap{ position:relative; display:inline-flex; }
-    .pill-trigger{
-      border:none;
-      cursor:pointer;
-      appearance:none;
-      -webkit-appearance:none;
-      font: inherit;
-      background: var(--card);
-    }
-    .pill-caret{ margin-left:10px; font-size:12px; opacity:.7; }
-    .pill-range{ display:none; } /* ✅ hide range in the top pill */
-    .pill-menu{
-      position:absolute;
-      right:0;
-      top:calc(100% + 10px);
-      min-width:240px;
-      background:#fff;
-      border:1px solid rgba(0,0,0,.08);
-      border-radius:14px;
-      box-shadow:0 14px 30px rgba(0,0,0,.14);
-      padding:8px;
-      display:none;
-      z-index:100;
-    }
-    .pill-wrap.open .pill-menu{ display:block; }
-    .pill-item{
-      display:block;
-      padding:10px 12px;
-      border-radius:12px;
-      text-decoration:none;
-      font-size:13px;
-      font-weight:600;
-      color:var(--text);
-    }
-    .pill-item:hover{ background:rgba(0,112,202,.08); }
+    .pill-wrap{position:relative}
+    .pill-caret{font-size:11px;color:var(--muted)}
+    .pill-menu{position:absolute;right:0;top:calc(100% + 8px);background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:0 8px 32px rgba(0,0,0,.12);min-width:220px;overflow:hidden;opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .18s ease,visibility .18s ease,transform .18s ease;z-index:100}
+    .pill-menu.is-open{opacity:1;visibility:visible;transform:translateY(0)}
+    .pill-item{display:block;padding:10px 16px;font-size:13px;font-weight:500;color:var(--text);text-decoration:none;transition:background .14s ease}
+    .pill-item:hover{background:rgba(0,84,154,.05)}
+    .pill-item.active{background:rgba(0,84,154,.08);color:var(--isl-primary);font-weight:600}
 
     /* ============= HERO ============= */
     .hero{
@@ -1027,10 +999,6 @@
         top:0;
         right:0;
       }
-      .pill-trigger{
-        padding:8px 12px;
-        font-size:12px;
-      }
 
       /* platform breakdown cards: keep everything inside, no weird overlaps */
       .platform{padding:18px}
@@ -1572,21 +1540,18 @@
         </div>
       </div>
 
-      <div class="pill-wrap" aria-label="Report period selector">
-        <button class="pill pill-trigger" id="quarterBtn" type="button" aria-haspopup="menu" aria-expanded="false">
-          <span class="pill-dot" aria-hidden="true"></span>
-          <span>
-            <strong id="reportQuarterLabel">Q1</strong>
-            <span class="pill-range"> <span id="reportRangeLabel">Sep–Nov 2025</span></span>
-          </span>
-          <span class="pill-caret" aria-hidden="true">▾</span>
+      <div class="pill-wrap">
+        <button class="pill" id="navBtn" type="button" aria-haspopup="menu" aria-expanded="false">
+          <span class="pill-dot"></span>
+          <span>Navigate</span>
+          <span class="pill-caret">▾</span>
         </button>
-
-        <div class="pill-menu" id="quarterMenu" role="menu" aria-label="Choose quarter">
-          <a class="pill-item" role="menuitem" href="/q1.html">Q1 • Sep–Nov 2025</a>
-          <a class="pill-item" role="menuitem" href="/q2.html">Q2 • Dec–Feb 2026</a>
-          <a class="pill-item" role="menuitem" href="/q3.html">Q3 • Mar–May 2026</a>
-          <a class="pill-item" role="menuitem" href="/web/">Website • Q2 • Dec–Feb 2026</a>
+        <div class="pill-menu" id="navMenu" role="menu">
+          <a class="pill-item" href="/?report=islq1" role="menuitem">Q1 &bull; Sep–Nov 2025</a>
+          <a class="pill-item active" href="/?report=islq2" role="menuitem">Q2 &bull; Dec–Feb 2026</a>
+          <a class="pill-item" href="/?report=islq3" role="menuitem">Q3 &bull; Mar–May 2026</a>
+          <a class="pill-item" href="/web/" role="menuitem">Website Report</a>
+          <a class="pill-item" href="/trends.html" role="menuitem">Trends &amp; Projections</a>
         </div>
       </div>
     </div>
@@ -2580,24 +2545,15 @@ function lockEditing(){
    QUARTER DROPDOWN
 ========================= */
 function quarterDropdown(){
-  const wrap = document.querySelector(".pill-wrap");
-  const btn = document.getElementById("quarterBtn");
-  if(!wrap || !btn) return;
-
-  btn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    wrap.classList.toggle("open");
-    btn.setAttribute("aria-expanded", wrap.classList.contains("open") ? "true" : "false");
+  const btn=document.getElementById("navBtn"), menu=document.getElementById("navMenu");
+  if(!btn||!menu) return;
+  btn.addEventListener("click",()=>{
+    const open=menu.classList.toggle("is-open");
+    btn.setAttribute("aria-expanded",String(open));
   });
-
-  document.addEventListener("click", () => {
-    wrap.classList.remove("open");
-    btn.setAttribute("aria-expanded","false");
-  });
-
-  document.addEventListener("keydown", (e) => {
-    if(e.key === "Escape"){
-      wrap.classList.remove("open");
+  document.addEventListener("click",e=>{
+    if(!btn.contains(e.target)&&!menu.contains(e.target)){
+      menu.classList.remove("is-open");
       btn.setAttribute("aria-expanded","false");
     }
   });
