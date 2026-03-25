@@ -361,7 +361,7 @@
       <ul>
         <li><strong>Pace projection (amber)</strong> — Uses the formula <code>P = (V / D<sub>elapsed</sub>) × D<sub>total</sub></code>, where <em>V</em> is the cumulative total to date, <em>D<sub>elapsed</sub></em> is the number of calendar days since the quarter started, and <em>D<sub>total</sub></em> is the total calendar days in the quarter (92 for Q3 Mar–May). This yields the observed daily rate, then extrapolates it across the full quarter. For example: if 19 days have elapsed and 13,000 impressions are recorded, the daily rate is 13,000 ÷ 19 ≈ 684/day, and the projection is 684 × 92 ≈ 62,960. Each card also shows the Q2 daily rate (Q2 total ÷ 90 days) so you can directly compare velocity, independent of where the projected total lands.</li>
         <li><strong>Followers</strong> — A snapshot metric (total at quarter end), not a cumulative count. No pace projection is shown; the card displays Q1 and Q2 actuals for reference.</li>
-        <li><strong>Q3 Projection Timeline</strong> — Toggleable chart view showing each metric's cumulative Q3 growth day-by-day. The solid line shows the linear pace from day 1 to today; the dashed line shows the extrapolated projection to quarter end. A subtle reference line shows the Q2 final total.</li>
+        <li><strong>Q3 Projection Timeline</strong> — Toggleable chart view showing how the projected Q3 final total has shifted over time. Each data point represents one session's snapshot, stored locally in your browser. The projection is calculated as <em>(current total ÷ days elapsed) × 92 days</em>. As pace changes day-to-day, the line drifts up or down — revealing whether Q3 is trending ahead of or behind expectations. A reference line shows the Q2 final total for context.</li>
         <li>Data is fetched live from Hootsuite via Google Apps Script and auto-refreshes every 5 minutes.</li>
       </ul>
     </div>
@@ -742,29 +742,56 @@ function buildComparisonCharts(qdata, q3comp, q3done){
   else document.querySelector("script[src*='chart']").addEventListener("load",go);
 }
 
+// ── Projection history (localStorage) ────────────────────────────────────────
+const PROJ_HIST_KEY='islq3_proj_history';
+
+function storeProjectionSnapshot(d3){
+  if(!d3) return;
+  const snap={t:Date.now(),vals:{}};
+  for(const m of METRICS){
+    if(!m.isPace) continue;
+    const v=extractMetric(d3,m);
+    if(v!==null) snap.vals[m.id]=v;
+  }
+  if(!Object.keys(snap.vals).length) return;
+  try{
+    const raw=localStorage.getItem(PROJ_HIST_KEY);
+    const hist=raw?JSON.parse(raw):[];
+    hist.push(snap);
+    localStorage.setItem(PROJ_HIST_KEY,JSON.stringify(hist.slice(-500)));
+  }catch(e){}
+}
+
+function loadProjectionHistory(){
+  let hist=[];
+  try{ hist=JSON.parse(localStorage.getItem(PROJ_HIST_KEY)||'[]'); }catch(e){ return []; }
+  // Deduplicate: keep last snapshot per calendar day
+  const byDay={};
+  for(const snap of hist){ byDay[new Date(snap.t).toDateString()]=snap; }
+  return Object.values(byDay).sort((a,b)=>a.t-b.t);
+}
+
 // ── Render: Q3 projection timeline charts ────────────────────────────────────
 function buildTimelineCharts(qdata, q3comp, q3done){
-  buildChartShells("Actual pace to date (solid) · pace projection to quarter end (dashed) · Q2 total reference");
+  buildChartShells("Projected Q3 final at each session date · Q2 final reference");
   const [,d2,d3]=qdata;
   const q3=QUARTERS[2];
+  const dTotal=(q3.end-q3.start)/86400000;
+
+  const history=loadProjectionHistory();
 
   function go(){
     for(const m of METRICS){
       const q2v=extractMetric(d2,m);
       const q3v=extractMetric(d3,m);
-      const paceResult=m.isPace&&!q3done?computePace(q3v,q3.start,q3.end):null;
-      const dTotal=Math.round(paceResult?paceResult.dTotal:92);
-      const dElapsed=paceResult?Math.round(paceResult.dElapsed):0;
-      const dailyRate=paceResult?paceResult.dailyRate:0;
-      const projected=paceResult?paceResult.projected:null;
 
       const canvas=document.getElementById(`chart-${m.id}`);
       if(!canvas) continue;
       if(chartInstances[m.id]) chartInstances[m.id].destroy();
       const ctx=canvas.getContext("2d");
 
-      if(!m.isPace||!paceResult){
-        // Followers or no-pace: just show a simple card with Q3 snapshot vs Q2
+      if(!m.isPace){
+        // Followers: simple Q2 vs current Q3 snapshot bar
         const h=canvas.offsetHeight||240;
         const labels=["Q2 · Dec–Feb","Q3 · Current"];
         const vals=[q2v??0, q3v??0];
@@ -782,77 +809,65 @@ function buildTimelineCharts(qdata, q3comp, q3done){
         continue;
       }
 
-      // Generate day-by-day points (step every ~3 days to keep chart clean)
-      const step=Math.max(1,Math.ceil(dTotal/40));
-      const dayLabels=[];
-      const actualData=[];
-      const projData=[];
-
-      for(let d=0;d<=dTotal;d+=step){
-        if(d===0){
-          dayLabels.push("Start");
-        } else if(d===dElapsed||Math.abs(d-dElapsed)<step/2){
-          dayLabels.push("Today");
-        } else if(d>=dTotal){
-          dayLabels.push("End");
-        } else {
-          dayLabels.push(`Day ${d}`);
-        }
-
-        if(d<=dElapsed){
-          actualData.push(Math.round(dailyRate*d));
-          projData.push(null);
-        } else {
-          actualData.push(null);
-          projData.push(Math.round(dailyRate*d));
-        }
-      }
-      // Ensure endpoint exists
-      if(dayLabels[dayLabels.length-1]!=="End"){
-        dayLabels.push("End");
-        actualData.push(null);
-        projData.push(Math.round(projected));
+      // Build projection points from stored history
+      const pts=[];
+      for(const snap of history){
+        const v=snap.vals[m.id];
+        if(v===null||v===undefined) continue;
+        const dElapsed=(snap.t-q3.start.getTime())/86400000;
+        if(dElapsed<1) continue;
+        const projFinal=(v/dElapsed)*dTotal;
+        if(!Number.isFinite(projFinal)||projFinal<=0) continue;
+        pts.push({t:snap.t, proj:Math.round(projFinal)});
       }
 
-      // Area gradient for actual line
+      if(pts.length===0){
+        ctx.save();
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle="#94a3b8";
+        ctx.font="13px Inter,system-ui,sans-serif";
+        ctx.textAlign="center";
+        ctx.textBaseline="middle";
+        ctx.fillText("History builds up as you revisit this page.",canvas.width/2,canvas.height/2-10);
+        ctx.fillText("Check back tomorrow to see the projection trend.",canvas.width/2,canvas.height/2+12);
+        ctx.restore();
+        const legendEl=document.getElementById(`legend-${m.id}`);
+        if(legendEl) legendEl.innerHTML=`<div class="legend-item" style="color:#94a3b8">Collecting snapshots…</div>`;
+        continue;
+      }
+
+      const labels=pts.map(p=>new Date(p.t).toLocaleDateString("en-US",{month:"short",day:"numeric"}));
+      const projData=pts.map(p=>p.proj);
+
       const h=canvas.offsetHeight||240;
       const gArea=ctx.createLinearGradient(0,0,0,h);
-      gArea.addColorStop(0,"rgba(0,84,154,.18)");
-      gArea.addColorStop(1,"rgba(0,84,154,.0)");
+      gArea.addColorStop(0,"rgba(245,158,11,.18)");
+      gArea.addColorStop(1,"rgba(245,158,11,.0)");
 
-      const datasets=[
-        {
-          label:"Q3 Actual Pace",
-          data:actualData,
-          borderColor:"rgba(0,84,154,.9)",
-          backgroundColor:gArea,
-          borderWidth:2.5,
-          pointRadius:(actualData.map((_,i)=>i===actualData.filter(v=>v!==null).length-1?6:0)),
-          pointBackgroundColor:"rgba(0,84,154,.9)",
-          fill:true,
-          tension:0,
-          spanGaps:false,
-        },
-        {
-          label:"Pace Projection",
-          data:projData,
-          borderColor:"rgba(245,158,11,.85)",
-          backgroundColor:"transparent",
-          borderWidth:2,
-          borderDash:[6,4],
-          pointRadius:(projData.map((v,i)=>i===projData.length-1&&v!==null?6:0)),
-          pointBackgroundColor:"rgba(245,158,11,.9)",
-          fill:false,
-          tension:0,
-          spanGaps:false,
-        },
-      ];
+      // Spread y-axis so small changes remain visible
+      const minP=Math.min(...projData), maxP=Math.max(...projData);
+      const yPad=(maxP-minP)*0.3||maxP*0.1;
+      const yMin=Math.max(0,minP-yPad);
 
-      // Q2 reference line
+      const datasets=[{
+        label:"Projected Q3 Final",
+        data:projData,
+        borderColor:"rgba(245,158,11,.9)",
+        backgroundColor:gArea,
+        borderWidth:2.5,
+        pointRadius:projData.map((_,i)=>i===projData.length-1?7:projData.length<8?4:2),
+        pointBackgroundColor:projData.map((_,i)=>i===projData.length-1?"rgba(245,158,11,1)":"rgba(245,158,11,.7)"),
+        pointBorderColor:projData.map((_,i)=>i===projData.length-1?"#fff":"transparent"),
+        pointBorderWidth:projData.map((_,i)=>i===projData.length-1?2:0),
+        fill:true,
+        tension:0.35,
+        spanGaps:false,
+      }];
+
       if(q2v!==null){
         datasets.push({
           label:"Q2 Final Total",
-          data:Array(dayLabels.length).fill(q2v),
+          data:Array(labels.length).fill(q2v),
           borderColor:"rgba(100,116,139,.4)",
           backgroundColor:"transparent",
           borderWidth:1.5,
@@ -865,54 +880,42 @@ function buildTimelineCharts(qdata, q3comp, q3done){
 
       chartInstances[m.id]=new Chart(ctx,{
         type:"line",
-        data:{labels:dayLabels,datasets},
+        data:{labels,datasets},
         options:{
           responsive:true,
           maintainAspectRatio:false,
           animation:{duration:700},
           plugins:{
             legend:{display:false},
-            tooltip:{
-              callbacks:{
-                label(c){
-                  const v=c.parsed.y;
-                  if(v===null||v===undefined) return null;
-                  return `${c.dataset.label}: ${fmt(v,m.isPercent)}`;
-                }
+            tooltip:{callbacks:{
+              title(items){return items[0].label;},
+              label(c){
+                const v=c.parsed.y;
+                if(v===null||v===undefined) return null;
+                return `${c.dataset.label}: ${fmt(v,m.isPercent)}`;
               }
-            }
+            }}
           },
           scales:{
             x:{
               grid:{color:"rgba(0,0,0,.03)"},
-              ticks:{
-                font:{size:10},color:"#64748B",
-                maxTicksLimit:8,
-                callback(val,i){
-                  const lbl=this.getLabelForValue(val);
-                  if(lbl==="Start"||lbl==="Today"||lbl==="End") return lbl;
-                  return lbl;
-                }
-              },
+              ticks:{font:{size:10},color:"#64748B",maxTicksLimit:12},
               border:{display:false},
             },
             y:{
-              beginAtZero:true,
+              min:yMin,
               grid:{color:"rgba(0,0,0,.04)"},
               border:{display:false},
-              ticks:{font:{size:11},color:"#64748B",padding:8,callback:v=>m.isPercent?`${v.toFixed(1)}%`:v>=1000?v.toLocaleString():v},
+              ticks:{font:{size:11},color:"#64748B",padding:8,
+                callback:v=>m.isPercent?`${v.toFixed(1)}%`:v>=1000?v.toLocaleString():v},
             },
           }
         }
       });
 
-      // Legend
       const legendEl=document.getElementById(`legend-${m.id}`);
       if(legendEl){
-        const items=[
-          `<div class="legend-item"><div class="legend-dot" style="background:rgba(0,84,154,.85)"></div>Q3 Actual Pace</div>`,
-          `<div class="legend-item"><div class="legend-dash"></div>Pace Projection</div>`,
-        ];
+        const items=[`<div class="legend-item"><div class="legend-dot" style="background:rgba(245,158,11,.85)"></div>Projected Q3 Final</div>`];
         if(q2v!==null) items.push(`<div class="legend-item"><div class="legend-dot" style="background:rgba(100,116,139,.5)"></div>Q2 Final Total</div>`);
         legendEl.innerHTML=items.join("");
       }
@@ -1034,6 +1037,7 @@ async function loadAndRender(){
 
     renderProjCards(qdata,q3comp,q3done);
     renderCharts(qdata,q3comp,q3done);
+    storeProjectionSnapshot(qdata[2]);
     setLastUpdated();
   }catch(err){
     const errBanner=$("errorBanner");
