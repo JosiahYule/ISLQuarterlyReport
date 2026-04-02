@@ -546,14 +546,17 @@ function renderProjCards(qdata, q3comp, q3done){
     const rateVsQ2=pace&&q2Rate?((pace.dailyRate-q2Rate)/q2Rate*100):null;
 
     // Headline: projected total (or current snapshot if no pace)
-    const headline = projected!==null
-      ? fmtApprox(projected,m.isPercent)
-      : fmt(m.baselineFromQ2&&q2v!==null&&q3v!==null?q3v-q2v:q3v,m.isPercent);
-    const headlineSub = projected!==null
+    const headlineVal = projected!==null && m.baselineFromQ2 && q2v!==null
+      ? q2v+projected
+      : projected;
+    const headline = headlineVal!==null
+      ? fmtApprox(headlineVal,m.isPercent)
+      : fmt(m.baselineFromQ2&&q2v!==null&&q3v!==null?q3v:q3v,m.isPercent);
+    const headlineSub = headlineVal!==null
       ? (q3done
-          ? (m.baselineFromQ2 ? "Q3 Net New Final" : "Q3 Final")
-          : (m.baselineFromQ2 ? "Projected Net New · Q3" : "Projected Final · Q3"))
-      : (m.baselineFromQ2 ? "Q3 Net New Snapshot" : "Q3 Current Snapshot");
+          ? (m.baselineFromQ2 ? "Q3 Projected Total" : "Q3 Final")
+          : (m.baselineFromQ2 ? "Projected Total · Q3" : "Projected Final · Q3"))
+      : (m.baselineFromQ2 ? "Q3 Current Total" : "Q3 Current Snapshot");
 
     // Progress bar (only for pace metrics)
     const dElapsedRounded = pace ? Math.round(pace.dElapsed) : 0;
