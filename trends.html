@@ -360,7 +360,7 @@
       <h3>How Projections Work</h3>
       <ul>
         <li><strong>Pace projection (amber)</strong> — Uses the formula <code>P = (V / D<sub>elapsed</sub>) × D<sub>total</sub></code>, where <em>V</em> is the cumulative total to date, <em>D<sub>elapsed</sub></em> is the number of calendar days since the quarter started, and <em>D<sub>total</sub></em> is the total calendar days in the quarter (92 for Q3 Mar–May). This yields the observed daily rate, then extrapolates it across the full quarter. For example: if 19 days have elapsed and 13,000 impressions are recorded, the daily rate is 13,000 ÷ 19 ≈ 684/day, and the projection is 684 × 92 ≈ 62,960. Each card also shows the Q2 daily rate (Q2 total ÷ 90 days) so you can directly compare velocity, independent of where the projected total lands.</li>
-        <li><strong>Followers</strong> — A snapshot metric (total at quarter end), not a cumulative count. No pace projection is shown; the card displays Q1 and Q2 actuals for reference.</li>
+        <li><strong>Followers</strong> — Treated as a running total. The pace projection estimates the end-of-quarter follower count assuming the observed daily growth rate (net new followers ÷ days elapsed) continues through the rest of the quarter. Rate vs Q2 compares daily growth velocity against last quarter.</li>
         <li><strong>Q3 Projection Timeline</strong> — Toggleable chart view showing how the projected Q3 final total has shifted over time. Each data point represents one session's snapshot, stored locally in your browser. The projection is calculated as <em>(current total ÷ days elapsed) × 92 days</em>. As pace changes day-to-day, the line drifts up or down — revealing whether Q3 is trending ahead of or behind expectations. A reference line shows the Q2 final total for context.</li>
         <li>Data is fetched live from Hootsuite via Google Apps Script and auto-refreshes every 5 minutes.</li>
       </ul>
@@ -387,7 +387,7 @@ const METRICS = [
   { id:"shares",       label:"Shares",           needles:["post shares","shares"],                                                     isPercent:false, isPace:true  },
   { id:"comments",     label:"Comments",         needles:["comments and replies","comments & replies","comments","replies"],           isPercent:false, isPace:true  },
   { id:"posts",        label:"Posts Published",  needles:["posts"],                                                                    isPercent:false, isPace:true  },
-  { id:"followers",    label:"Followers",        needles:["followers total","followers (total)","followers"],                          isPercent:false, isPace:false },
+  { id:"followers",    label:"Followers",        needles:["followers total","followers (total)","followers"],                          isPercent:false, isPace:true  },
 ];
 
 // Quarter colour palette
