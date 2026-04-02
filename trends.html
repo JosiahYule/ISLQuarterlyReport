@@ -145,6 +145,8 @@
       margin-bottom:18px;
     }
 
+    .proj-range{font-size:11px;color:var(--muted);margin-bottom:14px;letter-spacing:.01em}
+    .proj-range strong{color:var(--text);font-weight:600}
     .proj-progress-wrap{margin-bottom:16px}
     .proj-progress-track{
       height:6px;
@@ -359,8 +361,10 @@
     <div class="methodology-card">
       <h3>How Projections Work</h3>
       <ul>
-        <li><strong>Pace projection (amber)</strong> — Uses the formula <code>P = (V / D<sub>elapsed</sub>) × D<sub>total</sub></code>, where <em>V</em> is the cumulative total to date, <em>D<sub>elapsed</sub></em> is the number of calendar days since the quarter started, and <em>D<sub>total</sub></em> is the total calendar days in the quarter (92 for Q3 Mar–May). This yields the observed daily rate, then extrapolates it across the full quarter. For example: if 19 days have elapsed and 13,000 impressions are recorded, the daily rate is 13,000 ÷ 19 ≈ 684/day, and the projection is 684 × 92 ≈ 62,960. Each card also shows the Q2 daily rate (Q2 total ÷ 90 days) so you can directly compare velocity, independent of where the projected total lands.</li>
-        <li><strong>Followers</strong> — Uses net-new growth starting from the Q2 closing total. The pace projection estimates followers gained by end of Q3 based on <em>(current total − Q2 actual) ÷ days elapsed × 92</em>. Rate vs Q2 compares this daily growth rate against Q2's daily growth rate <em>(Q2 total − Q1 total) ÷ 90</em>. The bar chart shows projected total follower count (Q2 actual + projected net new).</li>
+        <li><strong>Blended projection model</strong> — Projections are hidden for the first 7 days of the quarter. After that, up to three signals are blended: (1) <strong>Simple pace</strong> — <code>(V ÷ D<sub>elapsed</sub>) × D<sub>total</sub></code>, the baseline formula; (2) <strong>7-day rolling rate</strong> — the daily increment observed over the past 7 session snapshots, projected forward from the current total; (3) <strong>Linear regression</strong> — a least-squares line fitted to all session snapshots, extrapolated to quarter-end. When all three are available the weights are 20 / 40 / 40 (simple / rolling / regression). During the first 14 days the blended result is further faded toward the Q2 pace (0% Q2 weight by day 14) to dampen early-quarter volatility. Snapshots are stored in your browser on each page visit.</li>
+        <li><strong>Posts multiplier</strong> — For Impressions, Reactions, Link Clicks, Shares, and Comments, the blended projection is mixed 70 / 30 with a posts-adjusted estimate: <em>(engagement per post) × (projected posts for the quarter)</em>. This accounts for changes in posting frequency between quarters — if you post less, the raw pace understates it; the multiplier corrects the signal.</li>
+        <li><strong>Confidence range</strong> — Once at least 5 session snapshots are stored, each card shows a low–high range based on the standard deviation of historical simple-pace projections. A wider range indicates more day-to-day volatility in that metric.</li>
+        <li><strong>Followers</strong> — Uses net-new growth starting from the Q2 closing total. The pace projection estimates followers gained by end of Q3 based on <em>(current total − Q2 actual) ÷ days elapsed × 92</em>. Rate vs Q2 compares this daily growth rate against Q2's daily growth rate <em>(Q2 total − Q1 total) ÷ 90</em>. The headline shows projected total (Q2 actual + projected net new).</li>
         <li><strong>Q3 Projection Timeline</strong> — Toggleable chart view showing how the projected Q3 final total has shifted over time. Each data point represents one session's snapshot, stored locally in your browser. The projection is calculated as <em>(current total ÷ days elapsed) × 92 days</em>. As pace changes day-to-day, the line drifts up or down — revealing whether Q3 is trending ahead of or behind expectations. A reference line shows the Q2 final total for context.</li>
         <li>Data is fetched live from Hootsuite via Google Apps Script and auto-refreshes every 5 minutes.</li>
       </ul>
@@ -381,11 +385,11 @@ const QUARTERS = [
 ];
 
 const METRICS = [
-  { id:"impressions",  label:"Impressions",     needles:["post impressions","impressions"],                                           isPercent:false, isPace:true  },
-  { id:"reactions",    label:"Reactions",        needles:["reactions and likes","reactions & likes","reactions","likes"],              isPercent:false, isPace:true  },
-  { id:"linkclicks",   label:"Link Clicks",      needles:["post link clicks","link clicks","clicks"],                                  isPercent:false, isPace:true  },
-  { id:"shares",       label:"Shares",           needles:["post shares","shares"],                                                     isPercent:false, isPace:true  },
-  { id:"comments",     label:"Comments",         needles:["comments and replies","comments & replies","comments","replies"],           isPercent:false, isPace:true  },
+  { id:"impressions",  label:"Impressions",     needles:["post impressions","impressions"],                                           isPercent:false, isPace:true, postsMultiplier:true  },
+  { id:"reactions",    label:"Reactions",        needles:["reactions and likes","reactions & likes","reactions","likes"],              isPercent:false, isPace:true, postsMultiplier:true  },
+  { id:"linkclicks",   label:"Link Clicks",      needles:["post link clicks","link clicks","clicks"],                                  isPercent:false, isPace:true, postsMultiplier:true  },
+  { id:"shares",       label:"Shares",           needles:["post shares","shares"],                                                     isPercent:false, isPace:true, postsMultiplier:true  },
+  { id:"comments",     label:"Comments",         needles:["comments and replies","comments & replies","comments","replies"],           isPercent:false, isPace:true, postsMultiplier:true  },
   { id:"posts",        label:"Posts Published",  needles:["posts"],                                                                    isPercent:false, isPace:true  },
   { id:"followers",    label:"Followers",        needles:["followers total","followers (total)","followers"],                          isPercent:false, isPace:true, baselineFromQ2:true },
 ];
@@ -501,6 +505,109 @@ function q2DailyRate(q2v, q2){
   return q2v/dTotal;
 }
 
+// ── Advanced projection (blended signals) ────────────────────────────────────
+// histBaseline: value to subtract from stored history snapshots (used for
+// followers which stores total but projects net-new growth).
+function computeAdvancedPace(current, qStart, qEnd, q2Rate, metricHistory, histBaseline=0){
+  if(current===null||!Number.isFinite(current)) return null;
+  const now=new Date();
+  const dElapsed=(now-qStart)/86400000;
+  if(dElapsed<7) return null;  // hide projection in first 7 days
+  const dTotal=(qEnd-qStart)/86400000;
+  const dRemaining=dTotal-dElapsed;
+
+  // Signal 1: simple average daily rate
+  const simpleRate=current/dElapsed;
+  const simpleProj=simpleRate*dTotal;
+
+  // Signal 2: 7-day rolling rate (recent increment)
+  let rollingRate=null, rollingProj=null;
+  if(metricHistory.length>=2){
+    const cutoff=now.getTime()-7*86400000;
+    const windowStart=metricHistory.find(s=>s.t>=cutoff)||metricHistory[0];
+    const latest=metricHistory[metricHistory.length-1];
+    const dt=(latest.t-windowStart.t)/86400000;
+    if(dt>=1){
+      const vStart=windowStart.val-histBaseline;
+      const vEnd=latest.val-histBaseline;
+      if(Number.isFinite(vStart)&&Number.isFinite(vEnd)&&vEnd>=vStart){
+        rollingRate=(vEnd-vStart)/dt;
+        rollingProj=current+rollingRate*dRemaining;
+        if(rollingProj<current) rollingProj=current; // can't go backwards
+      }
+    }
+  }
+
+  // Signal 3: linear regression on session snapshots
+  let regProj=null;
+  if(metricHistory.length>=3){
+    const pts=metricHistory.map(s=>({
+      x:(s.t-qStart.getTime())/86400000,
+      y:s.val-histBaseline
+    })).filter(p=>p.x>=0&&Number.isFinite(p.y)&&p.y>=0);
+    if(pts.length>=3){
+      const n=pts.length;
+      const sx=pts.reduce((a,p)=>a+p.x,0);
+      const sy=pts.reduce((a,p)=>a+p.y,0);
+      const sxy=pts.reduce((a,p)=>a+p.x*p.y,0);
+      const sx2=pts.reduce((a,p)=>a+p.x*p.x,0);
+      const den=n*sx2-sx*sx;
+      if(den!==0){
+        const slope=(n*sxy-sx*sy)/den;
+        const intercept=(sy-slope*sx)/n;
+        const r=intercept+slope*dTotal;
+        if(r>0) regProj=r;
+      }
+    }
+  }
+
+  // Blend the three signals
+  let blended;
+  if(regProj!==null&&rollingProj!==null){
+    blended=0.20*simpleProj+0.40*rollingProj+0.40*regProj;
+  } else if(regProj!==null){
+    blended=0.40*simpleProj+0.60*regProj;
+  } else if(rollingProj!==null){
+    blended=0.35*simpleProj+0.65*rollingProj;
+  } else {
+    blended=simpleProj;
+  }
+
+  // Fade in confidence: blend with Q2 pace over the first 14 days
+  const confidence=Math.min(1,dElapsed/14);
+  let projected;
+  if(q2Rate!==null&&Number.isFinite(q2Rate)&&q2Rate>0){
+    projected=confidence*blended+(1-confidence)*(q2Rate*dTotal);
+  } else {
+    projected=blended;
+  }
+
+  // Confidence range: std dev of all historical simple-pace projections
+  let low=null, high=null;
+  if(metricHistory.length>=5){
+    const histProjs=metricHistory.map(s=>{
+      const dE=(s.t-qStart.getTime())/86400000;
+      if(dE<1) return null;
+      return ((s.val-histBaseline)/dE)*dTotal;
+    }).filter(v=>v!==null&&Number.isFinite(v)&&v>0);
+    if(histProjs.length>=3){
+      const mean=histProjs.reduce((a,b)=>a+b,0)/histProjs.length;
+      const std=Math.sqrt(histProjs.reduce((s,v)=>s+(v-mean)**2,0)/histProjs.length);
+      low=Math.max(0,projected-std);
+      high=projected+std;
+    }
+  }
+
+  const dailyRate=rollingRate??simpleRate;
+  return {projected, low, high, dailyRate, dElapsed, dTotal};
+}
+
+function getMetricHistory(metricId){
+  return loadProjectionHistory()
+    .filter(s=>s.vals&&s.vals[metricId]!==undefined)
+    .map(s=>({t:s.t, val:s.vals[metricId]}));
+}
+
 // ── Fetching ──────────────────────────────────────────────────────────────────
 async function fetchQuarter(q){
   try{
@@ -530,73 +637,99 @@ function renderProjCards(qdata, q3comp, q3done){
   const q3=QUARTERS[2]; const q2=QUARTERS[1];
   const pct=(q3comp*100).toFixed(1);
 
+  // Pre-compute posts projection for the posts-multiplier signal
+  const postsM=METRICS.find(m=>m.id==="posts");
+  const postsQ3v=postsM?extractMetric(d3,postsM):null;
+  const postsQ2v=postsM?extractMetric(d2,postsM):null;
+  const postsQ2Rate=postsQ2v!==null?postsQ2v/((q2.end-q2.start)/86400000):null;
+  const postsPaceResult=postsM&&postsQ3v!==null&&!q3done
+    ?computeAdvancedPace(postsQ3v,q3.start,q3.end,postsQ2Rate,getMetricHistory("posts"),0):null;
+  const projectedPosts=postsPaceResult?postsPaceResult.projected:null;
+
   grid.innerHTML=METRICS.map(m=>{
     const q1v=extractMetric(d1,m);
     const q2v=extractMetric(d2,m);
     const q3v=extractMetric(d3,m);
-    const q3input = m.baselineFromQ2 && q2v!==null && q3v!==null ? q3v-q2v : q3v;
-    const pace=m.isPace&&!q3done?computePace(q3input,q3.start,q3.end):null;
+
+    const histBaseline=m.baselineFromQ2&&q2v!==null?q2v:0;
+    const q3input=m.baselineFromQ2&&q2v!==null&&q3v!==null?q3v-q2v:q3v;
     const q2Rate=m.isPace
-      ? (m.baselineFromQ2 && q1v!==null && q2v!==null
-          ? (q2v-q1v)/((q2.end-q2.start)/86400000)
-          : q2DailyRate(q2v,q2))
-      : null;
+      ?(m.baselineFromQ2&&q1v!==null&&q2v!==null
+          ?(q2v-q1v)/((q2.end-q2.start)/86400000)
+          :(q2v!==null?q2v/((q2.end-q2.start)/86400000):null))
+      :null;
+
+    let pace=m.isPace&&!q3done
+      ?computeAdvancedPace(q3input,q3.start,q3.end,q2Rate,getMetricHistory(m.id),histBaseline)
+      :null;
+
+    // Posts-multiplier signal: blend 70% pace + 30% (eng/post × projected posts)
+    if(pace&&m.postsMultiplier&&projectedPosts!==null&&postsQ3v&&postsQ3v>0&&q3v!==null){
+      const engPerPost=q3v/postsQ3v;
+      const postsMulProj=engPerPost*projectedPosts;
+      const blendedProj=0.70*pace.projected+0.30*postsMulProj;
+      const scale=pace.projected>0?blendedProj/pace.projected:1;
+      pace={...pace,projected:blendedProj,
+        low:pace.low!==null?pace.low*scale:null,
+        high:pace.high!==null?pace.high*scale:null};
+    }
 
     const projected=pace?pace.projected:null;
     const rateVsQ2=pace&&q2Rate?((pace.dailyRate-q2Rate)/q2Rate*100):null;
 
-    // Headline: projected total (or current snapshot if no pace)
-    const headlineVal = projected!==null && m.baselineFromQ2 && q2v!==null
-      ? q2v+projected
-      : projected;
-    const headline = headlineVal!==null
-      ? fmtApprox(headlineVal,m.isPercent)
-      : fmt(m.baselineFromQ2&&q2v!==null&&q3v!==null?q3v:q3v,m.isPercent);
-    const headlineSub = headlineVal!==null
-      ? (q3done
-          ? (m.baselineFromQ2 ? "Q3 Projected Total" : "Q3 Final")
-          : (m.baselineFromQ2 ? "Projected Total · Q3" : "Projected Final · Q3"))
-      : (m.baselineFromQ2 ? "Q3 Current Total" : "Q3 Current Snapshot");
+    // Headline
+    const headlineVal=projected!==null&&m.baselineFromQ2&&q2v!==null?q2v+projected:projected;
+    const headline=headlineVal!==null
+      ?fmtApprox(headlineVal,m.isPercent)
+      :fmt(q3v,m.isPercent);
+    const headlineSub=headlineVal!==null
+      ?(q3done
+          ?(m.baselineFromQ2?"Q3 Projected Total":"Q3 Final")
+          :(m.baselineFromQ2?"Projected Total · Q3":"Projected Final · Q3"))
+      :(m.baselineFromQ2?"Q3 Current Total":"Q3 Current Snapshot");
 
-    // Progress bar (only for pace metrics)
-    const dElapsedRounded = pace ? Math.round(pace.dElapsed) : 0;
-    const dTotalRounded   = pace ? Math.round(pace.dTotal)   : 92;
+    // Confidence range
+    let rangeHtml="";
+    if(pace&&pace.low!==null&&pace.high!==null){
+      const lowVal=m.baselineFromQ2&&q2v!==null?q2v+pace.low:pace.low;
+      const highVal=m.baselineFromQ2&&q2v!==null?q2v+pace.high:pace.high;
+      rangeHtml=`<div class="proj-range"><strong>Range:</strong> ${fmtApprox(lowVal,m.isPercent)} – ${fmtApprox(highVal,m.isPercent)}</div>`;
+    }
 
-    // Stat 1: Q3 to date (net new for baseline metrics)
-    const stat1Label = m.baselineFromQ2 ? "Q3 Net New" : "Q3 to Date";
-    const stat1Val = m.baselineFromQ2 && q3v!==null && q2v!==null
-      ? fmt(q3v-q2v,m.isPercent)
-      : fmt(q3v,m.isPercent);
+    // Progress bar
+    const dElapsedRounded=pace?Math.round(pace.dElapsed):0;
+    const dTotalRounded=pace?Math.round(pace.dTotal):92;
+
+    // Stat 1
+    const stat1Label=m.baselineFromQ2?"Q3 Net New":"Q3 to Date";
+    const stat1Val=m.baselineFromQ2&&q3v!==null&&q2v!==null
+      ?fmt(q3v-q2v,m.isPercent):fmt(q3v,m.isPercent);
 
     // Stat 2: Daily rate
-    let stat2Val = "—";
-    let stat2Class = "";
+    let stat2Val="—",stat2Class="";
     if(pace){
-      stat2Val = m.isPercent
-        ? `${pace.dailyRate.toFixed(3)}%/day`
-        : `${pace.dailyRate.toFixed(1)}/day`;
-      stat2Class = "is-rate";
+      stat2Val=m.isPercent?`${pace.dailyRate.toFixed(3)}%/day`:`${pace.dailyRate.toFixed(1)}/day`;
+      stat2Class="is-rate";
     }
 
-    // Stat 3: Rate change vs Q2
-    let stat3Val = "—";
-    let stat3Class = "is-na";
+    // Stat 3: Rate vs Q2
+    let stat3Val="—",stat3Class="is-na";
     if(rateVsQ2!==null){
-      const sign = rateVsQ2>=0 ? "▲ +" : "▼ ";
-      stat3Val = `${sign}${Math.abs(rateVsQ2).toFixed(1)}%`;
-      stat3Class = rateVsQ2>=0 ? "is-positive" : "is-negative";
+      const sign=rateVsQ2>=0?"▲ +":"▼ ";
+      stat3Val=`${sign}${Math.abs(rateVsQ2).toFixed(1)}%`;
+      stat3Class=rateVsQ2>=0?"is-positive":"is-negative";
     } else if(!m.isPace){
-      stat3Val = "n/a";
+      stat3Val="n/a";
     }
 
-    // Stat 4: Previous quarter actual (Q2)
-    const stat4Val = fmt(q2v,m.isPercent);
+    // Stat 4: Q2 Actual
+    const stat4Val=fmt(q2v,m.isPercent);
 
     return `<div class="proj-card">
   <div class="proj-card-label">${m.label}</div>
   <div class="proj-number">${headline}</div>
   <div class="proj-number-sub">${headlineSub}</div>
-
+  ${rangeHtml}
   <div class="proj-progress-wrap">
     <div class="proj-progress-track">
       <div class="proj-progress-fill" style="width:${Math.min(100,q3comp*100).toFixed(1)}%"></div>
@@ -606,7 +739,6 @@ function renderProjCards(qdata, q3comp, q3done){
       <span>${pct}%</span>
     </div>
   </div>
-
   <div class="proj-stats-grid">
     <div class="proj-stat">
       <div class="proj-stat-label">${stat1Label}</div>
@@ -659,13 +791,19 @@ function buildComparisonCharts(qdata, q3comp, q3done){
       const q1v=extractMetric(d1,m);
       const q2v=extractMetric(d2,m);
       const q3v=extractMetric(d3,m);
-      const chartQ3input = m.baselineFromQ2&&q2v!==null&&q3v!==null ? q3v-q2v : q3v;
-      const paceResult=m.isPace&&!q3done?computePace(chartQ3input,q3.start,q3.end):null;
+      const chartQ3input=m.baselineFromQ2&&q2v!==null&&q3v!==null?q3v-q2v:q3v;
+      const chartQ2Rate=q2v!==null
+        ?(m.baselineFromQ2&&q1v!==null?(q2v-q1v)/((QUARTERS[1].end-QUARTERS[1].start)/86400000)
+          :q2v/((QUARTERS[1].end-QUARTERS[1].start)/86400000))
+        :null;
+      const paceResult=m.isPace&&!q3done
+        ?computeAdvancedPace(chartQ3input,q3.start,q3.end,chartQ2Rate,getMetricHistory(m.id),m.baselineFromQ2&&q2v!==null?q2v:0)
+        :null;
       const pace=paceResult?paceResult.projected:null;
-      // For baseline metrics, chart shows totals: projected total = q2 + projected net new
-      const chartQ3val = pace!==null
-        ? (m.baselineFromQ2&&q2v!==null ? q2v+pace : pace)
-        : (q3v??0);
+      // Chart shows totals; for baseline metrics Q3 bar = q2 + projected net new
+      const chartQ3val=pace!==null
+        ?(m.baselineFromQ2&&q2v!==null?q2v+pace:pace)
+        :(q3v??0);
 
       const canvas=document.getElementById(`chart-${m.id}`);
       if(!canvas) continue;
@@ -834,7 +972,10 @@ function buildTimelineCharts(qdata, q3comp, q3done){
         if(v===null||v===undefined) continue;
         const dElapsed=(snap.t-q3.start.getTime())/86400000;
         if(dElapsed<1) continue;
-        const projFinal=(v/dElapsed)*dTotal;
+        // For baseline metrics, project net-new then add q2 baseline back
+        const netV=m.baselineFromQ2&&q2v!==null?v-q2v:v;
+        const projNet=(netV/dElapsed)*dTotal;
+        const projFinal=m.baselineFromQ2&&q2v!==null?q2v+projNet:projNet;
         if(!Number.isFinite(projFinal)||projFinal<=0) continue;
         pts.push({t:snap.t, proj:Math.round(projFinal)});
       }
