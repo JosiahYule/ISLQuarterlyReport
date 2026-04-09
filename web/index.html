@@ -117,6 +117,7 @@
   .delta{display:inline-flex;align-items:center;gap:4px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid;white-space:nowrap;}
   .delta.positive{background:rgba(16,185,129,.1);color:#059669;border-color:rgba(16,185,129,.25);}
   .delta.negative{background:rgba(239,68,68,.1);color:#DC2626;border-color:rgba(239,68,68,.25);}
+  .delta-sm{padding:3px 7px;font-size:11px;gap:3px;}
 
   /* TOOLTIPS */
   .kpi-card::after,.channel::after,.mini-tip::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 10px);z-index:50;transform:translate(-50%,6px);width:max-content;max-width:320px;min-width:220px;padding:14px 16px;background:rgba(0,61,114,.96);color:#fff;border:1px solid rgba(255,255,255,.14);border-radius:14px;box-shadow:0 14px 34px rgba(0,0,0,.18);font-size:13px;line-height:1.5;font-weight:500;text-align:left;white-space:normal;opacity:0;pointer-events:none;transition:opacity .16s ease,transform .16s ease;}
@@ -571,6 +572,16 @@ function getChannelTip(name){
   return tips[k] || (name + " groups sessions by acquisition source for traffic volume, share, and engagement comparison.");
 }
 
+function makeDeltaHTML(val){
+  if(!val) return "";
+  const t = String(val).trim();
+  if(!t || t === "—") return "";
+  let cls = "";
+  if(t.startsWith("▲") || t.startsWith("↑")) cls = " positive";
+  else if(t.startsWith("▼") || t.startsWith("↓")) cls = " negative";
+  return '<span class="delta delta-sm' + cls + '">' + t + "</span>";
+}
+
 function renderChannels(){
   const grid = document.getElementById("channelGrid");
   if(!grid) return;
@@ -582,10 +593,12 @@ function renderChannels(){
     div.className = "channel"; div.tabIndex = 0;
     div.setAttribute("data-tip", getChannelTip(c.name));
     const share = total > 0 ? ((c.sessions || 0) / total * 100) : undefined;
+    const sessionsDelta = c.sessionsDelta || c.sessions_delta || "";
+    const engRateDelta  = c.engagementRateDelta || c.engRate_delta || c.eng_rate_delta || "";
     div.innerHTML = "<h3>" + (c.name||"Channel") + "</h3>" +
-      '<div class="cstat"><span>Sessions</span><strong>' + fmtInt(c.sessions) + "</strong></div>" +
+      '<div class="cstat"><span>Sessions</span><strong>' + fmtInt(c.sessions) + "</strong>" + makeDeltaHTML(sessionsDelta) + "</div>" +
       '<div class="cstat"><span>Share of Traffic</span><strong>' + fmtPct(share) + "</strong></div>" +
-      '<div class="cstat"><span>Engagement Rate</span><strong>' + fmtPct(c.engagementRate) + "</strong></div>";
+      '<div class="cstat"><span>Engagement Rate</span><strong>' + fmtPct(c.engagementRate) + "</strong>" + makeDeltaHTML(engRateDelta) + "</div>";
     grid.appendChild(div);
   });
 }
@@ -603,7 +616,7 @@ function renderTopPages(){
   const pages = (REPORT && Array.isArray(REPORT.topPages)) ? REPORT.topPages : [];
   const byKey = new Map();
   pages.forEach(p => { const k = String((p && (p.key || p.name || p.title)) || "").trim().toLowerCase(); if(k) byKey.set(k,p); });
-  const rows = ORDER.map((label,i) => { const p = byKey.get(label.toLowerCase()) || {}; return {label,i,views:pv(p),bounce:br(p),timeSec:at(p)}; });
+  const rows = ORDER.map((label,i) => { const p = byKey.get(label.toLowerCase()) || {}; return {label,i,views:pv(p),bounce:br(p),timeSec:at(p),viewsDelta:p.viewsDelta||p.pageViewsDelta||p.views_delta||"",bounceDelta:p.bounceDelta||p.bounceRateDelta||p.bounce_delta||"",timeDelta:p.timeDelta||p.avgTimeDelta||p.time_delta||""}; });
   const sorted = [...rows].sort((a,b) => {
     const k=TOP_PAGES_SORT.key, d=TOP_PAGES_SORT.dir==="asc"?1:-1, av=a[k], bv=b[k];
     const an=(typeof av==="number"&&Number.isFinite(av))?av:null, bn=(typeof bv==="number"&&Number.isFinite(bv))?bv:null;
@@ -616,7 +629,7 @@ function renderTopPages(){
     '<th><div class="sort-head"><button type="button" class="sort-btn align-right" data-sort-key="bounce">Bounce Rate <span class="sort-arrow">' + sortArrow("bounce") + '</span></button><span class="mini-tip" tabindex="0" role="img" data-tip="Bounce rate is the percentage of visits where users leave after viewing just one page, without any additional interaction.">?</span></div></th>' +
     '<th><button type="button" class="sort-btn align-right" data-sort-key="timeSec">Avg Time on Page <span class="sort-arrow">' + sortArrow("timeSec") + "</span></button></th>" +
     "</tr></thead><tbody>" +
-    sorted.map(r => "<tr><td>" + r.label + "</td><td>" + fmtInt(r.views) + "</td><td>" + fmtPct(r.bounce) + "</td><td>" + fmtTime(r.timeSec) + "</td></tr>").join("") +
+    sorted.map(r => "<tr><td>" + r.label + '</td><td><span style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end;width:100%;">' + fmtInt(r.views) + makeDeltaHTML(r.viewsDelta) + '</span></td><td><span style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end;width:100%;">' + fmtPct(r.bounce) + makeDeltaHTML(r.bounceDelta) + '</span></td><td><span style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end;width:100%;">' + fmtTime(r.timeSec) + makeDeltaHTML(r.timeDelta) + "</span></td></tr>").join("") +
     "</tbody>";
   table.querySelectorAll("[data-sort-key]").forEach(btn => btn.addEventListener("click", () => toggleSort(btn.dataset.sortKey)));
 }
