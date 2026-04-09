@@ -395,6 +395,7 @@ const ACTIVE_LABEL  = REPORT_LABELS[ACTIVE_REPORT] || { quarter: "Web", range: "
    STATE
 ================================================ */
 let REPORT = null;
+let Q2     = null;
 let TOP_PAGES_SORT = { key: "views", dir: "desc" };
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -451,6 +452,22 @@ function animateCount(el, target, { duration=900, format="int" }={}){
     el.classList.toggle("active", el.dataset.webReport === ACTIVE_REPORT);
   });
 })();
+
+/* ================================================
+   AUTO DELTA CALCULATOR (client-side, Q3 vs Q2)
+================================================ */
+function toNum(v){ const n = Number(String(v ?? "").replace(/,/g,"")); return Number.isFinite(n) ? n : null; }
+function isNum(v){ return typeof v === "number" && Number.isFinite(v); }
+function formatAutoDelta(cur, prev){
+  const c = toNum(cur), p = toNum(prev);
+  if(c === null || p === null || p === 0) return null;
+  const pct = ((c - p) / Math.abs(p)) * 100;
+  if(!Number.isFinite(pct)) return null;
+  if(Math.abs(pct) < 0.005) return "0%";
+  const arrow = pct >= 0 ? "\u25B2" : "\u25BC";
+  const fixed = Math.abs(pct).toFixed(2).replace(/\.00$/,"").replace(/(\.\d)0$/,"$1");
+  return arrow + " " + fixed + "%";
+}
 
 /* ================================================
    DELTA RENDERER
@@ -593,8 +610,9 @@ function renderChannels(){
     div.className = "channel"; div.tabIndex = 0;
     div.setAttribute("data-tip", getChannelTip(c.name));
     const share = total > 0 ? ((c.sessions || 0) / total * 100) : undefined;
-    const sessionsDelta = c.sessionsDelta || c.sessions_delta || "";
-    const engRateDelta  = c.engagementRateDelta || c.engRate_delta || c.eng_rate_delta || "";
+    const prevC = Q2 && (Q2.channels || []).find(x => (x.name||"").toLowerCase() === (c.name||"").toLowerCase());
+    const sessionsDelta = formatAutoDelta(c.sessions, prevC && prevC.sessions) || c.sessionsDelta || "";
+    const engRateDelta  = formatAutoDelta(c.engagementRate, prevC && prevC.engagementRate) || c.engagementRateDelta || "";
     div.innerHTML = "<h3>" + (c.name||"Channel") + "</h3>" +
       '<div class="cstat"><span>Sessions</span><strong>' + fmtInt(c.sessions) + "</strong>" + makeDeltaHTML(sessionsDelta) + "</div>" +
       '<div class="cstat"><span>Share of Traffic</span><strong>' + fmtPct(share) + "</strong></div>" +
@@ -616,7 +634,20 @@ function renderTopPages(){
   const pages = (REPORT && Array.isArray(REPORT.topPages)) ? REPORT.topPages : [];
   const byKey = new Map();
   pages.forEach(p => { const k = String((p && (p.key || p.name || p.title)) || "").trim().toLowerCase(); if(k) byKey.set(k,p); });
-  const rows = ORDER.map((label,i) => { const p = byKey.get(label.toLowerCase()) || {}; return {label,i,views:pv(p),bounce:br(p),timeSec:at(p),viewsDelta:p.viewsDelta||p.pageViewsDelta||p.views_delta||"",bounceDelta:p.bounceDelta||p.bounceRateDelta||p.bounce_delta||"",timeDelta:p.timeDelta||p.avgTimeDelta||p.time_delta||""}; });
+  const q2Pages = (Q2 && Array.isArray(Q2.topPages)) ? Q2.topPages : [];
+  const q2ByKey = new Map();
+  q2Pages.forEach(p => { const k = String((p && (p.key || p.name)) || "").trim().toLowerCase(); if(k) q2ByKey.set(k,p); });
+  const rows = ORDER.map((label,i) => {
+    const p = byKey.get(label.toLowerCase()) || {};
+    const q2p = q2ByKey.get(label.toLowerCase()) || null;
+    return {
+      label, i,
+      views:   pv(p), bounce: br(p), timeSec: at(p),
+      viewsDelta:  formatAutoDelta(pv(p),  pv(q2p))  || p.viewsDelta  || "",
+      bounceDelta: formatAutoDelta(br(p),  br(q2p))  || p.bounceDelta || "",
+      timeDelta:   formatAutoDelta(at(p),  at(q2p))  || p.timeDelta   || ""
+    };
+  });
   const sorted = [...rows].sort((a,b) => {
     const k=TOP_PAGES_SORT.key, d=TOP_PAGES_SORT.dir==="asc"?1:-1, av=a[k], bv=b[k];
     const an=(typeof av==="number"&&Number.isFinite(av))?av:null, bn=(typeof bv==="number"&&Number.isFinite(bv))?bv:null;
@@ -716,9 +747,13 @@ quarterDropdown();
 
 (async function init(){
   try{
-    const payload = await loadData();
+    const [payload, q2Raw] = await Promise.all([
+      loadData(),
+      fetch("./web-data.json").then(r => r.ok ? r.json() : null).catch(() => null)
+    ]);
     if(payload && payload.error){ console.error(payload); throw new Error(payload.error); }
     REPORT = normalizePayloadToReport(payload);
+    if(q2Raw) Q2 = normalizePayloadToReport(q2Raw);
     wireChartToggles();
     renderGeneratedAt();
     renderKPIs();
