@@ -409,6 +409,23 @@ async function loadData(){
   return await res.json();
 }
 
+function previousReportKey(key){
+  const m = String(key || "").match(/^(.*?)(\d+)$/i);
+  if(!m) return null;
+  const num = Number(m[2]);
+  if(!Number.isFinite(num) || num <= 1) return null;
+  return m[1] + (num - 1);
+}
+
+async function loadReportByKey(key){
+  const url = REPORT_ENDPOINT + "?report=" + encodeURIComponent(key) + "&nocache=" + Date.now();
+  const res = await fetch(url, { cache: "default" });
+  if(!res.ok) throw new Error("Previous report fetch failed: " + res.status);
+  const json = await res.json();
+  if(json && json.error) throw new Error(json.error);
+  return json;
+}
+
 /* ================================================
    FORMATTERS
 ================================================ */
@@ -747,13 +764,19 @@ quarterDropdown();
 
 (async function init(){
   try{
-    const [payload, q2Raw] = await Promise.all([
-      loadData(),
-      fetch("./web-data.json").then(r => r.ok ? r.json() : null).catch(() => null)
-    ]);
+    const payload = await loadData();
     if(payload && payload.error){ console.error(payload); throw new Error(payload.error); }
     REPORT = normalizePayloadToReport(payload);
-    if(q2Raw) Q2 = normalizePayloadToReport(q2Raw);
+
+    const prevKey = previousReportKey(ACTIVE_REPORT);
+    if(prevKey){
+      try{
+        const q2Raw = await loadReportByKey(prevKey);
+        if(q2Raw) Q2 = normalizePayloadToReport(q2Raw);
+      }catch(err){
+        console.warn("Previous quarter (" + prevKey + ") could not be loaded. Deltas will not display.", err);
+      }
+    }
     wireChartToggles();
     renderGeneratedAt();
     renderKPIs();
