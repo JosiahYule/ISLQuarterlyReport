@@ -1204,7 +1204,17 @@
   height: 18px;
   display:block;
   fill: currentColor;
-}    
+}
+  .glass-nav{position:fixed;left:24px;bottom:24px;z-index:200;width:152px;padding:8px;border-radius:14px;background:rgba(248,252,255,.92);border:1px solid rgba(255,255,255,.95);box-shadow:0 12px 28px rgba(15,39,76,.16);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);transition:width .3s cubic-bezier(.2,.85,.28,1),box-shadow .3s ease;}
+  .glass-nav:hover,.glass-nav:focus-within,.glass-nav.is-open{width:min(208px,70vw);box-shadow:0 18px 36px rgba(15,39,76,.2);}
+  .glass-nav-title{all:unset;display:flex;align-items:center;justify-content:space-between;width:100%;box-sizing:border-box;cursor:pointer;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#26435f;padding:4px 6px;font-weight:700;white-space:nowrap;border-radius:10px;}
+  .glass-nav-title::after{content:"▾";font-size:12px;line-height:1;opacity:.8;transform:translateY(-1px);transition:transform .28s ease;}
+  .glass-nav.is-open .glass-nav-title::after,.glass-nav:hover .glass-nav-title::after,.glass-nav:focus-within .glass-nav-title::after{transform:rotate(180deg) translateY(1px);}
+  .glass-nav-list{list-style:none;display:grid;gap:4px;margin-top:4px;max-height:0;opacity:0;overflow:hidden;pointer-events:none;visibility:hidden;transform:translateY(2px) scale(.98);transform-origin:top left;transition:max-height .34s cubic-bezier(.2,.85,.28,1),opacity .24s ease,transform .3s ease,visibility 0s linear .34s;}
+  .glass-nav:hover .glass-nav-list,.glass-nav:focus-within .glass-nav-list,.glass-nav.is-open .glass-nav-list{max-height:360px;opacity:1;pointer-events:auto;visibility:visible;transform:translateY(0) scale(1);transition-delay:0s;}
+  .glass-nav-link{display:block;text-decoration:none;padding:8px 10px;border-radius:10px;color:#15314d;font-size:12px;font-weight:600;transition:var(--transition);border:1px solid transparent;}
+  .glass-nav-link:hover,.glass-nav-link:focus-visible,.glass-nav-link.is-active{background:rgba(0,112,202,.14);border-color:rgba(0,112,202,.2);color:#053f71;outline:none;}
+  @media(max-width:700px){.glass-nav{left:auto;right:12px;bottom:12px;width:128px;padding:7px;border-radius:12px}.glass-nav:hover,.glass-nav:focus-within,.glass-nav.is-open{width:min(182px,calc(100vw - 24px))}.glass-nav-title{font-size:10px;padding:3px 5px}.glass-nav-link{font-size:11px;padding:7px 9px}}
   </style>
 </head>
 
@@ -1265,7 +1275,7 @@
       </div>
     </div>
 
-    <section class="hero" aria-label="Report header">
+    <section class="hero" id="overview" aria-label="Report header">
       <div class="hero-grid">
         <div>
           <h1>Quarterly Performance Report</h1>
@@ -1281,7 +1291,7 @@
       </div>
     </section>
 
-    <section class="section" aria-label="Executive summary">
+    <section class="section" id="summary" aria-label="Executive summary">
       <div class="section-header">
         <div class="section-title">
           <h2>Summary</h2>
@@ -1301,7 +1311,7 @@
       </div>
     </section>
 
-    <section class="section" aria-label="Quarter totals">
+    <section class="section" id="quarter-totals" aria-label="Quarter totals">
       <div class="section-header">
         <div class="section-title">
           <h2>Quarter Totals</h2>
@@ -1370,7 +1380,7 @@
     </section>
 
     <!-- ✅ Platform Breakdown is its own card, and is CLOSED properly before Top Posts -->
-    <section class="section" aria-label="Platform breakdown">
+    <section class="section" id="platform-breakdown" aria-label="Platform breakdown">
       <div class="section-header">
         <div class="section-title">
           <h2>Platform Breakdown</h2>
@@ -1406,7 +1416,7 @@
       </div>
     </section>
 
-    <section class="section" aria-label="Top posts">
+    <section class="section" id="top-posts" aria-label="Top posts">
       <div class="section-header">
         <div class="section-title">
           <h2>Top Performing Posts</h2>
@@ -1418,7 +1428,7 @@
       <div class="top-compact" id="topCompact"></div>
     </section>
 
-    <section class="section" aria-label="Insights and analysis">
+    <section class="section" id="insights" aria-label="Insights and analysis">
       <div class="section-header">
         <div class="section-title">
           <h2>Insights, Analysis, and Actions</h2>
@@ -2077,6 +2087,7 @@ function brandDropdown(){
     lockEditing();
     quarterDropdown();
     brandDropdown();
+    wireFloatingSectionMenu();
 
   } catch(err){
     console.error(err);
@@ -2085,7 +2096,35 @@ function brandDropdown(){
     hideLoadingOverlay();
   }
 })();
+
+function wireFloatingSectionMenu(){
+  const nav = document.querySelector(".glass-nav"), toggle = nav && nav.querySelector(".glass-nav-title");
+  const links = Array.from(document.querySelectorAll(".glass-nav-link"));
+  if(!links.length || !nav || !toggle) return;
+  const close = () => { nav.classList.remove("is-open"); toggle.setAttribute("aria-expanded","false"); };
+  toggle.addEventListener("click", e => { e.preventDefault(); const open = nav.classList.toggle("is-open"); toggle.setAttribute("aria-expanded", open ? "true" : "false"); });
+  links.forEach(l => l.addEventListener("click", () => { if(window.matchMedia("(max-width:700px)").matches) close(); }));
+  document.addEventListener("click", e => { if(!nav.contains(e.target)) close(); });
+  const sections = links.map(l => document.querySelector(l.getAttribute("href"))).filter(Boolean);
+  const setActive = id => links.forEach(l => { const a = l.getAttribute("href") === "#"+id; l.classList.toggle("is-active",a); a ? l.setAttribute("aria-current","true") : l.removeAttribute("aria-current"); });
+  const obs = new IntersectionObserver(entries => { const vis = entries.filter(e => e.isIntersecting).sort((a,b) => b.intersectionRatio - a.intersectionRatio); if(vis[0]) setActive(vis[0].target.id); }, { threshold:[.25,.5,.75], rootMargin:"-25% 0px -45% 0px" });
+  sections.forEach(s => obs.observe(s));
+  if(sections[0]) setActive(sections[0].id);
+}
 </script>
+
+<nav class="glass-nav" aria-label="Section navigation" tabindex="0">
+  <button class="glass-nav-title" type="button" aria-expanded="false" aria-label="Toggle section navigation">Jump to section</button>
+  <ul class="glass-nav-list">
+    <li><a class="glass-nav-link" href="#overview">Overview</a></li>
+    <li><a class="glass-nav-link" href="#summary">Summary</a></li>
+    <li><a class="glass-nav-link" href="#quarter-totals">Quarter Totals</a></li>
+    <li><a class="glass-nav-link" href="#platform-breakdown">Platforms</a></li>
+    <li><a class="glass-nav-link" href="#top-posts">Top Posts</a></li>
+    <li><a class="glass-nav-link" href="#insights">Insights</a></li>
+  </ul>
+</nav>
+
 </body>
 </html>
 
