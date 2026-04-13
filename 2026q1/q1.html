@@ -277,6 +277,8 @@
     .pill-item{display:block;padding:10px 16px;font-size:13px;font-weight:500;color:var(--text);text-decoration:none;transition:background .14s ease}
     .pill-item:hover{background:rgba(0,84,154,.05)}
     .pill-item.active{background:rgba(0,84,154,.08);color:var(--isl-primary);font-weight:600}
+    .pill-menu-group-label{display:block;padding:8px 16px 4px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-top:1px solid var(--border);}
+    .pill-menu-group-label:first-child{border-top:none;}
 
     /* ============= HERO ============= */
     .hero{
@@ -1266,10 +1268,14 @@
           <span class="pill-caret">▾</span>
         </button>
         <div class="pill-menu" id="navMenu" role="menu">
-          <a class="pill-item active" href="/?report=islq1" role="menuitem">Q1 &bull; Sep–Nov 2025</a>
-          <a class="pill-item" href="/?report=islq2" role="menuitem">Q2 &bull; Dec–Feb 2026</a>
-          <a class="pill-item" href="/?report=islq3" role="menuitem">Q3 &bull; Mar–May 2026</a>
-          <a class="pill-item" href="/web/" role="menuitem">Website Report</a>
+          <span class="pill-menu-group-label">Social Media</span>
+          <a class="pill-item active" href="/?report=islq1" role="menuitem">Q1 &bull; Sep&#8211;Nov 2025</a>
+          <a class="pill-item" href="/?report=islq2" role="menuitem">Q2 &bull; Dec&#8211;Feb 2026</a>
+          <a class="pill-item" href="/?report=islq3" role="menuitem">Q3 &bull; Mar&#8211;May 2026</a>
+          <span class="pill-menu-group-label">Website Analytics</span>
+          <a class="pill-item" href="/web/?report=webq2" role="menuitem">Website Q2 &bull; Dec&#8211;Feb 2026</a>
+          <a class="pill-item" href="/web/?report=webq3" role="menuitem">Website Q3 &bull; Mar&#8211;May 2026</a>
+          <span class="pill-menu-group-label">Other</span>
           <a class="pill-item" href="/trends.html" role="menuitem">Trends &amp; Projections</a>
         </div>
       </div>
