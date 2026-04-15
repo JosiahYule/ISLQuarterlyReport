@@ -963,6 +963,15 @@ function buildTimelineCharts(qdata, q3comp, q3done){
   const history=loadProjectionHistory();
 
   function go(){
+    // Pre-compute projected posts (advanced blended) for posts-multiplier
+    const postsM=METRICS.find(m=>m.id==="posts");
+    const postsQ3v=postsM?extractMetric(d3,postsM):null;
+    const postsQ2v=postsM?extractMetric(d2,postsM):null;
+    const postsQ2Rate=postsQ2v!==null?postsQ2v/((QUARTERS[1].end-QUARTERS[1].start)/86400000):null;
+    const postsPaceResult=postsM&&postsQ3v!==null&&!q3done
+      ?computeAdvancedPace(postsQ3v,q3.start,q3.end,postsQ2Rate,getMetricHistory("posts"),0):null;
+    const projectedPosts=postsPaceResult?postsPaceResult.projected:null;
+
     for(const m of METRICS){
       const q2v=extractMetric(d2,m);
       const q3v=extractMetric(d3,m);
@@ -1000,7 +1009,16 @@ function buildTimelineCharts(qdata, q3comp, q3done){
         if(dElapsed<1) continue;
         // For baseline metrics, project net-new then add q2 baseline back
         const netV=m.baselineFromQ2&&q2v!==null?v-q2v:v;
-        const projNet=(netV/dElapsed)*dTotal;
+        let projNet=(netV/dElapsed)*dTotal;
+        // Posts-multiplier: blend 70% simple pace + 30% (eng/post × projected posts)
+        if(m.postsMultiplier&&projectedPosts!==null){
+          const snapPosts=snap.vals["posts"];
+          if(snapPosts&&snapPosts>0&&v!==null){
+            const engPerPost=v/snapPosts;
+            const postsMulProj=engPerPost*projectedPosts;
+            projNet=0.70*projNet+0.30*postsMulProj;
+          }
+        }
         const projFinal=m.baselineFromQ2&&q2v!==null?q2v+projNet:projNet;
         if(!Number.isFinite(projFinal)||projFinal<=0) continue;
         pts.push({t:snap.t, proj:Math.round(projFinal)});
