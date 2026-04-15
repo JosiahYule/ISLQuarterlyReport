@@ -639,6 +639,20 @@ async function fetchQuarter(q){
   }
 }
 
+// ── Posts-multiplier blend (shared) ──────────────────────────────────────────
+// Blends 70% pace projection with 30% engagement-per-post × projected posts.
+// Returns the adjusted pace object, or the original if conditions aren't met.
+function applyPostsMultiplier(pace, m, q3v, postsQ3v, projectedPosts){
+  if(!pace||!m.postsMultiplier||projectedPosts===null||!postsQ3v||postsQ3v<=0||q3v===null) return pace;
+  const engPerPost=q3v/postsQ3v;
+  const postsMulProj=engPerPost*projectedPosts;
+  const blendedProj=0.70*pace.projected+0.30*postsMulProj;
+  const scale=pace.projected>0?blendedProj/pace.projected:1;
+  return{...pace,projected:blendedProj,
+    low:pace.low!==null?pace.low*scale:null,
+    high:pace.high!==null?pace.high*scale:null};
+}
+
 // ── Render: projection cards ──────────────────────────────────────────────────
 function renderProjCards(qdata, q3comp, q3done){
   const grid=$("projGrid");
@@ -674,15 +688,7 @@ function renderProjCards(qdata, q3comp, q3done){
       :null;
 
     // Posts-multiplier signal: blend 70% pace + 30% (eng/post × projected posts)
-    if(pace&&m.postsMultiplier&&projectedPosts!==null&&postsQ3v&&postsQ3v>0&&q3v!==null){
-      const engPerPost=q3v/postsQ3v;
-      const postsMulProj=engPerPost*projectedPosts;
-      const blendedProj=0.70*pace.projected+0.30*postsMulProj;
-      const scale=pace.projected>0?blendedProj/pace.projected:1;
-      pace={...pace,projected:blendedProj,
-        low:pace.low!==null?pace.low*scale:null,
-        high:pace.high!==null?pace.high*scale:null};
-    }
+    pace=applyPostsMultiplier(pace,m,q3v,postsQ3v,projectedPosts);
 
     const projected=pace?pace.projected:null;
     const rateVsQ2=pace&&q2Rate?((pace.dailyRate-q2Rate)/q2Rate*100):null;
@@ -797,6 +803,15 @@ function buildComparisonCharts(qdata, q3comp, q3done){
   const q3=QUARTERS[2];
 
   function go(){
+    // Pre-compute posts projection for posts-multiplier (mirrors renderProjCards logic)
+    const postsM=METRICS.find(m=>m.id==="posts");
+    const postsQ3v=postsM?extractMetric(d3,postsM):null;
+    const postsQ2v=postsM?extractMetric(d2,postsM):null;
+    const postsQ2Rate=postsQ2v!==null?postsQ2v/((QUARTERS[1].end-QUARTERS[1].start)/86400000):null;
+    const postsPaceResult=postsM&&postsQ3v!==null&&!q3done
+      ?computeAdvancedPace(postsQ3v,q3.start,q3.end,postsQ2Rate,getMetricHistory("posts"),0):null;
+    const projectedPosts=postsPaceResult?postsPaceResult.projected:null;
+
     for(const m of METRICS){
       const q1v=extractMetric(d1,m);
       const q2v=extractMetric(d2,m);
@@ -806,9 +821,10 @@ function buildComparisonCharts(qdata, q3comp, q3done){
         ?(m.baselineFromQ2&&q1v!==null?(q2v-q1v)/((QUARTERS[1].end-QUARTERS[1].start)/86400000)
           :q2v/((QUARTERS[1].end-QUARTERS[1].start)/86400000))
         :null;
-      const paceResult=m.isPace&&!q3done
+      let paceResult=m.isPace&&!q3done
         ?computeAdvancedPace(chartQ3input,q3.start,q3.end,chartQ2Rate,getMetricHistory(m.id),m.baselineFromQ2&&q2v!==null?q2v:0)
         :null;
+      paceResult=applyPostsMultiplier(paceResult,m,q3v,postsQ3v,projectedPosts);
       const pace=paceResult?paceResult.projected:null;
       // Chart shows totals; for baseline metrics Q3 bar = q2 + projected net new
       const chartQ3val=pace!==null
