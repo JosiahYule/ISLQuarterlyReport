@@ -204,8 +204,9 @@ function MastNav({ quarter, onQuarter, data }) {
     <div className="masthead-nav">
       <div className="wrap masthead-nav-row">
 <nav className="nav-tabs">
-  <a href="/" className="is-active">Social Media</a>
-  <a href="/web/">Website</a>
+<a href="/">Social Media</a>
+<a href="/web/">Website</a>
+<a href="/trends/">Trends</a>
 </nav>
         <div className="nav-meta">
           <span>{data.meta.rangeLabel}</span>
