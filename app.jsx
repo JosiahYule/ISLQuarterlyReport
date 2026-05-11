@@ -185,10 +185,6 @@ function Masthead({ data }) {
           </div>
           <div className="masthead-sub">Quarterly Marketing Report</div>
         </div>
-        <div className="masthead-right">
-          <span>{data.meta.author}</span>
-          <span className="issue serif ital">Issue {data.meta.issue}</span>
-        </div>
       </div>
     </header>);
 

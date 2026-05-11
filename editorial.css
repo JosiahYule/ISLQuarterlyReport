@@ -63,7 +63,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   background: var(--paper);
 }
 .masthead-row { display: flex; align-items: baseline; justify-content: space-between; gap: 32px; }
-.masthead-left { display: flex; align-items: baseline; gap: 0px; min-width: 0; }
+.masthead-left { display: flex; align-items: baseline; gap: 18px; min-width: 0; }
 .masthead-mark { font-family: var(--serif); font-size: 28px; line-height: 1; letter-spacing: -0.02em; }
 .masthead-mark em { font-style: italic; color: var(--isl-blue); }
 .masthead-sub {
