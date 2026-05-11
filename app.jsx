@@ -173,62 +173,6 @@ const params = new URLSearchParams(window.location.search);
 }
 
 // =================================================================
-// Masthead + Nav
-// =================================================================
-function Masthead({ data }) {
-  return (
-    <header className="masthead">
-      <div className="wrap masthead-row" style={{ padding: "0 0px" }}>
-        <div className="masthead-left">
-          <div className="masthead-mark serif">
-            Integrated <em>Staffing</em>
-          </div>
-        </div>
-      </div>
-    </header>);
-
-}
-
-function MastNav({ quarter, onQuarter, data }) {
-  const params = new URLSearchParams(window.location.search);
-  const reportKey = params.get("report") || "islq3";
-  const [open, setOpen] = useState(false);
-  const ref = useRef();
-  useEffect(() => {
-    const close = (e) => {if (ref.current && !ref.current.contains(e.target)) setOpen(false);};
-    document.addEventListener("click", close);
-    return () => document.removeEventListener("click", close);
-  }, []);
-
-  return (
-    <div className="masthead-nav">
-      <div className="wrap masthead-nav-row">
-<nav className="nav-tabs">
-<a href="/">Social Media</a>
-<a href="/web/">Website</a>
-<a href="/trends/">Trends</a>
-</nav>
-        <div className="nav-meta">
-          <span>{data.meta.rangeLabel}</span>
-          <div ref={ref} style={{ position: "relative" }}>
-            <button className="qchooser" onClick={() => setOpen(!open)}>
-              <span>2026 · {reportKey === "islq1" ? "Q1" : reportKey === "islq2" ? "Q2" : "Q3"}</span>
-              <span className="caret">▾</span>
-            </button>
-            <div className={"menu" + (open ? " is-open" : "")}>
-              <div className="group">2026</div>
-              <a href="?report=islq3" className={window.location.search.includes("islq3") || !window.location.search ? "active" : ""}>Q3 — Mar–May 2026</a>
-              <a href="?report=islq2" className={window.location.search.includes("islq2") ? "active" : ""}>Q2 — Dec–Feb 2026</a>
-              <a href="?report=islq1" className={window.location.search.includes("islq1") ? "active" : ""}>Q1 — Sep–Nov 2025</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>);
-
-}
-
-// =================================================================
 // Hero
 // =================================================================
 function Hero({ data }) {

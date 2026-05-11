@@ -11,286 +11,92 @@
   <link rel="icon" type="image/svg+xml" href="../favicon-gear.svg" />
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-.masthead {
-  border-bottom: 1px solid var(--rule);
-  padding: 16px 0 14px;
-  background: var(--paper);
-}
-
-.masthead .wrap { max-width: var(--col); margin: 0 auto; padding: 24px 0px 0px; }
-
-    /* ── Loading ──────────────────────────────────────────────── */
-    .loading-screen {
-      position: fixed; inset: 0; z-index: 1000;
-      background: var(--paper);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center; gap: 20px;
-      transition: opacity .4s ease, visibility .4s ease;
-    }
-    .loading-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-    .loading-wordmark {
-      font-family: var(--serif); font-size: 32px; letter-spacing: -0.02em;
-      color: var(--ink); animation: loadPulse 1.8s ease-in-out infinite;
-    }
-    .loading-wordmark em { font-style: italic; color: var(--isl-blue); }
-    .loading-label {
-      font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
-      color: var(--ink-3); font-family: var(--sans);
-    }
-    .loading-track {
-      width: 120px; height: 2px; background: var(--rule);
-      border-radius: 99px; overflow: hidden;
-    }
-    .loading-fill {
-      width: 40%; height: 100%; background: var(--isl-blue);
-      border-radius: 99px; animation: loadScan 1.4s ease-in-out infinite;
-    }
-    @keyframes loadPulse { 0%,100%{opacity:1} 50%{opacity:.45} }
-    @keyframes loadScan  { 0%{transform:translateX(-150%)} 100%{transform:translateX(360%)} }
-
-    /* ── Page layout ──────────────────────────────────────────── */
     .trends-wrap { max-width: var(--col); margin: 0 auto; padding: 48px 32px 96px; }
     @media (max-width: 768px) { .trends-wrap { padding: 32px 20px 64px; } }
 
-    /* ── Section chrome ───────────────────────────────────────── */
     .t-section { margin-bottom: 64px; }
-    .t-section-head {
-      display: flex; align-items: baseline; justify-content: space-between;
-      gap: 16px; flex-wrap: wrap;
-      border-top: 1.5px solid var(--ink); padding-top: 14px; margin-bottom: 28px;
-    }
-    .t-section-label {
-      font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
-      color: var(--ink-3); font-family: var(--sans);
-    }
-    .t-section-title {
-      font-family: var(--serif); font-size: 26px; letter-spacing: -0.02em;
-      color: var(--ink); margin-bottom: 4px;
-    }
+    .t-section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-top: 1.5px solid var(--ink); padding-top: 14px; margin-bottom: 28px; }
+    .t-section-label { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); font-family: var(--sans); }
+    .t-section-title { font-family: var(--serif); font-size: 26px; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 4px; }
     .t-section-sub { font-size: 13px; color: var(--ink-3); font-family: var(--sans); }
-    .t-badge {
-      font-size: 11px; font-family: var(--sans); color: var(--ink-3);
-      border: 0px solid var(--rule); padding: 4px 12px; border-radius: 2px;
-      white-space: nowrap; align-self: flex-start;
-    }
+    .t-badge { font-size: 11px; font-family: var(--sans); color: var(--ink-3); padding: 4px 12px; white-space: nowrap; align-self: flex-start; }
 
-    /* ── Hero ─────────────────────────────────────────────────── */
-    .trends-hero { margin-bottom: 56px; border-top: 0px solid var(--rule); padding-top: 24px; }
-    .trends-hero-kicker {
-      font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
-      color: var(--ink-3); font-family: var(--sans); margin-bottom: 16px;
-    }
-    .trends-hero h1 {
-      font-family: var(--serif); font-size: clamp(36px, 5vw, 64px);
-      line-height: 1; letter-spacing: -0.03em; color: var(--ink);
-      margin-bottom: 16px; font-weight: 400;
-    }
+    .trends-hero { margin-bottom: 56px; padding-top: 24px; }
+    .trends-hero h1 { font-family: var(--serif); font-size: clamp(36px, 5vw, 64px); line-height: 1; letter-spacing: -0.03em; color: var(--ink); margin-bottom: 16px; font-weight: 400; }
     .trends-hero h1 em { font-style: italic; color: var(--isl-blue); }
-    .trends-hero-meta {
-      font-size: 13px; color: var(--ink-3); font-family: var(--sans);
-      display: flex; flex-wrap: wrap; gap: 24px; border-top: 0px solid var(--rule); padding-top: 12px;
-    }
+    .trends-hero-meta { font-size: 13px; color: var(--ink-3); font-family: var(--sans); display: flex; flex-wrap: wrap; gap: 24px; padding-top: 12px; }
     .trends-hero-meta strong { color: var(--ink); }
-    .hero-progress-pill {
-      display: inline-flex; align-items: center; gap: 8px;
-    }
-    .hero-progress-track {
-      width: 80px; height: 3px; background: var(--rule); border-radius: 99px; overflow: hidden;
-    }
-    .hero-progress-fill {
-      height: 100%; background: var(--isl-blue); border-radius: 99px;
-      transition: width .6s ease;
-    }
+    .hero-progress-pill { display: inline-flex; align-items: center; gap: 8px; }
+    .hero-progress-track { width: 80px; height: 3px; background: var(--rule); border-radius: 99px; overflow: hidden; }
+    .hero-progress-fill { height: 100%; background: var(--isl-blue); border-radius: 99px; transition: width .6s ease; }
 
-    /* ── Projection cards ─────────────────────────────────────── */
-    .proj-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1px;
-      border: 0px solid var(--rule); background: var(--rule);
-    }
-    .proj-card {
-      background: var(--paper); padding: 24px 20px;
-      display: flex; flex-direction: column; gap: 0;
-    }
-    .proj-card-label {
-      font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
-      color: var(--ink-3); font-family: var(--sans); margin-bottom: 14px;
-    }
-    .proj-number {
-      font-family: var(--serif); font-size: 40px; line-height: 1;
-      letter-spacing: -0.03em; color: var(--ink); margin-bottom: 2px;
-    }
-    .proj-number-sub {
-      font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--ink-3); font-family: var(--sans); margin-bottom: 16px;
-    }
-    .proj-range {
-      font-size: 12px; color: var(--ink-3); margin-bottom: 12px; font-family: var(--sans);
-    }
+    .proj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1px; background: var(--rule); }
+    .proj-card { background: var(--paper); padding: 24px 20px; display: flex; flex-direction: column; gap: 0; }
+    .proj-card-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); font-family: var(--sans); margin-bottom: 14px; }
+    .proj-number { font-family: var(--serif); font-size: 40px; line-height: 1; letter-spacing: -0.03em; color: var(--ink); margin-bottom: 2px; }
+    .proj-number-sub { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); font-family: var(--sans); margin-bottom: 16px; }
+    .proj-range { font-size: 12px; color: var(--ink-3); margin-bottom: 12px; font-family: var(--sans); }
     .proj-range strong { color: var(--ink); }
     .proj-progress-wrap { margin-bottom: 16px; }
-    .proj-progress-track {
-      height: 3px; background: var(--rule); border-radius: 99px; overflow: hidden; margin-bottom: 6px;
-    }
-    .proj-progress-fill {
-      height: 100%; background: var(--isl-blue); border-radius: 99px;
-      transition: width .6s ease;
-    }
-    .proj-progress-labels {
-      display: flex; justify-content: space-between;
-      font-size: 11px; color: var(--ink-3); font-family: var(--sans);
-    }
-    .proj-stats-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
-      border: 0px solid var(--rule); background: var(--rule);
-    }
+    .proj-progress-track { height: 3px; background: var(--rule); border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
+    .proj-progress-fill { height: 100%; background: var(--isl-blue); border-radius: 99px; transition: width .6s ease; }
+    .proj-progress-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-3); font-family: var(--sans); }
+    .proj-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--rule); }
     .proj-stat { background: var(--paper-2); padding: 10px 12px; }
-    .proj-stat-label {
-      font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--ink-3); font-family: var(--sans); margin-bottom: 4px;
-    }
-    .proj-stat-value {
-      font-size: 14px; font-family: var(--sans); font-weight: 600;
-      color: var(--ink); line-height: 1.2;
-    }
+    .proj-stat-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); font-family: var(--sans); margin-bottom: 4px; }
+    .proj-stat-value { font-size: 14px; font-family: var(--sans); font-weight: 600; color: var(--ink); line-height: 1.2; }
     .proj-stat-value.pos { color: #1a7f4b; }
     .proj-stat-value.neg { color: #b91c1c; }
     .proj-stat-value.na  { color: var(--ink-3); font-weight: 400; font-style: italic; font-size: 12px; }
     .proj-stat-value.rate{ color: var(--isl-blue); }
 
-    /* ── Chart toggle ─────────────────────────────────────────── */
-    .chart-toggle {
-      display: flex; gap: 0; border: 1px solid var(--rule); width: fit-content;
-    }
-    .chart-toggle-btn {
-      padding: 7px 16px; border: none; background: transparent;
-      font-size: 12px; font-family: var(--sans); font-weight: 500;
-      color: var(--ink-3); cursor: pointer; transition: background .15s, color .15s;
-      letter-spacing: 0.04em;
-    }
+    .chart-toggle { display: flex; gap: 0; border: 1px solid var(--rule); width: fit-content; }
+    .chart-toggle-btn { padding: 7px 16px; border: none; background: transparent; font-size: 12px; font-family: var(--sans); font-weight: 500; color: var(--ink-3); cursor: pointer; transition: background .15s, color .15s; letter-spacing: 0.04em; }
     .chart-toggle-btn + .chart-toggle-btn { border-left: 1px solid var(--rule); }
     .chart-toggle-btn.is-active { background: var(--ink); color: var(--paper); }
     .chart-toggle-btn:hover:not(.is-active) { color: var(--ink); background: var(--paper-2); }
 
-    /* ── Chart grid ───────────────────────────────────────────── */
-    .charts-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
-      gap: 1px; border: 0px solid var(--rule); background: var(--rule);
-    }
+    .charts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); gap: 1px; background: var(--rule); }
     @media (max-width: 600px) { .charts-grid { grid-template-columns: 1fr; } }
     .chart-card { background: var(--paper); padding: 24px; }
-    .chart-card-title {
-      font-family: var(--serif); font-size: 18px; letter-spacing: -0.01em;
-      color: var(--ink); margin-bottom: 2px;
-    }
-    .chart-card-sub {
-      font-size: 11px; color: var(--ink-3); font-family: var(--sans); margin-bottom: 16px;
-    }
+    .chart-card-title { font-family: var(--serif); font-size: 18px; letter-spacing: -0.01em; color: var(--ink); margin-bottom: 2px; }
+    .chart-card-sub { font-size: 11px; color: var(--ink-3); font-family: var(--sans); margin-bottom: 16px; }
     .chart-wrap { position: relative; height: 220px; }
-    .chart-legend {
-      display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px;
-    }
-    .legend-item {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 11px; color: var(--ink-3); font-family: var(--sans);
-    }
+    .chart-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--ink-3); font-family: var(--sans); }
     .legend-dot { width: 10px; height: 10px; border-radius: 1px; flex-shrink: 0; }
 
-    /* ── Methodology ──────────────────────────────────────────── */
     .method-body { font-size: 13px; color: var(--ink-2); font-family: var(--sans); line-height: 1.7; }
     .method-body li { margin-bottom: 12px; padding-left: 4px; }
     .method-body li strong { color: var(--ink); }
-    .method-body code {
-      font-family: monospace; font-size: 12px;
-      background: var(--paper-2); padding: 1px 5px; border-radius: 2px;
-    }
+    .method-body code { font-family: monospace; font-size: 12px; background: var(--paper-2); padding: 1px 5px; border-radius: 2px; }
 
-    /* ── Refresh bar ──────────────────────────────────────────── */
-    .refresh-bar {
-      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
-      gap: 12px; padding: 10px 0; margin-bottom: 40px;
-      border-bottom: 1px solid var(--rule);
-      font-size: 12px; color: var(--ink-3); font-family: var(--sans);
-    }
+    .refresh-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 10px 0; margin-bottom: 40px; border-bottom: 1px solid var(--rule); font-size: 12px; color: var(--ink-3); font-family: var(--sans); }
     .refresh-bar-left { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-    .live-dot {
-      display: inline-block; width: 6px; height: 6px; border-radius: 50%;
-      background: #1a7f4b; margin-right: 6px;
-      animation: livePulse 2s ease-in-out infinite;
-    }
+    .live-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #1a7f4b; margin-right: 6px; animation: livePulse 2s ease-in-out infinite; }
     @keyframes livePulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-    .refresh-btn {
-      font-size: 11px; font-family: var(--sans); letter-spacing: 0.1em;
-      text-transform: uppercase; color: var(--ink-3); background: transparent;
-      border: 1px solid var(--rule); padding: 5px 12px; cursor: pointer;
-      transition: border-color .15s, color .15s;
-    }
+    .refresh-btn { font-size: 11px; font-family: var(--sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); background: transparent; border: 1px solid var(--rule); padding: 5px 12px; cursor: pointer; transition: border-color .15s, color .15s; }
     .refresh-btn:hover { border-color: var(--ink); color: var(--ink); }
     .refresh-btn:disabled { opacity: .4; cursor: not-allowed; }
 
-    /* ── Error ────────────────────────────────────────────────── */
-    .error-bar {
-      font-size: 12px; font-family: var(--sans); color: #b91c1c;
-      padding: 10px 0; border-bottom: 1px solid rgba(185,28,28,.2);
-      margin-bottom: 24px; display: none;
-    }
+    .error-bar { font-size: 12px; font-family: var(--sans); color: #b91c1c; padding: 10px 0; border-bottom: 1px solid rgba(185,28,28,.2); margin-bottom: 24px; display: none; }
     .error-bar.show { display: block; }
   </style>
 </head>
 <body data-layout="editorial" data-density="balanced">
-
-<!-- Loading screen -->
-<div class="loading-screen" id="loadingScreen">
-  <div class="loading-wordmark serif">Integrated <em>Staffing</em></div>
-  <div class="loading-track"><div class="loading-fill"></div></div>
-  <div class="loading-label">Loading trends</div>
-</div>
 
 <div id="nav-root"></div>
 
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
+<script type="text/babel" src="/nav.jsx"></script>
 <script type="text/babel">
-const { useState, useEffect, useRef } = React;
-
-function Masthead() {
-  return (
-    <header className="masthead">
-      <div className="wrap masthead-row">
-        <div className="masthead-left">
-          <div className="masthead-mark serif">Integrated <em>Staffing</em></div>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function MastNav() {
-  return (
-    <div className="masthead-nav">
-      <div className="wrap masthead-nav-row">
-        <nav className="nav-tabs">
-          <a href="/">Social Media</a>
-          <a href="/web/">Website</a>
-          <a href="/trends/" className="is-active">Trends</a>
-        </nav>
-        <div className="nav-meta">
-          <span>Q1 · Q2 · Q3</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-ReactDOM.createRoot(document.getElementById("nav-root")).render(
-  <><Masthead /><MastNav /></>
-);
+renderNav("trends", null, null);
 </script>
 
-<!-- Page -->
 <div class="trends-wrap">
 
-  <!-- Hero -->
   <div class="trends-hero">
     <h1>Quarterly <em>Trends.</em></h1>
     <div class="trends-hero-meta">
@@ -303,7 +109,6 @@ ReactDOM.createRoot(document.getElementById("nav-root")).render(
     </div>
   </div>
 
-  <!-- Projection cards -->
   <section class="t-section">
     <div class="t-section-head">
       <div>
@@ -316,7 +121,6 @@ ReactDOM.createRoot(document.getElementById("nav-root")).render(
     <div class="proj-grid" id="projGrid"></div>
   </section>
 
-  <!-- Charts -->
   <section class="t-section">
     <div class="t-section-head">
       <div>
@@ -334,7 +138,6 @@ ReactDOM.createRoot(document.getElementById("nav-root")).render(
     <div class="charts-grid" id="chartsGrid"></div>
   </section>
 
-  <!-- Methodology -->
   <section class="t-section">
     <div class="t-section-head">
       <div>
@@ -352,10 +155,9 @@ ReactDOM.createRoot(document.getElementById("nav-root")).render(
     </ul>
   </section>
 
-</div><!-- /trends-wrap -->
+</div>
 
 <script>
-// ── Config ───────────────────────────────────────────────────────────────────
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbwB-RGI1lVHrUE03PkkSEYbLuiTLxE4phMBBOm81diNJtSPyUWGoB_bOlkgFIoVF4yzLQ/exec";
 const REFRESH_SEC = 300;
 
@@ -375,73 +177,35 @@ const METRICS = [
   { id:"followers",   label:"Followers",      needles:["followers total","followers (total)","followers"],                        isPercent:false, isPace:true,  baselineFromQ2:true   },
 ];
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
-
 function nfk(s){ return String(s??"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim(); }
-
 function toNumber(v){
   if(v===null||v===undefined) return null;
   if(typeof v==="number") return Number.isFinite(v)?v:null;
   const s=String(v).trim().replace(/,/g,"").replace(/\s+/g,"").replace(/%/g,"").replace(/[▲▼]/g,"").replace(/^\+/,"");
   if(!s||s==="—"||s==="-") return null;
   if(!/^-?\d+(\.\d+)?$/.test(s)) return null;
-  const n=Number(s);
-  return Number.isFinite(n)?n:null;
+  const n=Number(s); return Number.isFinite(n)?n:null;
 }
-
-function fmt(v, isPercent){
-  const n=toNumber(v);
-  if(n===null) return "—";
-  if(isPercent) return `${n.toFixed(2)}%`;
-  return n>=1000?n.toLocaleString():String(Math.round(n));
-}
-
-function fmtApprox(n, isPercent){
-  if(n===null||!Number.isFinite(n)) return "—";
-  if(isPercent) return `${n.toFixed(2)}%`;
-  return Math.round(n).toLocaleString();
-}
-
-// ── Quarter math ──────────────────────────────────────────────────────────────
-function completion(q){
-  const now=new Date();
-  if(now>=q.end) return 1;
-  if(now<q.start) return 0;
-  return (now-q.start)/(q.end-q.start);
-}
+function fmt(v, isPercent){ const n=toNumber(v); if(n===null) return "—"; if(isPercent) return `${n.toFixed(2)}%`; return n>=1000?n.toLocaleString():String(Math.round(n)); }
+function fmtApprox(n, isPercent){ if(n===null||!Number.isFinite(n)) return "—"; if(isPercent) return `${n.toFixed(2)}%`; return Math.round(n).toLocaleString(); }
+function completion(q){ const now=new Date(); if(now>=q.end) return 1; if(now<q.start) return 0; return (now-q.start)/(q.end-q.start); }
 function quarterComplete(q){ return new Date()>=q.end; }
 
-// ── Data extraction ───────────────────────────────────────────────────────────
 function extractFromRows(rows, metric){
   if(!Array.isArray(rows)||!rows.length) return null;
   const map={};
-  for(const r of rows){
-    const raw=r.field??r.Field??r.name??r.Name??"";
-    const k=nfk(raw);
-    if(k) map[k]=r.value??r.Value??null;
-  }
-  for(const n of metric.needles){
-    const k=nfk(n);
-    if(map[k]!==undefined) return toNumber(map[k]);
-  }
+  for(const r of rows){ const raw=r.field??r.Field??r.name??r.Name??""; const k=nfk(raw); if(k) map[k]=r.value??r.Value??null; }
+  for(const n of metric.needles){ const k=nfk(n); if(map[k]!==undefined) return toNumber(map[k]); }
   const keys=Object.keys(map);
-  for(const n of metric.needles){
-    const nl=nfk(n);
-    const hit=keys.find(k=>k.includes(nl));
-    if(hit!==undefined) return toNumber(map[hit]);
-  }
+  for(const n of metric.needles){ const nl=nfk(n); const hit=keys.find(k=>k.includes(nl)); if(hit!==undefined) return toNumber(map[hit]); }
   return null;
 }
-
 function extractFromOverall(overall, metric){
   if(!overall||typeof overall!=="object"||Array.isArray(overall)) return null;
   const direct={impressions:"impressions",reactions:"reactions",linkclicks:"linkclicks",shares:"shares",comments:"comments",posts:"posts",followers:"followers"};
-  const k=direct[metric.id];
-  if(k&&overall[k]!==undefined) return toNumber(overall[k]);
-  return null;
+  const k=direct[metric.id]; if(k&&overall[k]!==undefined) return toNumber(overall[k]); return null;
 }
-
 function extractMetric(data, metric){
   if(!data) return null;
   if(data.quarterTotals){ const v=extractFromRows(data.quarterTotals,metric); if(v!==null) return v; }
@@ -449,237 +213,107 @@ function extractMetric(data, metric){
   return null;
 }
 
-// ── Projection engine ─────────────────────────────────────────────────────────
 function computeAdvancedPace(current, qStart, qEnd, q2Rate, metricHistory, histBaseline=0){
   if(current===null||!Number.isFinite(current)) return null;
-  const now=new Date();
-  const dElapsed=(now-qStart)/86400000;
-  if(dElapsed<7) return null;
-  const dTotal=(qEnd-qStart)/86400000;
-  const dRemaining=dTotal-dElapsed;
-
-  const simpleRate=current/dElapsed;
-  const simpleProj=simpleRate*dTotal;
-
+  const now=new Date(); const dElapsed=(now-qStart)/86400000; if(dElapsed<7) return null;
+  const dTotal=(qEnd-qStart)/86400000; const dRemaining=dTotal-dElapsed;
+  const simpleRate=current/dElapsed; const simpleProj=simpleRate*dTotal;
   let rollingRate=null, rollingProj=null;
   if(metricHistory.length>=2){
-    const cutoff=now.getTime()-7*86400000;
-    const windowStart=metricHistory.find(s=>s.t>=cutoff)||metricHistory[0];
-    const latest=metricHistory[metricHistory.length-1];
+    const cutoff=now.getTime()-7*86400000; const windowStart=metricHistory.find(s=>s.t>=cutoff)||metricHistory[0]; const latest=metricHistory[metricHistory.length-1];
     const dt=(latest.t-windowStart.t)/86400000;
-    if(dt>=1){
-      const vS=windowStart.val-histBaseline, vE=latest.val-histBaseline;
-      if(Number.isFinite(vS)&&Number.isFinite(vE)&&vE>=vS){
-        rollingRate=(vE-vS)/dt;
-        rollingProj=Math.max(current,current+rollingRate*dRemaining);
-      }
-    }
+    if(dt>=1){ const vS=windowStart.val-histBaseline, vE=latest.val-histBaseline; if(Number.isFinite(vS)&&Number.isFinite(vE)&&vE>=vS){ rollingRate=(vE-vS)/dt; rollingProj=Math.max(current,current+rollingRate*dRemaining); } }
   }
-
   let regProj=null;
   if(metricHistory.length>=3){
-    const pts=metricHistory.map(s=>({x:(s.t-qStart.getTime())/86400000,y:s.val-histBaseline}))
-      .filter(p=>p.x>=0&&Number.isFinite(p.y)&&p.y>=0);
-    if(pts.length>=3){
-      const n=pts.length,sx=pts.reduce((a,p)=>a+p.x,0),sy=pts.reduce((a,p)=>a+p.y,0);
-      const sxy=pts.reduce((a,p)=>a+p.x*p.y,0),sx2=pts.reduce((a,p)=>a+p.x*p.x,0);
-      const den=n*sx2-sx*sx;
-      if(den!==0){ const slope=(n*sxy-sx*sy)/den,intercept=(sy-slope*sx)/n,r=intercept+slope*dTotal; if(r>0) regProj=r; }
-    }
+    const pts=metricHistory.map(s=>({x:(s.t-qStart.getTime())/86400000,y:s.val-histBaseline})).filter(p=>p.x>=0&&Number.isFinite(p.y)&&p.y>=0);
+    if(pts.length>=3){ const n=pts.length,sx=pts.reduce((a,p)=>a+p.x,0),sy=pts.reduce((a,p)=>a+p.y,0),sxy=pts.reduce((a,p)=>a+p.x*p.y,0),sx2=pts.reduce((a,p)=>a+p.x*p.x,0),den=n*sx2-sx*sx; if(den!==0){ const slope=(n*sxy-sx*sy)/den,intercept=(sy-slope*sx)/n,r=intercept+slope*dTotal; if(r>0) regProj=r; } }
   }
-
   let blended;
   if(regProj!==null&&rollingProj!==null) blended=0.20*simpleProj+0.40*rollingProj+0.40*regProj;
   else if(regProj!==null)                blended=0.40*simpleProj+0.60*regProj;
   else if(rollingProj!==null)            blended=0.35*simpleProj+0.65*rollingProj;
   else                                   blended=simpleProj;
-
   const confidence=Math.min(1,dElapsed/14);
-  let projected;
-  if(q2Rate!==null&&Number.isFinite(q2Rate)&&q2Rate>0)
-    projected=confidence*blended+(1-confidence)*(q2Rate*dTotal);
-  else projected=blended;
-
+  let projected = (q2Rate!==null&&Number.isFinite(q2Rate)&&q2Rate>0) ? confidence*blended+(1-confidence)*(q2Rate*dTotal) : blended;
   let low=null, high=null;
   if(metricHistory.length>=5){
-    const histProjs=metricHistory.map(s=>{
-      const dE=(s.t-qStart.getTime())/86400000;
-      if(dE<1) return null;
-      return ((s.val-histBaseline)/dE)*dTotal;
-    }).filter(v=>v!==null&&Number.isFinite(v)&&v>0);
-    if(histProjs.length>=3){
-      const mean=histProjs.reduce((a,b)=>a+b,0)/histProjs.length;
-      const std=Math.sqrt(histProjs.reduce((s,v)=>s+(v-mean)**2,0)/histProjs.length);
-      low=Math.max(0,projected-std); high=projected+std;
-    }
+    const histProjs=metricHistory.map(s=>{ const dE=(s.t-qStart.getTime())/86400000; if(dE<1) return null; return ((s.val-histBaseline)/dE)*dTotal; }).filter(v=>v!==null&&Number.isFinite(v)&&v>0);
+    if(histProjs.length>=3){ const mean=histProjs.reduce((a,b)=>a+b,0)/histProjs.length; const std=Math.sqrt(histProjs.reduce((s,v)=>s+(v-mean)**2,0)/histProjs.length); low=Math.max(0,projected-std); high=projected+std; }
   }
-
   return {projected, low, high, dailyRate:rollingRate??simpleRate, dElapsed, dTotal};
 }
 
-function getMetricHistory(metricId){
-  return loadHistory().filter(s=>s.vals&&s.vals[metricId]!==undefined).map(s=>({t:s.t,val:s.vals[metricId]}));
-}
-
+function getMetricHistory(metricId){ return loadHistory().filter(s=>s.vals&&s.vals[metricId]!==undefined).map(s=>({t:s.t,val:s.vals[metricId]})); }
 function applyPostsMultiplier(pace, m, q3v, postsQ3v, projectedPosts){
   if(!pace||!m.postsMultiplier||projectedPosts===null||!postsQ3v||postsQ3v<=0||q3v===null) return pace;
-  const engPerPost=q3v/postsQ3v;
-  const postsMulProj=engPerPost*projectedPosts;
-  const blendedProj=0.70*pace.projected+0.30*postsMulProj;
-  const scale=pace.projected>0?blendedProj/pace.projected:1;
+  const engPerPost=q3v/postsQ3v, postsMulProj=engPerPost*projectedPosts, blendedProj=0.70*pace.projected+0.30*postsMulProj, scale=pace.projected>0?blendedProj/pace.projected:1;
   return{...pace,projected:blendedProj,low:pace.low!==null?pace.low*scale:null,high:pace.high!==null?pace.high*scale:null};
 }
 
-// ── localStorage history ──────────────────────────────────────────────────────
 const HIST_KEY="islq3_proj_history";
-
 function storeSnapshot(d3){
-  if(!d3) return;
-  const snap={t:Date.now(),vals:{}};
+  if(!d3) return; const snap={t:Date.now(),vals:{}};
   for(const m of METRICS){ if(!m.isPace) continue; const v=extractMetric(d3,m); if(v!==null) snap.vals[m.id]=v; }
   if(!Object.keys(snap.vals).length) return;
-  try{
-    const raw=localStorage.getItem(HIST_KEY);
-    const hist=raw?JSON.parse(raw):[];
-    hist.push(snap);
-    localStorage.setItem(HIST_KEY,JSON.stringify(hist.slice(-500)));
-  }catch(e){}
+  try{ const raw=localStorage.getItem(HIST_KEY); const hist=raw?JSON.parse(raw):[]; hist.push(snap); localStorage.setItem(HIST_KEY,JSON.stringify(hist.slice(-500))); }catch(e){}
 }
-
 function loadHistory(){
-  let hist=[];
-  try{ hist=JSON.parse(localStorage.getItem(HIST_KEY)||"[]"); }catch(e){ return []; }
-  const byDay={};
-  for(const snap of hist){ byDay[new Date(snap.t).toDateString()]=snap; }
+  let hist=[]; try{ hist=JSON.parse(localStorage.getItem(HIST_KEY)||"[]"); }catch(e){ return []; }
+  const byDay={}; for(const snap of hist){ byDay[new Date(snap.t).toDateString()]=snap; }
   return Object.values(byDay).sort((a,b)=>a.t-b.t);
 }
 
-// ── Fetch ─────────────────────────────────────────────────────────────────────
 async function fetchQ(q){
   try{
     const url=`${ENDPOINT}?report=${encodeURIComponent(q.key)}&nocache=1&t=${Date.now()}`;
-    const res=await fetch(url,{cache:"no-store"});
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json=await res.json();
-    if(json&&json.error) throw new Error(json.message||"Endpoint error");
-    return json;
-  }catch(err){
-    if(q.localFallback){ try{ const r=await fetch(q.localFallback); if(r.ok) return await r.json(); }catch{} }
-    return null;
-  }
+    const res=await fetch(url,{cache:"no-store"}); if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json=await res.json(); if(json&&json.error) throw new Error(json.message||"Endpoint error"); return json;
+  }catch(err){ if(q.localFallback){ try{ const r=await fetch(q.localFallback); if(r.ok) return await r.json(); }catch{} } return null; }
 }
 
-// ── Render: proj cards ────────────────────────────────────────────────────────
 function renderProjCards(qdata, q3comp, q3done){
   const grid=$("projGrid"); if(!grid) return;
-  const [d1,d2,d3]=qdata; const q3=QUARTERS[2]; const q2=QUARTERS[1];
-  const pct=(q3comp*100).toFixed(1);
-
-  const postsM=METRICS.find(m=>m.id==="posts");
-  const postsQ3v=postsM?extractMetric(d3,postsM):null;
-  const postsQ2v=postsM?extractMetric(d2,postsM):null;
+  const [d1,d2,d3]=qdata; const q3=QUARTERS[2]; const q2=QUARTERS[1]; const pct=(q3comp*100).toFixed(1);
+  const postsM=METRICS.find(m=>m.id==="posts"); const postsQ3v=postsM?extractMetric(d3,postsM):null; const postsQ2v=postsM?extractMetric(d2,postsM):null;
   const postsQ2Rate=postsQ2v!==null?postsQ2v/((q2.end-q2.start)/86400000):null;
-  const postsPace=postsM&&postsQ3v!==null&&!q3done
-    ?computeAdvancedPace(postsQ3v,q3.start,q3.end,postsQ2Rate,getMetricHistory("posts"),0):null;
+  const postsPace=postsM&&postsQ3v!==null&&!q3done?computeAdvancedPace(postsQ3v,q3.start,q3.end,postsQ2Rate,getMetricHistory("posts"),0):null;
   const projectedPosts=postsPace?postsPace.projected:null;
-
   grid.innerHTML=METRICS.map(m=>{
     const q1v=extractMetric(d1,m), q2v=extractMetric(d2,m), q3v=extractMetric(d3,m);
-    const histBaseline=m.baselineFromQ2&&q2v!==null?q2v:0;
-    const q3input=m.baselineFromQ2&&q2v!==null&&q3v!==null?q3v-q2v:q3v;
-    const q2Rate=m.isPace
-      ?(m.baselineFromQ2&&q1v!==null&&q2v!==null?(q2v-q1v)/((q2.end-q2.start)/86400000):q2v!==null?q2v/((q2.end-q2.start)/86400000):null)
-      :null;
-
+    const histBaseline=m.baselineFromQ2&&q2v!==null?q2v:0; const q3input=m.baselineFromQ2&&q2v!==null&&q3v!==null?q3v-q2v:q3v;
+    const q2Rate=m.isPace?(m.baselineFromQ2&&q1v!==null&&q2v!==null?(q2v-q1v)/((q2.end-q2.start)/86400000):q2v!==null?q2v/((q2.end-q2.start)/86400000):null):null;
     let pace=m.isPace&&!q3done?computeAdvancedPace(q3input,q3.start,q3.end,q2Rate,getMetricHistory(m.id),histBaseline):null;
     pace=applyPostsMultiplier(pace,m,q3v,postsQ3v,projectedPosts);
-
-    const projected=pace?pace.projected:null;
-    const rateVsQ2=pace&&q2Rate?((pace.dailyRate-q2Rate)/q2Rate*100):null;
+    const projected=pace?pace.projected:null; const rateVsQ2=pace&&q2Rate?((pace.dailyRate-q2Rate)/q2Rate*100):null;
     const headlineVal=projected!==null&&m.baselineFromQ2&&q2v!==null?q2v+projected:projected;
     const headline=headlineVal!==null?fmtApprox(headlineVal,m.isPercent):fmt(q3v,m.isPercent);
-    const headlineSub=headlineVal!==null
-      ?(q3done?(m.baselineFromQ2?"Q3 Projected Total":"Q3 Final"):(m.baselineFromQ2?"Projected Total · Q3":"Projected Final · Q3"))
-      :(m.baselineFromQ2?"Q3 Current Total":"Q3 Current");
-
+    const headlineSub=headlineVal!==null?(q3done?(m.baselineFromQ2?"Q3 Projected Total":"Q3 Final"):(m.baselineFromQ2?"Projected Total · Q3":"Projected Final · Q3")):(m.baselineFromQ2?"Q3 Current Total":"Q3 Current");
     let rangeHtml="";
-    if(pace&&pace.low!==null&&pace.high!==null){
-      const lv=m.baselineFromQ2&&q2v!==null?q2v+pace.low:pace.low;
-      const hv=m.baselineFromQ2&&q2v!==null?q2v+pace.high:pace.high;
-      rangeHtml=`<div class="proj-range"><strong>Range:</strong> ${fmtApprox(lv,m.isPercent)} – ${fmtApprox(hv,m.isPercent)}</div>`;
-    }
-
-    const dE=pace?Math.round(pace.dElapsed):0;
-    const dT=pace?Math.round(pace.dTotal):92;
-
-    const stat1Label=m.baselineFromQ2?"Q3 Net New":"Q3 to Date";
-    const stat1Val=m.baselineFromQ2&&q3v!==null&&q2v!==null?fmt(q3v-q2v,m.isPercent):fmt(q3v,m.isPercent);
-
-    let stat2Val="—", stat2Cls="";
-    if(pace){ stat2Val=m.isPercent?`${pace.dailyRate.toFixed(3)}%/day`:`${pace.dailyRate.toFixed(1)}/day`; stat2Cls="rate"; }
-
-    let stat3Val="—", stat3Cls="na";
-    if(rateVsQ2!==null){ const sign=rateVsQ2>=0?"▲ +":"▼ "; stat3Val=`${sign}${Math.abs(rateVsQ2).toFixed(1)}%`; stat3Cls=rateVsQ2>=0?"pos":"neg"; }
-    else if(!m.isPace){ stat3Val="n/a"; }
-
-    return `<div class="proj-card">
-  <div class="proj-card-label">${m.label}</div>
-  <div class="proj-number">${headline}</div>
-  <div class="proj-number-sub">${headlineSub}</div>
-  ${rangeHtml}
-  <div class="proj-progress-wrap">
-    <div class="proj-progress-track"><div class="proj-progress-fill" style="width:${Math.min(100,q3comp*100).toFixed(1)}%"></div></div>
-    <div class="proj-progress-labels"><span>Day ${dE} of ${dT}${q3done?" · complete":""}</span><span>${pct}%</span></div>
-  </div>
-  <div class="proj-stats-grid">
-    <div class="proj-stat"><div class="proj-stat-label">${stat1Label}</div><div class="proj-stat-value">${stat1Val}</div></div>
-    <div class="proj-stat"><div class="proj-stat-label">Daily Rate</div><div class="proj-stat-value ${stat2Cls}">${stat2Val}</div></div>
-    <div class="proj-stat"><div class="proj-stat-label">Rate vs Q2</div><div class="proj-stat-value ${stat3Cls}">${stat3Val}</div></div>
-    <div class="proj-stat"><div class="proj-stat-label">Q2 Actual</div><div class="proj-stat-value">${fmt(q2v,m.isPercent)}</div></div>
-  </div>
-</div>`;
+    if(pace&&pace.low!==null&&pace.high!==null){ const lv=m.baselineFromQ2&&q2v!==null?q2v+pace.low:pace.low; const hv=m.baselineFromQ2&&q2v!==null?q2v+pace.high:pace.high; rangeHtml=`<div class="proj-range"><strong>Range:</strong> ${fmtApprox(lv,m.isPercent)} – ${fmtApprox(hv,m.isPercent)}</div>`; }
+    const dE=pace?Math.round(pace.dElapsed):0; const dT=pace?Math.round(pace.dTotal):92;
+    const stat1Label=m.baselineFromQ2?"Q3 Net New":"Q3 to Date"; const stat1Val=m.baselineFromQ2&&q3v!==null&&q2v!==null?fmt(q3v-q2v,m.isPercent):fmt(q3v,m.isPercent);
+    let stat2Val="—", stat2Cls=""; if(pace){ stat2Val=m.isPercent?`${pace.dailyRate.toFixed(3)}%/day`:`${pace.dailyRate.toFixed(1)}/day`; stat2Cls="rate"; }
+    let stat3Val="—", stat3Cls="na"; if(rateVsQ2!==null){ const sign=rateVsQ2>=0?"▲ +":"▼ "; stat3Val=`${sign}${Math.abs(rateVsQ2).toFixed(1)}%`; stat3Cls=rateVsQ2>=0?"pos":"neg"; } else if(!m.isPace){ stat3Val="n/a"; }
+    return `<div class="proj-card"><div class="proj-card-label">${m.label}</div><div class="proj-number">${headline}</div><div class="proj-number-sub">${headlineSub}</div>${rangeHtml}<div class="proj-progress-wrap"><div class="proj-progress-track"><div class="proj-progress-fill" style="width:${Math.min(100,q3comp*100).toFixed(1)}%"></div></div><div class="proj-progress-labels"><span>Day ${dE} of ${dT}${q3done?" · complete":""}</span><span>${pct}%</span></div></div><div class="proj-stats-grid"><div class="proj-stat"><div class="proj-stat-label">${stat1Label}</div><div class="proj-stat-value">${stat1Val}</div></div><div class="proj-stat"><div class="proj-stat-label">Daily Rate</div><div class="proj-stat-value ${stat2Cls}">${stat2Val}</div></div><div class="proj-stat"><div class="proj-stat-label">Rate vs Q2</div><div class="proj-stat-value ${stat3Cls}">${stat3Val}</div></div><div class="proj-stat"><div class="proj-stat-label">Q2 Actual</div><div class="proj-stat-value">${fmt(q2v,m.isPercent)}</div></div></div></div>`;
   }).join("");
 }
 
-// ── Chart instances ───────────────────────────────────────────────────────────
-const charts={};
-let currentView="comparison";
-let cachedQdata=null, cachedQ3comp=0, cachedQ3done=false;
-
-// Editorial chart colours (no gradients — flat ink tones)
-const C = {
-  q1: "rgba(100,116,139,.7)",
-  q2: "rgba(0,61,114,.8)",
-  q3: "rgba(0,84,154,.85)",
-  proj:"rgba(180,130,0,.85)",
-  area:"rgba(0,84,154,.07)",
-  ref: "rgba(100,116,139,.4)",
-};
+const charts={}; let currentView="comparison"; let cachedQdata=null, cachedQ3comp=0, cachedQ3done=false;
+const C = { q1:"rgba(100,116,139,.7)", q2:"rgba(0,61,114,.8)", q3:"rgba(0,84,154,.85)", proj:"rgba(180,130,0,.85)", area:"rgba(0,84,154,.07)", ref:"rgba(100,116,139,.4)" };
 
 function buildShells(sub){
   const grid=$("chartsGrid"); if(!grid) return;
-  grid.innerHTML=METRICS.map(m=>`
-    <div class="chart-card">
-      <div class="chart-card-title">${m.label}</div>
-      <div class="chart-card-sub">${sub}</div>
-      <div class="chart-wrap"><canvas id="chart-${m.id}"></canvas></div>
-      <div class="chart-legend" id="legend-${m.id}"></div>
-    </div>`).join("");
+  grid.innerHTML=METRICS.map(m=>`<div class="chart-card"><div class="chart-card-title">${m.label}</div><div class="chart-card-sub">${sub}</div><div class="chart-wrap"><canvas id="chart-${m.id}"></canvas></div><div class="chart-legend" id="legend-${m.id}"></div></div>`).join("");
 }
 
-// ── Comparison bar charts ─────────────────────────────────────────────────────
 function buildComparison(qdata, q3comp, q3done){
   buildShells(!q3done?"Q1 & Q2 actuals · Q3 pace projection":"Quarter-over-quarter actuals");
   const [d1,d2,d3]=qdata; const q3=QUARTERS[2]; const q2=QUARTERS[1];
-
-  const postsM=METRICS.find(m=>m.id==="posts");
-  const postsQ3v=postsM?extractMetric(d3,postsM):null;
-  const postsQ2v=postsM?extractMetric(d2,postsM):null;
+  const postsM=METRICS.find(m=>m.id==="posts"); const postsQ3v=postsM?extractMetric(d3,postsM):null; const postsQ2v=postsM?extractMetric(d2,postsM):null;
   const postsQ2Rate=postsQ2v!==null?postsQ2v/((q2.end-q2.start)/86400000):null;
-  const postsPace=postsM&&postsQ3v!==null&&!q3done
-    ?computeAdvancedPace(postsQ3v,q3.start,q3.end,postsQ2Rate,getMetricHistory("posts"),0):null;
+  const postsPace=postsM&&postsQ3v!==null&&!q3done?computeAdvancedPace(postsQ3v,q3.start,q3.end,postsQ2Rate,getMetricHistory("posts"),0):null;
   const projectedPosts=postsPace?postsPace.projected:null;
-
   function go(){
     for(const m of METRICS){
       const q1v=extractMetric(d1,m), q2v=extractMetric(d2,m), q3v=extractMetric(d3,m);
@@ -687,223 +321,95 @@ function buildComparison(qdata, q3comp, q3done){
       const chartQ2Rate=q2v!==null?(m.baselineFromQ2&&q1v!==null?(q2v-q1v)/((q2.end-q2.start)/86400000):q2v/((q2.end-q2.start)/86400000)):null;
       let pace=m.isPace&&!q3done?computeAdvancedPace(chartQ3input,q3.start,q3.end,chartQ2Rate,getMetricHistory(m.id),m.baselineFromQ2&&q2v!==null?q2v:0):null;
       pace=applyPostsMultiplier(pace,m,q3v,postsQ3v,projectedPosts);
-      const projected=pace?pace.projected:null;
-      const chartQ3val=projected!==null?(m.baselineFromQ2&&q2v!==null?q2v+projected:projected):(q3v??0);
-
+      const projected=pace?pace.projected:null; const chartQ3val=projected!==null?(m.baselineFromQ2&&q2v!==null?q2v+projected:projected):(q3v??0);
       const canvas=document.getElementById(`chart-${m.id}`); if(!canvas) continue;
       if(charts[m.id]) charts[m.id].destroy();
       const ctx=canvas.getContext("2d");
-
       const labels=["Q1 · Sep–Nov","Q2 · Dec–Feb",projected!==null?"Q3 · Projected":"Q3 · Mar–May"];
       const colors=[C.q1, C.q2, projected!==null?C.proj:C.q3];
-
-      charts[m.id]=new Chart(ctx,{
-        type:"bar",
-        data:{
-          labels,
-          datasets:[{
-            data:[q1v??0, q2v??0, chartQ3val],
-            backgroundColor:colors,
-            borderWidth:0,
-            borderRadius:2,
-            borderSkipped:false,
-          }]
-        },
-        options:{
-          responsive:true, maintainAspectRatio:false,
-          animation:{duration:600,easing:"easeOutQuart"},
-          plugins:{
-            legend:{display:false},
-            tooltip:{callbacks:{label(c){ const v=c.parsed.y; return v===null?"":fmt(v,m.isPercent)+(c.label.includes("Projected")?" (projected)":""); }}}
-          },
-          scales:{
-            x:{grid:{display:false},ticks:{font:{size:11,family:"Inter Tight, system-ui"},color:"#64748b"},border:{display:false}},
-            y:{beginAtZero:true,grid:{color:"rgba(0,0,0,.04)"},border:{display:false,dash:[3,3]},ticks:{font:{size:11,family:"Inter Tight, system-ui"},color:"#64748b",padding:6,callback:v=>m.isPercent?`${v.toFixed(1)}%`:v>=1000?v.toLocaleString():v}},
-          }
-        }
-      });
-
+      charts[m.id]=new Chart(ctx,{type:"bar",data:{labels,datasets:[{data:[q1v??0,q2v??0,chartQ3val],backgroundColor:colors,borderWidth:0,borderRadius:2,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:600,easing:"easeOutQuart"},plugins:{legend:{display:false},tooltip:{callbacks:{label(c){ const v=c.parsed.y; return v===null?"":fmt(v,m.isPercent)+(c.label.includes("Projected")?" (projected)":""); }}}},scales:{x:{grid:{display:false},ticks:{font:{size:11,family:"Inter Tight, system-ui"},color:"#64748b"},border:{display:false}},y:{beginAtZero:true,grid:{color:"rgba(0,0,0,.04)"},border:{display:false,dash:[3,3]},ticks:{font:{size:11,family:"Inter Tight, system-ui"},color:"#64748b",padding:6,callback:v=>m.isPercent?`${v.toFixed(1)}%`:v>=1000?v.toLocaleString():v}}}}});
       const legendEl=document.getElementById(`legend-${m.id}`);
-      if(legendEl) legendEl.innerHTML=[
-        `<div class="legend-item"><div class="legend-dot" style="background:${C.q1}"></div>Q1 Actual</div>`,
-        `<div class="legend-item"><div class="legend-dot" style="background:${C.q2}"></div>Q2 Actual</div>`,
-        projected!==null
-          ?`<div class="legend-item"><div class="legend-dot" style="background:${C.proj}"></div>Q3 Projected</div>`
-          :`<div class="legend-item"><div class="legend-dot" style="background:${C.q3}"></div>Q3 ${q3done?"Actual":"To Date"}</div>`,
-      ].join("");
+      if(legendEl) legendEl.innerHTML=[`<div class="legend-item"><div class="legend-dot" style="background:${C.q1}"></div>Q1 Actual</div>`,`<div class="legend-item"><div class="legend-dot" style="background:${C.q2}"></div>Q2 Actual</div>`,projected!==null?`<div class="legend-item"><div class="legend-dot" style="background:${C.proj}"></div>Q3 Projected</div>`:`<div class="legend-item"><div class="legend-dot" style="background:${C.q3}"></div>Q3 ${q3done?"Actual":"To Date"}</div>`].join("");
     }
   }
-  if(typeof Chart!=="undefined") go();
-  else document.querySelector("script[src*='chart']").addEventListener("load",go);
+  if(typeof Chart!=="undefined") go(); else document.querySelector("script[src*='chart']").addEventListener("load",go);
 }
 
-// ── Timeline line charts ──────────────────────────────────────────────────────
 function buildTimeline(qdata, q3comp, q3done){
   buildShells("Projected Q3 final at each session · Q2 reference line");
-  const [,d2,d3]=qdata; const q3=QUARTERS[2];
-  const dTotal=(q3.end-q3.start)/86400000;
-  const history=loadHistory();
-
-  const postsM=METRICS.find(m=>m.id==="posts");
-  const postsQ3v=postsM?extractMetric(d3,postsM):null;
-  const postsQ2v=postsM?extractMetric(d2,postsM):null;
+  const [,d2,d3]=qdata; const q3=QUARTERS[2]; const dTotal=(q3.end-q3.start)/86400000; const history=loadHistory();
+  const postsM=METRICS.find(m=>m.id==="posts"); const postsQ3v=postsM?extractMetric(d3,postsM):null; const postsQ2v=postsM?extractMetric(d2,postsM):null;
   const postsQ2Rate=postsQ2v!==null?postsQ2v/((QUARTERS[1].end-QUARTERS[1].start)/86400000):null;
-  const postsPace=postsM&&postsQ3v!==null&&!q3done
-    ?computeAdvancedPace(postsQ3v,q3.start,q3.end,postsQ2Rate,getMetricHistory("posts"),0):null;
+  const postsPace=postsM&&postsQ3v!==null&&!q3done?computeAdvancedPace(postsQ3v,q3.start,q3.end,postsQ2Rate,getMetricHistory("posts"),0):null;
   const projectedPosts=postsPace?postsPace.projected:null;
-
   function go(){
     for(const m of METRICS){
       const q2v=extractMetric(d2,m), q3v=extractMetric(d3,m);
       const canvas=document.getElementById(`chart-${m.id}`); if(!canvas) continue;
       if(charts[m.id]) charts[m.id].destroy();
       const ctx=canvas.getContext("2d");
-
       if(!m.isPace){
-        // Simple bar for non-pace metrics
         charts[m.id]=new Chart(ctx,{type:"bar",data:{labels:["Q2 · Dec–Feb","Q3 · Current"],datasets:[{data:[q2v??0,q3v??0],backgroundColor:[C.q2,C.q3],borderWidth:0,borderRadius:2,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:11},color:"#64748b"},border:{display:false}},y:{beginAtZero:true,grid:{color:"rgba(0,0,0,.04)"},border:{display:false},ticks:{font:{size:11},color:"#64748b"}}}}});
-        const l=document.getElementById(`legend-${m.id}`);
-        if(l) l.innerHTML=`<div class="legend-item"><div class="legend-dot" style="background:${C.q2}"></div>Q2 Actual</div><div class="legend-item"><div class="legend-dot" style="background:${C.q3}"></div>Q3 Snapshot</div>`;
-        continue;
+        const l=document.getElementById(`legend-${m.id}`); if(l) l.innerHTML=`<div class="legend-item"><div class="legend-dot" style="background:${C.q2}"></div>Q2 Actual</div><div class="legend-item"><div class="legend-dot" style="background:${C.q3}"></div>Q3 Snapshot</div>`; continue;
       }
-
       const pts=[];
       for(const snap of history){
         const v=snap.vals[m.id]; if(v===null||v===undefined) continue;
         const dElapsed=(snap.t-q3.start.getTime())/86400000; if(dElapsed<1) continue;
-        const netV=m.baselineFromQ2&&q2v!==null?v-q2v:v;
-        let projNet=(netV/dElapsed)*dTotal;
-        if(m.postsMultiplier&&projectedPosts!==null){
-          const snapPosts=snap.vals["posts"];
-          if(snapPosts&&snapPosts>0&&v!==null){ const engPerPost=v/snapPosts; projNet=0.70*projNet+0.30*engPerPost*projectedPosts; }
-        }
+        const netV=m.baselineFromQ2&&q2v!==null?v-q2v:v; let projNet=(netV/dElapsed)*dTotal;
+        if(m.postsMultiplier&&projectedPosts!==null){ const snapPosts=snap.vals["posts"]; if(snapPosts&&snapPosts>0&&v!==null){ const engPerPost=v/snapPosts; projNet=0.70*projNet+0.30*engPerPost*projectedPosts; } }
         const projFinal=m.baselineFromQ2&&q2v!==null?q2v+projNet:projNet;
-        if(!Number.isFinite(projFinal)||projFinal<=0) continue;
-        pts.push({t:snap.t,proj:Math.round(projFinal)});
+        if(!Number.isFinite(projFinal)||projFinal<=0) continue; pts.push({t:snap.t,proj:Math.round(projFinal)});
       }
-
       if(pts.length===0){
-        ctx.save(); ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle="#94a3b8"; ctx.font="12px Inter Tight, system-ui";
-        ctx.textAlign="center"; ctx.textBaseline="middle";
-        ctx.fillText("History builds up as you revisit this page.",canvas.width/2,canvas.height/2-8);
-        ctx.fillText("Check back tomorrow to see the trend.",canvas.width/2,canvas.height/2+12);
-        ctx.restore();
-        const l=document.getElementById(`legend-${m.id}`);
-        if(l) l.innerHTML=`<div class="legend-item" style="color:#94a3b8">Collecting snapshots…</div>`;
-        continue;
+        ctx.save(); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle="#94a3b8"; ctx.font="12px Inter Tight, system-ui"; ctx.textAlign="center"; ctx.textBaseline="middle";
+        ctx.fillText("History builds up as you revisit this page.",canvas.width/2,canvas.height/2-8); ctx.fillText("Check back tomorrow to see the trend.",canvas.width/2,canvas.height/2+12); ctx.restore();
+        const l=document.getElementById(`legend-${m.id}`); if(l) l.innerHTML=`<div class="legend-item" style="color:#94a3b8">Collecting snapshots…</div>`; continue;
       }
-
-      const labels=pts.map(p=>new Date(p.t).toLocaleDateString("en-US",{month:"short",day:"numeric"}));
-      const projData=pts.map(p=>p.proj);
-      const minP=Math.min(...projData), maxP=Math.max(...projData);
-      const yPad=(maxP-minP)*0.3||maxP*0.1;
-
-      const datasets=[{
-        label:"Projected Q3 Final",
-        data:projData,
-        borderColor:C.proj,
-        backgroundColor:C.area,
-        borderWidth:2,
-        pointRadius:projData.map((_,i)=>i===projData.length-1?6:projData.length<8?3:1.5),
-        pointBackgroundColor:C.proj,
-        pointBorderColor:"#fff",
-        pointBorderWidth:projData.map((_,i)=>i===projData.length-1?2:0),
-        fill:true, tension:0.3, spanGaps:false,
-      }];
+      const labels=pts.map(p=>new Date(p.t).toLocaleDateString("en-US",{month:"short",day:"numeric"})); const projData=pts.map(p=>p.proj);
+      const minP=Math.min(...projData), maxP=Math.max(...projData); const yPad=(maxP-minP)*0.3||maxP*0.1;
+      const datasets=[{label:"Projected Q3 Final",data:projData,borderColor:C.proj,backgroundColor:C.area,borderWidth:2,pointRadius:projData.map((_,i)=>i===projData.length-1?6:projData.length<8?3:1.5),pointBackgroundColor:C.proj,pointBorderColor:"#fff",pointBorderWidth:projData.map((_,i)=>i===projData.length-1?2:0),fill:true,tension:0.3,spanGaps:false}];
       if(q2v!==null) datasets.push({label:"Q2 Final",data:Array(labels.length).fill(q2v),borderColor:C.ref,backgroundColor:"transparent",borderWidth:1.5,borderDash:[3,5],pointRadius:0,fill:false,tension:0});
-
-      charts[m.id]=new Chart(ctx,{
-        type:"line",data:{labels,datasets},
-        options:{
-          responsive:true,maintainAspectRatio:false,animation:{duration:600},
-          plugins:{legend:{display:false},tooltip:{callbacks:{label(c){const v=c.parsed.y;return v===null?"":c.dataset.label+": "+fmt(v,m.isPercent);}}}},
-          scales:{
-            x:{grid:{color:"rgba(0,0,0,.03)"},ticks:{font:{size:10,family:"Inter Tight, system-ui"},color:"#64748b",maxTicksLimit:12},border:{display:false}},
-            y:{min:Math.max(0,minP-yPad),grid:{color:"rgba(0,0,0,.04)"},border:{display:false},ticks:{font:{size:11,family:"Inter Tight, system-ui"},color:"#64748b",padding:6,callback:v=>m.isPercent?`${v.toFixed(1)}%`:v>=1000?v.toLocaleString():v}},
-          }
-        }
-      });
-
+      charts[m.id]=new Chart(ctx,{type:"line",data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},plugins:{legend:{display:false},tooltip:{callbacks:{label(c){const v=c.parsed.y;return v===null?"":c.dataset.label+": "+fmt(v,m.isPercent);}}}},scales:{x:{grid:{color:"rgba(0,0,0,.03)"},ticks:{font:{size:10,family:"Inter Tight, system-ui"},color:"#64748b",maxTicksLimit:12},border:{display:false}},y:{min:Math.max(0,minP-yPad),grid:{color:"rgba(0,0,0,.04)"},border:{display:false},ticks:{font:{size:11,family:"Inter Tight, system-ui"},color:"#64748b",padding:6,callback:v=>m.isPercent?`${v.toFixed(1)}%`:v>=1000?v.toLocaleString():v}}}}});
       const l=document.getElementById(`legend-${m.id}`);
-      if(l){
-        const items=[`<div class="legend-item"><div class="legend-dot" style="background:${C.proj}"></div>Projected Q3 Final</div>`];
-        if(q2v!==null) items.push(`<div class="legend-item"><div class="legend-dot" style="background:${C.ref}"></div>Q2 Final</div>`);
-        l.innerHTML=items.join("");
-      }
+      if(l){ const items=[`<div class="legend-item"><div class="legend-dot" style="background:${C.proj}"></div>Projected Q3 Final</div>`]; if(q2v!==null) items.push(`<div class="legend-item"><div class="legend-dot" style="background:${C.ref}"></div>Q2 Final</div>`); l.innerHTML=items.join(""); }
     }
   }
-  if(typeof Chart!=="undefined") go();
-  else document.querySelector("script[src*='chart']").addEventListener("load",go);
+  if(typeof Chart!=="undefined") go(); else document.querySelector("script[src*='chart']").addEventListener("load",go);
 }
 
-function renderCharts(qdata, q3comp, q3done){
-  cachedQdata=qdata; cachedQ3comp=q3comp; cachedQ3done=q3done;
-  currentView==="timeline"?buildTimeline(qdata,q3comp,q3done):buildComparison(qdata,q3comp,q3done);
-}
+function renderCharts(qdata, q3comp, q3done){ cachedQdata=qdata; cachedQ3comp=q3comp; cachedQ3done=q3done; currentView==="timeline"?buildTimeline(qdata,q3comp,q3done):buildComparison(qdata,q3comp,q3done); }
 
-// ── Chart toggle ──────────────────────────────────────────────────────────────
 function wireToggle(){
   const bC=$("btnComparison"), bT=$("btnTimeline"); if(!bC||!bT) return;
   bC.addEventListener("click",()=>{if(currentView==="comparison") return; currentView="comparison"; bC.classList.add("is-active"); bT.classList.remove("is-active"); if(cachedQdata) buildComparison(cachedQdata,cachedQ3comp,cachedQ3done);});
   bT.addEventListener("click",()=>{if(currentView==="timeline") return; currentView="timeline"; bT.classList.add("is-active"); bC.classList.remove("is-active"); if(cachedQdata) buildTimeline(cachedQdata,cachedQ3comp,cachedQ3done);});
 }
 
-// ── Countdown ─────────────────────────────────────────────────────────────────
 let countdownSec=REFRESH_SEC, countdownTimer=null;
-function startCountdown(){
-  clearInterval(countdownTimer); countdownSec=REFRESH_SEC; tickCountdown();
-  countdownTimer=setInterval(()=>{ countdownSec--; tickCountdown(); if(countdownSec<=0){ clearInterval(countdownTimer); doRefresh(); } },1000);
-}
-function tickCountdown(){
-  const el=$("countdown"); if(!el) return;
-  const m=Math.floor(countdownSec/60),s=countdownSec%60;
-  el.textContent=`${m}:${String(s).padStart(2,"0")}`;
-}
+function startCountdown(){ clearInterval(countdownTimer); countdownSec=REFRESH_SEC; tickCountdown(); countdownTimer=setInterval(()=>{ countdownSec--; tickCountdown(); if(countdownSec<=0){ clearInterval(countdownTimer); doRefresh(); } },1000); }
+function tickCountdown(){ const el=$("countdown"); if(!el) return; const m=Math.floor(countdownSec/60),s=countdownSec%60; el.textContent=`${m}:${String(s).padStart(2,"0")}`; }
 function setLastUpdated(){ const el=$("lastUpdated"); if(el) el.textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}); }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
 let isLoading=false;
-
 async function loadAndRender(){
   if(isLoading) return; isLoading=true;
   const btn=$("refreshBtn"); if(btn) btn.disabled=true;
   try{
-    const qdata=await Promise.all(QUARTERS.map(fetchQ));
-    const q3=QUARTERS[2], q3comp=completion(q3), q3done=quarterComplete(q3);
-
+    const qdata=await Promise.all(QUARTERS.map(fetchQ)); const q3=QUARTERS[2], q3comp=completion(q3), q3done=quarterComplete(q3);
     const pct=(q3comp*100).toFixed(1);
     const pl=$("progressLabel"), pf=$("progressFill");
     if(pl) pl.textContent=`${pct}% elapsed${q3done?" · complete":""}`;
     if(pf) pf.style.width=`${Math.min(100,q3comp*100).toFixed(1)}%`;
-
     const missing=QUARTERS.filter((_,i)=>!qdata[i]).map(q=>q.label);
     const eb=$("errorBar");
-    if(eb){
-      if(missing.length){ eb.textContent=`Could not load data for: ${missing.join(", ")}. Projections for those quarters will show as —.`; eb.classList.add("show"); }
-      else eb.classList.remove("show");
-    }
-
-    renderProjCards(qdata,q3comp,q3done);
-    renderCharts(qdata,q3comp,q3done);
-    storeSnapshot(qdata[2]);
-    setLastUpdated();
-  }catch(err){
-    const eb=$("errorBar"); if(eb){ eb.textContent=`Error: ${err.message}`; eb.classList.add("show"); }
-  }finally{
-    isLoading=false; if(btn) btn.disabled=false;
-    const ls=$("loadingScreen"); if(ls) ls.classList.add("hidden");
-  }
+    if(eb){ if(missing.length){ eb.textContent=`Could not load data for: ${missing.join(", ")}.`; eb.classList.add("show"); } else eb.classList.remove("show"); }
+    renderProjCards(qdata,q3comp,q3done); renderCharts(qdata,q3comp,q3done); storeSnapshot(qdata[2]); setLastUpdated();
+  }catch(err){ const eb=$("errorBar"); if(eb){ eb.textContent=`Error: ${err.message}`; eb.classList.add("show"); } }
+  finally{ isLoading=false; if(btn) btn.disabled=false; }
 }
-
 async function doRefresh(){ await loadAndRender(); startCountdown(); }
-
-window.addEventListener("DOMContentLoaded",()=>{
-  wireToggle();
-  const btn=$("refreshBtn"); if(btn) btn.addEventListener("click",doRefresh);
-  doRefresh();
-  startCountdown();
-});
+window.addEventListener("DOMContentLoaded",()=>{ wireToggle(); const btn=$("refreshBtn"); if(btn) btn.addEventListener("click",doRefresh); doRefresh(); startCountdown(); });
 </script>
 </body>
 </html>

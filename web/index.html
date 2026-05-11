@@ -11,7 +11,6 @@
 <link rel="stylesheet" href="../editorial.css" />
 
 <style>
-  /* Web report specific additions */
   .channel-row-web {
     display: grid;
     grid-template-columns: 0.4fr 1.6fr repeat(3, 1fr);
@@ -22,58 +21,22 @@
   }
   .channel-row-web:last-child { border-bottom: 1px solid var(--rule); }
   body[data-density="tight"] .channel-row-web { padding: 18px 0; }
-  .channel-row-web.is-head {
-    padding: 12px 0;
-    border-top: 0;
-    border-bottom: 1px solid var(--ink);
-  }
-  .channel-row-web.is-head > div {
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--ink-3);
-    font-weight: 500;
-  }
+  .channel-row-web.is-head { padding: 12px 0; border-top: 0; border-bottom: 1px solid var(--ink); }
+  .channel-row-web.is-head > div { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; }
   .channel-row-web.is-head .col-num { text-align: right; }
 
-  .pages-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-  }
-  .page-tile {
-    padding: 28px 24px;
-    border-right: 1px solid var(--rule);
-    border-bottom: 1px solid var(--rule);
-  }
+  .pages-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+  .page-tile { padding: 28px 24px; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
   .page-tile:nth-child(4n) { border-right: 0; }
   .page-tile:nth-last-child(-n+4) { border-bottom: 0; }
-  .page-tile-name {
-    font-family: var(--serif);
-    font-size: 18px;
-    margin-bottom: 20px;
-    color: var(--ink);
-    line-height: 1.2;
-  }
+  .page-tile-name { font-family: var(--serif); font-size: 18px; margin-bottom: 20px; color: var(--ink); line-height: 1.2; }
   .page-stat { margin-bottom: 14px; }
-  .page-stat-label {
-    font-size: 10px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--ink-4);
-    font-weight: 500;
-    margin-bottom: 4px;
-  }
-  .page-stat-value {
-    font-family: var(--serif);
-    font-size: 22px;
-    color: var(--ink);
-  }
+  .page-stat-label { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-4); font-weight: 500; margin-bottom: 4px; }
+  .page-stat-value { font-family: var(--serif); font-size: 22px; color: var(--ink); }
 
   @media (max-width: 880px) {
     .pages-grid { grid-template-columns: repeat(2, 1fr); }
     .page-tile:nth-child(2n) { border-right: 0; }
-    .page-tile:nth-child(4n) { border-right: 0; }
     .channel-row-web { grid-template-columns: 1fr 1fr; row-gap: 12px; }
   }
   @media (max-width: 560px) {
@@ -84,11 +47,13 @@
 </head>
 <body data-layout="editorial" data-density="balanced">
 
+<div id="nav-root"></div>
 <div id="root"></div>
 
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<script type="text/babel" src="/nav.jsx"></script>
 <script src="../tweaks-panel.jsx" type="text/babel"></script>
 
 <script type="text/babel">
@@ -96,11 +61,7 @@ const { useState, useEffect, useRef } = React;
 
 const WEB_ENDPOINT = "https://script.google.com/macros/s/AKfycbwWpZWB_eP48AX_B4TkGgKjEJPGoB7y9ynpv74SWA3MiEtV-Kmd-0eV-ecfTIysbWY3CQ/exec";
 
-const TWEAK_DEFAULTS = {
-  layout: "editorial",
-  density: "balanced",
-  accent: "isl"
-};
+const TWEAK_DEFAULTS = { layout: "editorial", density: "balanced", accent: "isl" };
 
 const REPORT_META = {
   webq1: { quarter: "Q1", quarterWord: "One",   rangeLabel: "Sep – Nov 2025", issue: "1" },
@@ -108,15 +69,13 @@ const REPORT_META = {
   webq3: { quarter: "Q3", quarterWord: "Three", rangeLabel: "Mar – May 2026", issue: "3" },
 };
 
-// ── Helpers ──────────────────────────────────────────────────────────
-const fmtInt = n => (typeof n === "number" && Number.isFinite(n)) ? n.toLocaleString() : "—";
-const fmtPct = n => (typeof n === "number" && Number.isFinite(n)) ? n.toFixed(1) + "%" : "—";
+const fmtInt  = n => (typeof n === "number" && Number.isFinite(n)) ? n.toLocaleString() : "—";
+const fmtPct  = n => (typeof n === "number" && Number.isFinite(n)) ? n.toFixed(1) + "%" : "—";
 function fmtTime(sec) {
   if (typeof sec !== "number" || !Number.isFinite(sec)) return "—";
   const m = Math.floor(sec / 60), s = Math.round(sec % 60);
   return m + ":" + String(s).padStart(2, "0");
 }
-
 function parseDelta(d) {
   if (d == null) return { dir: "flat", pct: 0 };
   if (typeof d === "object" && "dir" in d) return d;
@@ -127,138 +86,31 @@ function parseDelta(d) {
   if (/^[▲↑]/.test(s)) dir = "up";
   else if (/^[▼↓]/.test(s)) dir = "down";
   const m = s.match(/-?\d+(\.\d+)?/);
-  const pct = m ? Math.abs(parseFloat(m[0])) : 0;
-  return { dir, pct };
+  return { dir, pct: m ? Math.abs(parseFloat(m[0])) : 0 };
 }
-
 function arrow(dir) { return dir === "up" ? "↑" : dir === "down" ? "↓" : "—"; }
-
-function Delta({ d }) {
-  if (!d) return null;
-  const pd = parseDelta(d);
-  return (
-    <span className={"delta " + pd.dir}>
-      <span className="arrow serif ital">{arrow(pd.dir)}</span>
-      <span>{pd.pct.toFixed(1)}%</span>
-    </span>
-  );
-}
-
-// ── Data loading ──────────────────────────────────────────────────────
-function getReportKey() {
-  const params = new URLSearchParams(window.location.search);
-  return (params.get("report") || "webq3").toLowerCase();
-}
-
-function getPrevKey(key) {
-  const m = key.match(/^(.*?)(\d+)$/i);
-  if (!m) return null;
-  const num = Number(m[2]);
-  if (num <= 1) return null;
-  return m[1] + (num - 1);
-}
-
-async function fetchReport(key) {
-  const res = await fetch(`${WEB_ENDPOINT}?report=${key}&t=${Date.now()}`, { cache: "no-store" });
-  if (!res.ok) throw new Error("Fetch failed: " + res.status);
-  return await res.json();
-}
-
+function getReportKey() { return (new URLSearchParams(window.location.search).get("report") || "webq3").toLowerCase(); }
+function getPrevKey(key) { const m = key.match(/^(.*?)(\d+)$/i); if (!m) return null; const n = Number(m[2]); return n <= 1 ? null : m[1] + (n - 1); }
+async function fetchReport(key) { const res = await fetch(`${WEB_ENDPOINT}?report=${key}&t=${Date.now()}`, { cache: "no-store" }); if (!res.ok) throw new Error("Fetch failed: " + res.status); return res.json(); }
 function calcAutoDelta(cur, prev) {
   if (typeof cur !== "number" || typeof prev !== "number" || prev === 0) return null;
   const pct = ((cur - prev) / Math.abs(prev)) * 100;
   return { dir: pct > 0 ? "up" : pct < 0 ? "down" : "flat", pct: Math.abs(pct) };
 }
 
-// ── Masthead ──────────────────────────────────────────────────────────
-function Masthead({ reportKey }) {
-  const meta = REPORT_META[reportKey] || REPORT_META.webq3;
-  return (
-    <header className="masthead">
-      <div className="wrap masthead-row">
-        <div className="masthead-left">
-          <div className="masthead-mark serif">Integrated <em>Staffing</em></div>
-          <div className="masthead-sub">Quarterly Website Report</div>
-        </div>
-        <div className="masthead-right">
-          <span>Josiah Yule</span>
-          <span className="issue serif ital">Issue {meta.issue}</span>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-// ── Nav ───────────────────────────────────────────────────────────────
-function MastNav({ reportKey }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef();
-  const meta = REPORT_META[reportKey] || REPORT_META.webq3;
-
-  useEffect(() => {
-    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("click", close);
-    return () => document.removeEventListener("click", close);
-  }, []);
-
-  return (
-    <div className="masthead-nav">
-      <div className="wrap masthead-nav-row">
-        <nav className="nav-tabs">
-          <a href="/">Social Media</a>
-          <a href="/web/" className="is-active">Website</a>
-          <a href="/trends/">Trends</a>
-        </nav>
-        <div className="nav-meta">
-          <span>{meta.rangeLabel}</span>
-          <div ref={ref} style={{ position: "relative" }}>
-            <button className="qchooser" onClick={() => setOpen(!open)}>
-              <span>2026 · {meta.quarter}</span>
-              <span className="caret">▾</span>
-            </button>
-            <div className={"menu" + (open ? " is-open" : "")}>
-              <div className="group">2026</div>
-              <a href="?report=webq3" className={reportKey === "webq3" ? "active" : ""} onClick={() => setOpen(false)}>Q3 — Mar–May 2026</a>
-              <a href="?report=webq2" className={reportKey === "webq2" ? "active" : ""} onClick={() => setOpen(false)}>Q2 — Dec–Feb 2026</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Hero ──────────────────────────────────────────────────────────────
 function Hero({ reportKey, data }) {
   const meta = REPORT_META[reportKey] || REPORT_META.webq3;
-  const note = typeof data.insights?.working === "string"
-    ? data.insights.working.split("\n\n")[0]
-    : "Website performance report for Integrated Staffing.";
-
+  const note = typeof data.insights?.working === "string" ? data.insights.working.split("\n\n")[0] : "Website performance report for Integrated Staffing.";
   return (
     <section className="hero wrap">
       <div className="hero-kicker">Volume 2026 · {meta.quarter} Report · Website Analytics</div>
       <h1 className="hero-title serif">Quarter <em>{meta.quarterWord}</em></h1>
       <div className="hero-lede-row">
         <div className="hero-lede-meta">
-          <div className="meta-pair">
-            <span className="label">Reporting period</span>
-            <span className="value serif">{meta.rangeLabel}</span>
-          </div>
-          <div className="meta-pair">
-            <span className="label">Source</span>
-            <span className="value serif">GA4 · Squarespace</span>
-          </div>
-          <div className="meta-pair">
-            <span className="label">Property</span>
-            <span className="value serif">integratedstaffing.ca</span>
-          </div>
-          <div className="meta-pair">
-            <span className="label">Generated</span>
-            <span className="value serif">
-              {data.generatedAt ? new Date(data.generatedAt).toLocaleDateString() : "—"}
-            </span>
-          </div>
+          <div className="meta-pair"><span className="label">Reporting period</span><span className="value serif">{meta.rangeLabel}</span></div>
+          <div className="meta-pair"><span className="label">Source</span><span className="value serif">GA4 · Squarespace</span></div>
+          <div className="meta-pair"><span className="label">Property</span><span className="value serif">integratedstaffing.ca</span></div>
+          <div className="meta-pair"><span className="label">Generated</span><span className="value serif">{data.generatedAt ? new Date(data.generatedAt).toLocaleDateString() : "—"}</span></div>
         </div>
         <p className="hero-lede serif">{note}</p>
       </div>
@@ -266,40 +118,30 @@ function Hero({ reportKey, data }) {
   );
 }
 
-// ── KPIs ──────────────────────────────────────────────────────────────
 const KPI_DEFS = [
-  { key: "sessions",            label: "Total Visits",       fmt: fmtInt, note: "all sessions this quarter" },
-  { key: "users",               label: "Unique Users",       fmt: fmtInt, note: "distinct visitors" },
-  { key: "engagementRate",      label: "Engagement Rate",    fmt: fmtPct, note: "meaningful sessions" },
-  { key: "avgEngagementTimeSec",label: "Avg Time on Site",   fmt: fmtTime, note: "active engagement per visit" },
-  { key: "actions",             label: "Candidate Actions",  fmt: fmtInt, note: "high-intent interactions" },
-  { key: "formSubmissions",     label: "Form Submissions",   fmt: fmtInt, note: "completed contact forms" },
+  { key: "sessions",            label: "Total Visits",      fmt: fmtInt,  note: "all sessions this quarter" },
+  { key: "users",               label: "Unique Users",      fmt: fmtInt,  note: "distinct visitors" },
+  { key: "engagementRate",      label: "Engagement Rate",   fmt: fmtPct,  note: "meaningful sessions" },
+  { key: "avgEngagementTimeSec",label: "Avg Time on Site",  fmt: fmtTime, note: "active engagement per visit" },
+  { key: "actions",             label: "Candidate Actions", fmt: fmtInt,  note: "high-intent interactions" },
+  { key: "formSubmissions",     label: "Form Submissions",  fmt: fmtInt,  note: "completed contact forms" },
 ];
 
 function Numbers({ data, prevData }) {
-  const o = data.overall || {};
-  const prev = prevData?.overall || {};
-
+  const o = data.overall || {}, prev = prevData?.overall || {};
   return (
     <section className="section wrap">
-      <header className="section-head">
-        <h2 className="section-title serif">The Numbers</h2>
-      </header>
+      <header className="section-head"><h2 className="section-title serif">The Numbers</h2></header>
       <div className="kpi-grid">
         {KPI_DEFS.map(k => {
           const v = o[k.key];
-          const d = data.deltas?.[k.key]
-            ? parseDelta(data.deltas[k.key])
-            : calcAutoDelta(v, prev[k.key]) || { dir: "flat", pct: 0 };
+          const d = data.deltas?.[k.key] ? parseDelta(data.deltas[k.key]) : calcAutoDelta(v, prev[k.key]) || { dir: "flat", pct: 0 };
           return (
             <div className="kpi" key={k.key}>
               <div className="kpi-label">{k.label}</div>
               <div className="kpi-value num">{k.fmt(v)}</div>
               <div className="kpi-foot">
-                <span className={"delta " + d.dir}>
-                  <span className="arrow serif ital">{arrow(d.dir)}</span>
-                  <span>{d.pct.toFixed(1)}%</span>
-                </span>
+                <span className={"delta " + d.dir}><span className="arrow serif ital">{arrow(d.dir)}</span><span>{d.pct.toFixed(1)}%</span></span>
                 <span className="delta-note">{k.note}</span>
               </div>
             </div>
@@ -310,61 +152,24 @@ function Numbers({ data, prevData }) {
   );
 }
 
-// ── Traffic Channels ──────────────────────────────────────────────────
 function Channels({ data, prevData }) {
-  const channels = data.channels || [];
-  const prevChannels = prevData?.channels || [];
-
-  const prevMap = {};
-  prevChannels.forEach(c => { prevMap[c.name?.toLowerCase()] = c; });
-
+  const channels = data.channels || [], prevChannels = prevData?.channels || [];
+  const prevMap = {}; prevChannels.forEach(c => { prevMap[c.name?.toLowerCase()] = c; });
   return (
     <section className="section wrap">
-      <header className="section-head">
-        <h2 className="section-title serif">Traffic Channels</h2>
-      </header>
-
+      <header className="section-head"><h2 className="section-title serif">Traffic Channels</h2></header>
       <div className="channels">
-        <div className="channel-row-web is-head">
-          <div></div>
-          <div>Channel</div>
-          <div className="col-num">Sessions</div>
-          <div className="col-num">Share</div>
-          <div className="col-num">Eng. Rate</div>
-        </div>
-
+        <div className="channel-row-web is-head"><div></div><div>Channel</div><div className="col-num">Sessions</div><div className="col-num">Share</div><div className="col-num">Eng. Rate</div></div>
         {channels.map((c, i) => {
           const prev = prevMap[c.name?.toLowerCase()] || null;
-          const sessionsDelta = calcAutoDelta(c.sessions, prev?.sessions);
-          const erDelta = calcAutoDelta(c.engagementRate, prev?.engagementRate);
-
+          const sd = calcAutoDelta(c.sessions, prev?.sessions), ed = calcAutoDelta(c.engagementRate, prev?.engagementRate);
           return (
             <div className="channel-row-web" key={c.name}>
               <div className="channel-idx serif ital">{String(i + 1).padStart(2, "0")}</div>
-              <div>
-                <div className="channel-name serif">{c.name}</div>
-              </div>
-              <div className="col-num">
-                <span className="big">{fmtInt(c.sessions)}</span>
-                {sessionsDelta && (
-                  <span className={"delta " + sessionsDelta.dir} style={{ fontSize: 12 }}>
-                    <span className="arrow serif ital">{arrow(sessionsDelta.dir)}</span>
-                    <span>{sessionsDelta.pct.toFixed(1)}%</span>
-                  </span>
-                )}
-              </div>
-              <div className="col-num">
-                <span className="big">{fmtPct(c.shareOfTraffic)}</span>
-              </div>
-              <div className="col-num">
-                <span className="big">{fmtPct(c.engagementRate)}</span>
-                {erDelta && (
-                  <span className={"delta " + erDelta.dir} style={{ fontSize: 12 }}>
-                    <span className="arrow serif ital">{arrow(erDelta.dir)}</span>
-                    <span>{erDelta.pct.toFixed(1)}%</span>
-                  </span>
-                )}
-              </div>
+              <div><div className="channel-name serif">{c.name}</div></div>
+              <div className="col-num"><span className="big">{fmtInt(c.sessions)}</span>{sd && <span className={"delta " + sd.dir} style={{fontSize:12}}><span className="arrow serif ital">{arrow(sd.dir)}</span><span>{sd.pct.toFixed(1)}%</span></span>}</div>
+              <div className="col-num"><span className="big">{fmtPct(c.shareOfTraffic)}</span></div>
+              <div className="col-num"><span className="big">{fmtPct(c.engagementRate)}</span>{ed && <span className={"delta " + ed.dir} style={{fontSize:12}}><span className="arrow serif ital">{arrow(ed.dir)}</span><span>{ed.pct.toFixed(1)}%</span></span>}</div>
             </div>
           );
         })}
@@ -373,57 +178,22 @@ function Channels({ data, prevData }) {
   );
 }
 
-// ── Top Pages ─────────────────────────────────────────────────────────
 function TopPages({ data, prevData }) {
-  const pages = data.topPages || [];
-  const prevPages = prevData?.topPages || [];
-
-  const prevMap = {};
-  prevPages.forEach(p => { prevMap[(p.key || p.name || "").toLowerCase()] = p; });
-
+  const pages = data.topPages || [], prevPages = prevData?.topPages || [];
+  const prevMap = {}; prevPages.forEach(p => { prevMap[(p.key || p.name || "").toLowerCase()] = p; });
   return (
     <section className="section wrap">
-      <header className="section-head">
-        <h2 className="section-title serif">Top Pages</h2>
-      </header>
-
+      <header className="section-head"><h2 className="section-title serif">Top Pages</h2></header>
       <div className="pages-grid" style={{ borderTop: "1px solid var(--rule)", borderLeft: "1px solid var(--rule)" }}>
         {pages.map(p => {
           const prev = prevMap[(p.key || p.name || "").toLowerCase()] || null;
-          const viewsDelta = calcAutoDelta(p.pageViews, prev?.pageViews);
-          const timeDelta = calcAutoDelta(p.avgTimeOnPageSec, prev?.avgTimeOnPageSec);
-
+          const vd = calcAutoDelta(p.pageViews, prev?.pageViews), td = calcAutoDelta(p.avgTimeOnPageSec, prev?.avgTimeOnPageSec);
           return (
             <div className="page-tile" key={p.key}>
               <div className="page-tile-name">{p.key}</div>
-              <div className="page-stat">
-                <div className="page-stat-label">Page Views</div>
-                <div className="page-stat-value">
-                  {fmtInt(p.pageViews)}
-                  {viewsDelta && (
-                    <span className={"delta " + viewsDelta.dir} style={{ fontSize: 13, marginLeft: 8 }}>
-                      <span className="arrow serif ital">{arrow(viewsDelta.dir)}</span>
-                      <span>{viewsDelta.pct.toFixed(1)}%</span>
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="page-stat">
-                <div className="page-stat-label">Bounce Rate</div>
-                <div className="page-stat-value">{fmtPct(p.bounceRate)}</div>
-              </div>
-              <div className="page-stat">
-                <div className="page-stat-label">Avg Time</div>
-                <div className="page-stat-value">
-                  {fmtTime(p.avgTimeOnPageSec)}
-                  {timeDelta && (
-                    <span className={"delta " + timeDelta.dir} style={{ fontSize: 13, marginLeft: 8 }}>
-                      <span className="arrow serif ital">{arrow(timeDelta.dir)}</span>
-                      <span>{timeDelta.pct.toFixed(1)}%</span>
-                    </span>
-                  )}
-                </div>
-              </div>
+              <div className="page-stat"><div className="page-stat-label">Page Views</div><div className="page-stat-value">{fmtInt(p.pageViews)}{vd && <span className={"delta " + vd.dir} style={{fontSize:13,marginLeft:8}}><span className="arrow serif ital">{arrow(vd.dir)}</span><span>{vd.pct.toFixed(1)}%</span></span>}</div></div>
+              <div className="page-stat"><div className="page-stat-label">Bounce Rate</div><div className="page-stat-value">{fmtPct(p.bounceRate)}</div></div>
+              <div className="page-stat"><div className="page-stat-label">Avg Time</div><div className="page-stat-value">{fmtTime(p.avgTimeOnPageSec)}{td && <span className={"delta " + td.dir} style={{fontSize:13,marginLeft:8}}><span className="arrow serif ital">{arrow(td.dir)}</span><span>{td.pct.toFixed(1)}%</span></span>}</div></div>
             </div>
           );
         })}
@@ -432,34 +202,23 @@ function TopPages({ data, prevData }) {
   );
 }
 
-// ── Insights ──────────────────────────────────────────────────────────
 function Notes({ data }) {
   const ins = data.insights || {};
-  const toList = (v) => {
-    if (Array.isArray(v)) return v;
-    if (typeof v === "string" && v.trim()) return v.split("\n\n").filter(Boolean);
-    return ["No notes yet."];
-  };
-
+  const toList = v => Array.isArray(v) ? v : typeof v === "string" && v.trim() ? v.split("\n\n").filter(Boolean) : ["No notes yet."];
   const sections = [
     { key: "working",    label: "Working",      sub: "momentum to preserve", cls: "working" },
     { key: "notWorking", label: "Not working",  sub: "habits to break",      cls: "notworking" },
     { key: "actions",    label: "Actions",      sub: "this quarter",         cls: "" },
     { key: "next",       label: "Next quarter", sub: "Q4 priorities",        cls: "" },
   ];
-
   return (
     <section className="section wrap">
-      <header className="section-head">
-        <h2 className="section-title serif">Editor's Notes</h2>
-      </header>
+      <header className="section-head"><h2 className="section-title serif">Editor's Notes</h2></header>
       <div className="notes">
         {sections.map(s => (
           <div className={"note " + s.cls} key={s.key}>
             <h4>{s.label} <em className="serif ital">— {s.sub}</em></h4>
-            <ul>
-              {toList(ins[s.key]).map((n, i) => <li key={i}>{n}</li>)}
-            </ul>
+            <ul>{toList(ins[s.key]).map((n, i) => <li key={i}>{n}</li>)}</ul>
           </div>
         ))}
       </div>
@@ -467,29 +226,22 @@ function Notes({ data }) {
   );
 }
 
-// ── Colophon ──────────────────────────────────────────────────────────
 function Colophon({ reportKey }) {
   const meta = REPORT_META[reportKey] || REPORT_META.webq3;
   return (
     <footer className="wrap colophon">
-      <div className="left serif">
-        Integrated Staffing — Quarterly Website Report.<br />
-        {meta.quarter} 2026, {meta.rangeLabel}.
-      </div>
-      <div className="right">
-        <div className="upper">Internal — Do Not Distribute</div>
-        <div style={{ marginTop: 8 }}>Generated {new Date().toLocaleDateString()}</div>
-      </div>
+      <div className="left serif">Integrated Staffing — Quarterly Website Report.<br />{meta.quarter} 2026, {meta.rangeLabel}.</div>
+      <div className="right"><div className="upper">Internal — Do Not Distribute</div><div style={{ marginTop: 8 }}>Generated {new Date().toLocaleDateString()}</div></div>
     </footer>
   );
 }
 
-// ── App ───────────────────────────────────────────────────────────────
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const [data, setData] = useState(null);
   const [prevData, setPrevData] = useState(null);
   const reportKey = getReportKey();
+  const meta = REPORT_META[reportKey] || REPORT_META.webq3;
 
   useEffect(() => {
     document.body.setAttribute("data-layout", t.layout);
@@ -497,84 +249,24 @@ function App() {
   }, [t.layout, t.density]);
 
   useEffect(() => {
+    renderNav("web", { key: reportKey, label: meta.quarter, rangeLabel: meta.rangeLabel });
+  }, [reportKey]);
+
+  useEffect(() => {
     (async () => {
       try {
         const current = await fetchReport(reportKey);
         setData(current);
         const prevKey = getPrevKey(reportKey);
-        if (prevKey) {
-          try {
-            const prev = await fetchReport(prevKey);
-            setPrevData(prev);
-          } catch {}
-        }
-      } catch (err) {
-        console.error(err);
-      }
+        if (prevKey) { try { setPrevData(await fetchReport(prevKey)); } catch {} }
+      } catch (err) { console.error(err); }
     })();
   }, [reportKey]);
 
-if (!data) return (
-    <div style={{
-      position: "fixed",
-      inset: 0,
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: "32px",
-      background: "var(--paper)"
-    }}>
-      <div style={{
-        fontFamily: "var(--serif)",
-        fontSize: "clamp(32px, 5vw, 56px)",
-        letterSpacing: "-0.02em",
-        color: "var(--ink)",
-        animation: "pulse 2s ease-in-out infinite"
-      }}>
-        Integrated <em style={{ fontStyle: "italic", color: "var(--isl-blue)" }}>Staffing</em>
-      </div>
-      <div style={{
-        width: "120px",
-        height: "1px",
-        background: "var(--rule)",
-        position: "relative",
-        overflow: "hidden"
-      }}>
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          background: "var(--ink)",
-          animation: "scan 1.4s ease-in-out infinite"
-        }} />
-      </div>
-      <div style={{
-        fontFamily: "var(--sans)",
-        fontSize: "11px",
-        letterSpacing: "0.18em",
-        textTransform: "uppercase",
-        color: "var(--ink-4)",
-        animation: "pulse 2s ease-in-out infinite"
-      }}>
-        Loading report
-      </div>
-      <style>{`
-        @keyframes scan {
-          0%   { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50%       { opacity: 0.5; }
-        }
-      `}</style>
-    </div>
-  );
+  if (!data) return null;
 
   return (
     <React.Fragment>
-      <Masthead reportKey={reportKey} />
-      <MastNav reportKey={reportKey} />
       <main>
         <Hero reportKey={reportKey} data={data} />
         <Numbers data={data} prevData={prevData} />
@@ -583,29 +275,10 @@ if (!data) return (
         <Notes data={data} />
       </main>
       <Colophon reportKey={reportKey} />
-
       <TweaksPanel title="Tweaks">
         <TweakSection title="Layout">
-          <TweakRadio
-            label="Mode"
-            value={t.layout}
-            onChange={v => setTweak("layout", v)}
-            options={[
-              { value: "editorial", label: "Editorial" },
-              { value: "apple",     label: "Apple" },
-              { value: "document",  label: "Document" }
-            ]}
-          />
-          <TweakRadio
-            label="Density"
-            value={t.density}
-            onChange={v => setTweak("density", v)}
-            options={[
-              { value: "airy",     label: "Airy" },
-              { value: "balanced", label: "Balanced" },
-              { value: "tight",    label: "Tight" }
-            ]}
-          />
+          <TweakRadio label="Mode" value={t.layout} onChange={v => setTweak("layout", v)} options={[{value:"editorial",label:"Editorial"},{value:"apple",label:"Apple"},{value:"document",label:"Document"}]} />
+          <TweakRadio label="Density" value={t.density} onChange={v => setTweak("density", v)} options={[{value:"airy",label:"Airy"},{value:"balanced",label:"Balanced"},{value:"tight",label:"Tight"}]} />
         </TweakSection>
       </TweaksPanel>
     </React.Fragment>
