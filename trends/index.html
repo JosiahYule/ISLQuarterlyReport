@@ -245,28 +245,52 @@
   <div class="loading-label">Loading trends</div>
 </div>
 
-<!-- Masthead -->
-<header class="masthead">
-  <div class="wrap masthead-row">
-    <div class="masthead-left">
-      <div class="masthead-mark serif">Integrated <em>Staffing</em></div>
-    </div>
-  </div>
-</header>
+<div id="nav-root"></div>
 
-<!-- Nav -->
-<div class="masthead-nav">
-  <div class="wrap masthead-nav-row">
-    <nav class="nav-tabs">
-      <a href="/">Social Media</a>
-      <a href="/web/">Website</a>
-      <a href="/trends/" class="is-active">Trends</a>
-    </nav>
-    <div class="nav-meta">
-      <span>Q1 · Q2 · Q3</span>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+function Masthead() {
+  return (
+    <header className="masthead">
+      <div className="wrap masthead-row">
+        <div className="masthead-left">
+          <div className="masthead-mark serif">Integrated <em>Staffing</em></div>
+          <div className="masthead-sub">Quarterly Marketing Report</div>
+        </div>
+        <div className="masthead-right">
+          <span>Josiah Yule</span>
+          <span className="issue serif ital">Trends</span>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function MastNav() {
+  return (
+    <div className="masthead-nav">
+      <div className="wrap masthead-nav-row">
+        <nav className="nav-tabs">
+          <a href="/">Social Media</a>
+          <a href="/web/">Website</a>
+          <a href="/trends/" className="is-active">Trends</a>
+        </nav>
+        <div className="nav-meta">
+          <span>Q1 · Q2 · Q3</span>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("nav-root")).render(
+  <><Masthead /><MastNav /></>
+);
+</script>
 
 <!-- Page -->
 <div class="trends-wrap">
