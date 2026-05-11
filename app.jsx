@@ -435,7 +435,7 @@ function Platforms({ data }) {
           <div className="col-num">Engagement Rate</div>
           <div className="col-num">Page Reach</div>
           <div className="col-num hide-apple">Page Clicks</div>
-          <div className="col-num">Trend</div>
+          <div className="col-num">Trends</div>
         </div>
         {data.platforms.map((p, i) =>
         <div className="channel-row" key={p.key}>
