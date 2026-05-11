@@ -53,7 +53,28 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .num   { font-variant-numeric: tabular-nums lining-nums; }
 .upper { text-transform: uppercase; letter-spacing: 0.14em; font-size: 11px; font-weight: 500; color: var(--ink-3); }
 
-.wrap { max-width: var(--col); margin: 0 auto; padding: 0 32px; }
+.wrap { max-width: var(--col); margin: 0 auto; padding: 0 40px; }
+
+/* Match trends page horizontal rhythm so left edge aligns consistently across views */
+@media (max-width: 768px) {
+  .wrap { padding: 0 24px; }
+}
+
+/* Use a single outer content wrapper like trends page, then flatten nested .wrap blocks */
+.report-wrap {
+  max-width: var(--col);
+  margin: 0 auto;
+  padding: 48px 40px 0;
+}
+.report-wrap > .wrap {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+/* Keep section internals edge-aligned with trends-style outer wrapper. */
+@media (max-width: 768px) {
+  .report-wrap { padding: 32px 24px 0; }
+}
 
 /* ============= LOADING SCREEN ============= */
 .loading-screen {
