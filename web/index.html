@@ -513,9 +513,60 @@ function App() {
     })();
   }, [reportKey]);
 
-  if (!data) return (
-    <div style={{ padding: "80px 32px", fontFamily: "var(--serif)", fontSize: "24px" }}>
-      Loading…
+if (!data) return (
+    <div style={{
+      position: "fixed",
+      inset: 0,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "32px",
+      background: "var(--paper)"
+    }}>
+      <div style={{
+        fontFamily: "var(--serif)",
+        fontSize: "clamp(32px, 5vw, 56px)",
+        letterSpacing: "-0.02em",
+        color: "var(--ink)",
+        animation: "pulse 2s ease-in-out infinite"
+      }}>
+        Integrated <em style={{ fontStyle: "italic", color: "var(--isl-blue)" }}>Staffing</em>
+      </div>
+      <div style={{
+        width: "120px",
+        height: "1px",
+        background: "var(--rule)",
+        position: "relative",
+        overflow: "hidden"
+      }}>
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          background: "var(--ink)",
+          animation: "scan 1.4s ease-in-out infinite"
+        }} />
+      </div>
+      <div style={{
+        fontFamily: "var(--sans)",
+        fontSize: "11px",
+        letterSpacing: "0.18em",
+        textTransform: "uppercase",
+        color: "var(--ink-4)",
+        animation: "pulse 2s ease-in-out infinite"
+      }}>
+        Loading report
+      </div>
+      <style>{`
+        @keyframes scan {
+          0%   { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50%       { opacity: 0.5; }
+        }
+      `}</style>
     </div>
   );
 
