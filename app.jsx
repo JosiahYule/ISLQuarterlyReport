@@ -178,12 +178,11 @@ const params = new URLSearchParams(window.location.search);
 function Masthead({ data }) {
   return (
     <header className="masthead">
-      <div className="wrap masthead-row">
+      <div className="wrap masthead-row" style={{ padding: "0 0px" }}>
         <div className="masthead-left">
           <div className="masthead-mark serif">
             Integrated <em>Staffing</em>
           </div>
-          <div className="masthead-sub">Quarterly Marketing Report</div>
         </div>
       </div>
     </header>);
