@@ -404,7 +404,7 @@ async function loadAndRender(){
     const missing=QUARTERS.filter((_,i)=>!qdata[i]).map(q=>q.label);
     const eb=$("errorBar");
     if(eb){ if(missing.length){ eb.textContent=`Could not load data for: ${missing.join(", ")}.`; eb.classList.add("show"); } else eb.classList.remove("show"); }
-    renderProjCards(qdata,q3comp,q3done); renderCharts(qdata,q3comp,q3done); storeSnapshot(qdata[2]); setLastUpdated();
+    renderProjCards(qdata,q3comp,q3done); renderCharts(qdata,q3comp,q3done); storeSnapshot(qdata[2]); setLastUpdated(); if(typeof hideLoadingScreen==="function") hideLoadingScreen();
   }catch(err){ const eb=$("errorBar"); if(eb){ eb.textContent=`Error: ${err.message}`; eb.classList.add("show"); } }
   finally{ isLoading=false; if(btn) btn.disabled=false; }
 }

@@ -55,6 +55,47 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 .wrap { max-width: var(--col); margin: 0 auto; padding: 0 32px; }
 
+/* ============= LOADING SCREEN ============= */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  background: var(--paper);
+  z-index: 999;
+  transition: opacity 0.5s ease;
+}
+.loading-screen.is-gone { opacity: 0; pointer-events: none; }
+.loading-wordmark {
+  font-family: var(--serif);
+  font-size: clamp(32px, 5vw, 56px);
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  animation: loadPulse 2s ease-in-out infinite;
+}
+.loading-wordmark em { font-style: italic; color: var(--isl-blue); }
+.loading-track {
+  width: 120px; height: 1px;
+  background: var(--rule);
+  position: relative; overflow: hidden;
+}
+.loading-fill {
+  position: absolute; inset: 0;
+  background: var(--ink);
+  animation: loadScan 1.4s ease-in-out infinite;
+}
+.loading-label {
+  font-family: var(--sans);
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--ink-4);
+  animation: loadPulse 2s ease-in-out infinite;
+}
+@keyframes loadScan  { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+@keyframes loadPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
 /* ============= MASTHEAD ============= */
 .masthead {
   border-bottom: 1px solid var(--rule);

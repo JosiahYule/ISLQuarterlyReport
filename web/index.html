@@ -253,6 +253,10 @@ function App() {
   }, [reportKey]);
 
   useEffect(() => {
+    if (data) hideLoadingScreen();
+  }, [data]);
+
+  useEffect(() => {
     (async () => {
       try {
         const current = await fetchReport(reportKey);

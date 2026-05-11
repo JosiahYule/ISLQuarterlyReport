@@ -97,3 +97,11 @@ function renderNav(active, quarter, onQuarter) {
     </>
   );
 }
+
+// Call after page content is ready to fade out the loading screen.
+function hideLoadingScreen() {
+  const el = document.getElementById("loadingScreen");
+  if (!el) return;
+  el.classList.add("is-gone");
+  setTimeout(() => el.remove(), 500);
+}
