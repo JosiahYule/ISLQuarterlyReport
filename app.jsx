@@ -1,4 +1,4 @@
-// ISL Quarterly Report — Q2 2026 (Organic Social Media)
+// ISL Quarterly Report — Organic Social Media
 // Editorial design with Tweaks for layout & density variants
 
 const { useState, useEffect, useMemo, useRef } = React;
@@ -24,13 +24,10 @@ const fmt = (n) => {
 };
 const fmtExact = (n) => n.toLocaleString();
 const fmtPct = (n) => n.toFixed(2) + "%";
-
-function arrow(dir) {return dir === "up" ? "↑" : dir === "down" ? "↓" : "—";}
+function arrow(dir) { return dir === "up" ? "↑" : dir === "down" ? "↓" : "—"; }
 
 // =================================================================
-// Delta parser — accepts either the new { dir, pct } object
-// OR the production string format like "▲ 12.7%" / "▼ 5.2%" / "— 0.0%".
-// normalizeReport() runs once on the payload before mounting.
+// Delta parser
 // =================================================================
 function parseDelta(d) {
   if (d == null) return { dir: "flat", pct: 0 };
@@ -39,16 +36,18 @@ function parseDelta(d) {
   if (typeof d !== "string") return { dir: "flat", pct: 0 };
   const s = d.trim();
   let dir = "flat";
-  if (/^[▲↑]/.test(s) || /\bup\b/i.test(s)) dir = "up";else
-  if (/^[▼↓]/.test(s) || /\bdown\b/i.test(s)) dir = "down";
+  if (/^[▲↑]/.test(s) || /\bup\b/i.test(s)) dir = "up";
+  else if (/^[▼↓]/.test(s) || /\bdown\b/i.test(s)) dir = "down";
   const m = s.match(/-?\d+(\.\d+)?/);
-  const pct = m ? Math.abs(parseFloat(m[0])) : 0;
-  return { dir, pct };
+  return { dir, pct: m ? Math.abs(parseFloat(m[0])) : 0 };
 }
+
+// =================================================================
+// normalizeReport
+// =================================================================
 function normalizeReport(r) {
   if (!r) return r;
 
-  // If it's already in the expected shape, just parse deltas and return
   if (r.overall && r.platforms) {
     if (r.deltas) {
       const out = {};
@@ -61,115 +60,118 @@ function normalizeReport(r) {
         followersDelta: parseDelta(p.followersDelta),
         engagementRateDelta: parseDelta(p.engagementRateDelta),
         pageReachDelta: parseDelta(p.pageReachDelta),
-        pageClicksDelta: parseDelta(p.pageClicksDelta)
+        pageClicksDelta: parseDelta(p.pageClicksDelta),
       }));
     }
     return r;
   }
 
-  // --- Translate from Apps Script shape ---
-
-  // Quarter totals → overall + deltas
-  const overall = {};
-  const deltas = {};
-  const keyMap = {
-    posts: "posts",
-    impressions: "impressions",
-    shares: "shares",
-    reactions: "reactions",
-    followers: "followers",
-    linkClicks: "linkclicks",
-    comments: "comments",
-    avgEngagementRate: "avgengagementrate"
-  };
+  const overall = {}, deltas = {};
+  const keyMap = { posts:"posts", impressions:"impressions", shares:"shares", reactions:"reactions", followers:"followers", linkClicks:"linkclicks", comments:"comments", avgEngagementRate:"avgengagementrate" };
   (r.quarterTotals || []).forEach((row) => {
     const mapped = keyMap[row.field] || row.field.toLowerCase();
     overall[mapped] = row.value;
     deltas[mapped] = parseDelta(row.delta);
   });
 
-  // Platform breakdown → platforms array
   const platforms = (r.platformBreakdown || []).map((p) => ({
-    key: p.Platform.toLowerCase(),
-    name: p.Platform,
-    followers: p.Followers,
-    followersDelta: parseDelta(p["Followers Δ"]),
-    engagementRate: p["Engagement Rate"],
-    engagementRateDelta: parseDelta(p["ER Δ"]),
-    pageReach: p.Reach,
-    pageReachDelta: parseDelta(p["Reach Δ"]),
-    pageClicks: p.Clicks,
-    pageClicksDelta: parseDelta(p["Clicks Δ"]),
-    note: ""
+    key: p.Platform.toLowerCase(), name: p.Platform,
+    followers: p.Followers, followersDelta: parseDelta(p["Followers Δ"]),
+    engagementRate: p["Engagement Rate"], engagementRateDelta: parseDelta(p["ER Δ"]),
+    pageReach: p.Reach, pageReachDelta: parseDelta(p["Reach Δ"]),
+    pageClicks: p.Clicks, pageClicksDelta: parseDelta(p["Clicks Δ"]),
+    note: "",
   }));
 
-  // Top posts → grouped by platform
   const topPostsByPlatform = { linkedin: [], facebook: [], instagram: [] };
   (r.topPosts || []).forEach((p) => {
     const key = (p.Platform || "").toLowerCase();
     if (topPostsByPlatform[key] && p.Title) {
-      topPostsByPlatform[key].push({
-        title: p.Title,
-        impressions: p.Impressions || 0,
-        likes: p.Likes || 0,
-        shares: p.Shares || 0,
-        flag: ""
-      });
+      topPostsByPlatform[key].push({ title: p.Title, impressions: p.Impressions || 0, likes: p.Likes || 0, shares: p.Shares || 0, flag: "" });
     }
   });
 
-  // Insights → notes (convert strings to arrays)
   const insightMap = {};
-  (r.insights || []).forEach((i) => {
-    insightMap[i.Section] = i.Text;
-  });
+  (r.insights || []).forEach((i) => { insightMap[i.Section] = i.Text; });
   const notes = {
-    working: insightMap.working ? [insightMap.working] : ["No notes yet."],
+    working:    insightMap.working    ? [insightMap.working]    : ["No notes yet."],
     notWorking: insightMap.notWorking ? [insightMap.notWorking] : ["No notes yet."],
-    actions: insightMap.actions ? [insightMap.actions] : ["No notes yet."],
-    next: insightMap.next ? [insightMap.next] : ["No notes yet."]
+    actions:    insightMap.actions    ? [insightMap.actions]    : ["No notes yet."],
+    next:       insightMap.next       ? [insightMap.next]       : ["No notes yet."],
   };
 
-const weekly = Array.from({ length: 13 }, (_, i) => ({
-  wk: i + 1,
-  imp: 0,
-  leads: 0,
-  spend: 0
-}));
+  const weekly = Array.from({ length: 13 }, (_, i) => ({ wk: i + 1, imp: 0, leads: 0, spend: 0 }));
 
-  // Meta
-const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(window.location.search);
   const reportKey = params.get("report") || "islq3";
-
   const REPORT_META = {
     islq1: { quarter: "Q1", quarterWord: "One",   year: "2026", rangeLabel: "Sep – Nov 2025", issue: "1" },
     islq2: { quarter: "Q2", quarterWord: "Two",   year: "2026", rangeLabel: "Dec – Feb 2026", issue: "2" },
     islq3: { quarter: "Q3", quarterWord: "Three", year: "2026", rangeLabel: "Mar – May 2026", issue: "3" },
   };
-
   const reportMeta = REPORT_META[reportKey] || REPORT_META["islq3"];
-
   const meta = {
-    quarter: reportMeta.quarter,
-    quarterWord: reportMeta.quarterWord,
-    year: reportMeta.year,
-    rangeLabel: reportMeta.rangeLabel,
+    quarter: reportMeta.quarter, quarterWord: reportMeta.quarterWord,
+    year: reportMeta.year, rangeLabel: reportMeta.rangeLabel,
     generatedLabel: r.generatedAt ? new Date(r.generatedAt).toLocaleDateString() : "",
-    author: "Josiah Yule",
-    issue: reportMeta.issue
+    author: "Josiah Yule", issue: reportMeta.issue,
   };
 
-  return {
-    meta,
-    editorsNote: insightMap.editorsNote || insightMap.working || "No editor's note yet.",
-    overall,
-    deltas,
-    platforms,
-    topPostsByPlatform,
-    notes,
-    weekly,
-    allPosts: r.allPosts || []
-  };
+  return { meta, editorsNote: insightMap.editorsNote || insightMap.working || "No editor's note yet.", overall, deltas, platforms, topPostsByPlatform, notes, weekly, allPosts: r.allPosts || [] };
+}
+
+// =================================================================
+// Masthead + Nav
+// =================================================================
+function Masthead({ data }) {
+  return (
+    <header className="masthead">
+      <div className="wrap masthead-row">
+        <div className="masthead-left">
+          <div className="masthead-mark serif">Integrated <em>Staffing</em></div>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function MastNav({ data }) {
+  const params = new URLSearchParams(window.location.search);
+  const reportKey = params.get("report") || "islq3";
+  const [open, setOpen] = useState(false);
+  const ref = useRef();
+  useEffect(() => {
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, []);
+
+  return (
+    <div className="masthead-nav">
+      <div className="wrap masthead-nav-row">
+        <nav className="nav-tabs">
+          <a href="/" className="is-active">Social Media</a>
+          <a href="/web/">Website</a>
+          <a href="/trends/">Trends</a>
+        </nav>
+        <div className="nav-meta">
+          <span>{data.meta.rangeLabel}</span>
+          <div ref={ref} style={{ position: "relative" }}>
+            <button className="qchooser" onClick={() => setOpen(!open)}>
+              <span>2026 · {reportKey === "islq1" ? "Q1" : reportKey === "islq2" ? "Q2" : "Q3"}</span>
+              <span className="caret">▾</span>
+            </button>
+            <div className={"menu" + (open ? " is-open" : "")}>
+              <div className="group">2026</div>
+              <a href="?report=islq3" className={!window.location.search || window.location.search.includes("islq3") ? "active" : ""}>Q3 — Mar–May 2026</a>
+              <a href="?report=islq2" className={window.location.search.includes("islq2") ? "active" : ""}>Q2 — Dec–Feb 2026</a>
+              <a href="?report=islq1" className={window.location.search.includes("islq1") ? "active" : ""}>Q1 — Sep–Nov 2025</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // =================================================================
@@ -179,58 +181,45 @@ function Hero({ data }) {
   return (
     <section className="hero wrap" data-screen-label="01 Hero">
       <div className="hero-kicker">{data.meta.quarter} Report · Social Media</div>
-      <h1 className="hero-title serif" style={{ fontWeight: "100", fontFamily: "\"Instrument Serif\"" }}>
+      <h1 className="hero-title serif" style={{ fontWeight: "100", fontFamily: '"Instrument Serif"' }}>
         Quarter <em>{data.meta.quarterWord}</em>
       </h1>
       <div className="hero-lede-row">
         <div className="hero-lede-meta">
-          <div className="meta-pair">
-            <span className="label">Reporting period</span>
-            <span className="value serif">{data.meta.rangeLabel}</span>
-          </div>
-          <div className="meta-pair">
-            <span className="label">Generated</span>
-            <span className="value serif">{data.meta.generatedLabel}</span>
-          </div>
-          <div className="meta-pair">
-            <span className="label">Prepared by</span>
-            <span className="value serif">{data.meta.author}</span>
-          </div>
+          <div className="meta-pair"><span className="label">Reporting period</span><span className="value serif">{data.meta.rangeLabel}</span></div>
+          <div className="meta-pair"><span className="label">Generated</span><span className="value serif">{data.meta.generatedLabel}</span></div>
+          <div className="meta-pair"><span className="label">Prepared by</span><span className="value serif">{data.meta.author}</span></div>
         </div>
         <p className="hero-lede serif">
           {data.editorsNote.split(/(\bLinkedIn\b|\bFacebook\b|\bInstagram\b)/).map((part, i) =>
-          part === "LinkedIn" || part === "Facebook" || part === "Instagram" ?
-          <em key={i}>{part}</em> :
-          <React.Fragment key={i}>{part}</React.Fragment>
+            part === "LinkedIn" || part === "Facebook" || part === "Instagram"
+              ? <em key={i}>{part}</em>
+              : <React.Fragment key={i}>{part}</React.Fragment>
           )}
         </p>
       </div>
-    </section>);
-
+    </section>
+  );
 }
 
 // =================================================================
-// The Numbers (KPIs) — matches production: Posts, Impressions, Shares,
-// Reactions, Followers, Link Clicks, Comments, Avg Engagement Rate
+// Numbers (KPIs)
 // =================================================================
 const KPI_DEFS = [
-{ key: "posts", label: "Posts Published", fmt: fmtExact, note: "across all platforms" },
-{ key: "impressions", label: "Impressions", fmt: fmt, note: "total reach served" },
-{ key: "shares", label: "Shares", fmt: fmtExact, note: "amplification by audience" },
-{ key: "reactions", label: "Reactions", fmt: fmtExact, note: "likes + reactions" },
-{ key: "followers", label: "Followers", fmt: fmtExact, note: "combined audience" },
-{ key: "linkclicks", label: "Link Clicks", fmt: fmtExact, note: "engagement with posts" },
-{ key: "comments", label: "Comments", fmt: fmtExact, note: "depth of conversation" },
-{ key: "avgengagementrate", label: "Avg Engagement Rate", fmt: (v) => v.toFixed(2) + "%", note: "blended across posts" }];
-
+  { key: "posts",            label: "Posts Published",    fmt: fmtExact,                       note: "across all platforms" },
+  { key: "impressions",      label: "Impressions",        fmt: fmt,                             note: "total reach served" },
+  { key: "shares",           label: "Shares",             fmt: fmtExact,                       note: "amplification by audience" },
+  { key: "reactions",        label: "Reactions",          fmt: fmtExact,                       note: "likes + reactions" },
+  { key: "followers",        label: "Followers",          fmt: fmtExact,                       note: "combined audience" },
+  { key: "linkclicks",       label: "Link Clicks",        fmt: fmtExact,                       note: "engagement with posts" },
+  { key: "comments",         label: "Comments",           fmt: fmtExact,                       note: "depth of conversation" },
+  { key: "avgengagementrate",label: "Avg Engagement Rate",fmt: (v) => v.toFixed(2) + "%",      note: "blended across posts" },
+];
 
 function Numbers({ data }) {
   return (
     <section className="section wrap" data-screen-label="02 Numbers">
-      <header className="section-head">
-        <h2 className="section-title serif">The Numbers</h2>
-      </header>
-
+      <header className="section-head"><h2 className="section-title serif">The Numbers</h2></header>
       <div className="kpi-grid">
         {KPI_DEFS.map((k) => {
           const v = data.overall[k.key];
@@ -240,96 +229,59 @@ function Numbers({ data }) {
               <div className="kpi-label">{k.label}</div>
               <div className="kpi-value num">{k.fmt(v)}</div>
               <div className="kpi-foot">
-                <span className={"delta " + d.dir}>
-                  <span className="arrow serif ital">{arrow(d.dir)}</span>
-                  <span>{d.pct.toFixed(1)}%</span>
-                </span>
+                <span className={"delta " + d.dir}><span className="arrow serif ital">{arrow(d.dir)}</span><span>{d.pct.toFixed(1)}%</span></span>
                 <span className="delta-note">{k.note}</span>
               </div>
-            </div>);
-
+            </div>
+          );
         })}
       </div>
-    </section>);
-
+    </section>
+  );
 }
 
 // =================================================================
-// Trend Chart — custom SVG, editorial
+// Trend Chart
 // =================================================================
 function TrendChart({ data, metric = "impressions" }) {
-  const w = 1100,h = 320;
-  const padL = 56,padR = 20,padT = 30,padB = 40;
-
-  const series = useMemo(() => {
-    return {
-      labels: data.weekly.map((d) => d.wk),
-      lines: {
-        impressions: { name: "Impressions (K)", values: data.weekly.map((d) => d.imp), color: "var(--isl-blue)", unit: "K" },
-        engagements: { name: "Engagements", values: data.weekly.map((d) => d.leads), color: "var(--ink)", unit: "" },
-        linkclicks: { name: "Link Clicks", values: data.weekly.map((d) => d.spend), color: "var(--ink-3)", unit: "" }
-      }
-    };
-  }, [data]);
+  const w = 1100, h = 320, padL = 56, padR = 20, padT = 30, padB = 40;
+  const series = useMemo(() => ({
+    labels: data.weekly.map((d) => d.wk),
+    lines: {
+      impressions: { name: "Impressions (K)", values: data.weekly.map((d) => d.imp), color: "var(--isl-blue)", unit: "K" },
+      engagements: { name: "Engagements",     values: data.weekly.map((d) => d.leads), color: "var(--ink)",     unit: "" },
+      linkclicks:  { name: "Link Clicks",     values: data.weekly.map((d) => d.spend), color: "var(--ink-3)",   unit: "" },
+    },
+  }), [data]);
 
   const active = series.lines[metric] || series.lines.impressions;
-  const max = Math.max(...active.values) * 1.15;
-  const min = 0;
+  const max = Math.max(...active.values) * 1.15, min = 0;
   const xStep = (w - padL - padR) / (active.values.length - 1);
-  const points = active.values.map((v, i) => [
-  padL + i * xStep,
-  padT + (h - padT - padB) * (1 - (v - min) / (max - min))]
-  );
+  const points = active.values.map((v, i) => [padL + i * xStep, padT + (h - padT - padB) * (1 - (v - min) / (max - min))]);
   const path = points.map((p, i) => (i === 0 ? "M" : "L") + p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ");
   const areaPath = path + ` L${points[points.length - 1][0]},${h - padB} L${points[0][0]},${h - padB} Z`;
-
-  const ticks = [0, 0.25, 0.5, 0.75, 1].map((t) => ({
-    v: min + (max - min) * t,
-    y: padT + (h - padT - padB) * (1 - t)
-  }));
-
+  const ticks = [0, 0.25, 0.5, 0.75, 1].map((t) => ({ v: min + (max - min) * t, y: padT + (h - padT - padB) * (1 - t) }));
   const avg = active.values.reduce((a, b) => a + b, 0) / active.values.length;
   const peakIdx = active.values.indexOf(Math.max(...active.values));
 
   return (
     <svg className="trend-chart" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="xMidYMid meet">
-      {ticks.map((t, i) =>
-      <g key={i}>
-          <line x1={padL} x2={w - padR} y1={t.y} y2={t.y} stroke="var(--rule-soft)" strokeWidth="1" />
-          <text x={padL - 12} y={t.y + 4} textAnchor="end" fontSize="11" fill="var(--ink-4)" fontFamily="var(--sans)">
-            {t.v < 10 ? t.v.toFixed(1) : Math.round(t.v)}{active.unit}
-          </text>
-        </g>
-      )}
+      {ticks.map((t, i) => <g key={i}>
+        <line x1={padL} x2={w - padR} y1={t.y} y2={t.y} stroke="var(--rule-soft)" strokeWidth="1" />
+        <text x={padL - 12} y={t.y + 4} textAnchor="end" fontSize="11" fill="var(--ink-4)" fontFamily="var(--sans)">{t.v < 10 ? t.v.toFixed(1) : Math.round(t.v)}{active.unit}</text>
+      </g>)}
       <line x1={padL} x2={w - padR} y1={h - padB} y2={h - padB} stroke="var(--ink)" strokeWidth="1" />
       <path d={areaPath} fill={active.color} opacity="0.06" />
       <path d={path} fill="none" stroke={active.color} strokeWidth="1.5" />
-      {points.map((p, i) =>
-      <g key={i}>
-          <circle cx={p[0]} cy={p[1]} r={i === peakIdx ? 4 : 2.5} fill="var(--paper)" stroke={active.color} strokeWidth="1.5" />
-          {i === peakIdx &&
-        <text x={p[0]} y={p[1] - 14} textAnchor="middle" fontFamily="var(--serif)" fontStyle="italic" fontSize="14" fill="var(--isl-blue)">
-              peak — {active.values[i] < 10 ? active.values[i].toFixed(1) : active.values[i]}{active.unit}
-            </text>
-        }
-        </g>
-      )}
-      {series.labels.map((l, i) =>
-      <text key={l} x={padL + i * xStep} y={h - padB + 18} textAnchor="middle" fontSize="11" fill="var(--ink-3)" fontFamily="var(--sans)">
-          {l}
-        </text>
-      )}
-      <line
-        x1={padL} x2={w - padR}
-        y1={padT + (h - padT - padB) * (1 - (avg - min) / (max - min))}
-        y2={padT + (h - padT - padB) * (1 - (avg - min) / (max - min))}
-        stroke="var(--ink-4)" strokeWidth="1" strokeDasharray="2 4" />
-      
-      <text x={w - padR} y={padT + (h - padT - padB) * (1 - (avg - min) / (max - min)) - 6} textAnchor="end" fontSize="11" fill="var(--ink-4)" fontFamily="var(--sans)">
-        avg {avg < 10 ? avg.toFixed(1) : Math.round(avg)}{active.unit}
-      </text>
-    </svg>);
-
+      {points.map((p, i) => <g key={i}>
+        <circle cx={p[0]} cy={p[1]} r={i === peakIdx ? 4 : 2.5} fill="var(--paper)" stroke={active.color} strokeWidth="1.5" />
+        {i === peakIdx && <text x={p[0]} y={p[1] - 14} textAnchor="middle" fontFamily="var(--serif)" fontStyle="italic" fontSize="14" fill="var(--isl-blue)">peak — {active.values[i] < 10 ? active.values[i].toFixed(1) : active.values[i]}{active.unit}</text>}
+      </g>)}
+      {series.labels.map((l, i) => <text key={l} x={padL + i * xStep} y={h - padB + 18} textAnchor="middle" fontSize="11" fill="var(--ink-3)" fontFamily="var(--sans)">{l}</text>)}
+      <line x1={padL} x2={w - padR} y1={padT + (h - padT - padB) * (1 - (avg - min) / (max - min))} y2={padT + (h - padT - padB) * (1 - (avg - min) / (max - min))} stroke="var(--ink-4)" strokeWidth="1" strokeDasharray="2 4" />
+      <text x={w - padR} y={padT + (h - padT - padB) * (1 - (avg - min) / (max - min)) - 6} textAnchor="end" fontSize="11" fill="var(--ink-4)" fontFamily="var(--sans)">avg {avg < 10 ? avg.toFixed(1) : Math.round(avg)}{active.unit}</text>
+    </svg>
+  );
 }
 
 function Trend({ data, metric, setMetric }) {
@@ -338,27 +290,22 @@ function Trend({ data, metric, setMetric }) {
     const lines = {
       impressions: { vals: data.weekly.map((w) => w.imp), color: "var(--isl-blue)", unit: "K" },
       engagements: { vals: data.weekly.map((w) => w.leads), color: "var(--ink)", unit: "" },
-      linkclicks: { vals: data.weekly.map((w) => w.spend), color: "var(--ink-3)", unit: "" }
+      linkclicks:  { vals: data.weekly.map((w) => w.spend), color: "var(--ink-3)", unit: "" },
     };
     const l = lines[k];
     const total = l.vals.reduce((a, b) => a + b, 0);
-    const display = l.unit === "K" ?
-    Math.round(total) + "K" :
-    Math.round(total).toLocaleString();
+    const display = l.unit === "K" ? Math.round(total) + "K" : Math.round(total).toLocaleString();
     return (
       <span className={"legend-item" + (metric === k ? "" : " is-off")} onClick={() => setMetric(k)}>
         <span className="swatch" style={{ background: l.color }}></span>
         <span>{label}</span>
         <span className="v serif num">{display}</span>
-      </span>);
-
+      </span>
+    );
   };
-
   return (
     <section className="section wrap" data-screen-label="03 Trend">
-      <header className="section-head">
-        <h2 className="section-title serif">Week by Week</h2>
-      </header>
+      <header className="section-head"><h2 className="section-title serif">Week by Week</h2></header>
       <div className="trend-body">
         <TrendChart data={data} metric={metric} />
         <div className="trend-legend">
@@ -367,82 +314,14 @@ function Trend({ data, metric, setMetric }) {
           {tab("linkclicks", "Link Clicks")}
         </div>
       </div>
-    </section>);
-
+    </section>
+  );
 }
 
 // =================================================================
-// Platforms — replaces the "Channels" section
+// Platforms
 // =================================================================
-function Platforms({ data }) {
-  return (
-    <section className="section wrap" data-screen-label="04 Platforms">
-      <header className="section-head">
-        <h2 className="section-title serif">By Platform</h2>
-      </header>
-
-      <div className="channels">
-        <div className="channel-row is-head">
-          <div></div>
-          <div>Platform</div>
-          <div className="col-num">Followers</div>
-          <div className="col-num">Engagement Rate</div>
-          <div className="col-num">Page Reach</div>
-          <div className="col-num hide-apple">Page Clicks</div>
-          <div className="col-num">Trends</div>
-        </div>
-        {data.platforms.map((p, i) =>
-        <div className="channel-row" key={p.key}>
-            <div className="channel-idx serif ital">{String(i + 1).padStart(2, "0")}.</div>
-            <div>
-              <div className="channel-name serif">{p.name}</div>
-              <div className="channel-note">{p.note}</div>
-            </div>
-            <div className="col-num">
-              <span className="big serif num">{fmtExact(p.followers)}</span>
-              <span className="sub">
-                <span className={"delta " + p.followersDelta.dir}>
-                  {arrow(p.followersDelta.dir)} {p.followersDelta.pct.toFixed(1)}%
-                </span>
-              </span>
-            </div>
-            <div className="col-num">
-              <span className="big serif num">{p.engagementRate.toFixed(2)}%</span>
-              <span className="sub">
-                <span className={"delta " + p.engagementRateDelta.dir}>
-                  {arrow(p.engagementRateDelta.dir)} {p.engagementRateDelta.pct.toFixed(1)}%
-                </span>
-              </span>
-            </div>
-            <div className="col-num">
-              <span className="big serif num">{fmt(p.pageReach)}</span>
-              <span className="sub">
-                <span className={"delta " + p.pageReachDelta.dir}>
-                  {arrow(p.pageReachDelta.dir)} {p.pageReachDelta.pct.toFixed(1)}%
-                </span>
-              </span>
-            </div>
-            <div className="col-num hide-apple">
-              <span className="big serif num">{fmtExact(p.pageClicks)}</span>
-              <span className="sub">
-                <span className={"delta " + p.pageClicksDelta.dir}>
-                  {arrow(p.pageClicksDelta.dir)} {p.pageClicksDelta.pct.toFixed(1)}%
-                </span>
-              </span>
-            </div>
-            <div className="col-num">
-              <PlatformSpark p={p} />
-            </div>
-          </div>
-        )}
-      </div>
-    </section>);
-
-}
-
-// Tiny sparkline next to each platform — a synthetic engagement curve
 function PlatformSpark({ p }) {
-  // Deterministic synthetic curve scaled by engagement rate
   const seed = p.engagementRate;
   const points = Array.from({ length: 13 }, (_, i) => {
     const t = i / 12;
@@ -450,8 +329,8 @@ function PlatformSpark({ p }) {
     const noise = seed * (i + 1) % 7 / 14;
     return base * 0.7 + noise * 0.4;
   });
-  const w = 120,h = 38;
-  const max = Math.max(...points),min = Math.min(...points);
+  const w = 120, h = 38;
+  const max = Math.max(...points), min = Math.min(...points);
   const xStep = w / (points.length - 1);
   const path = points.map((v, i) => {
     const x = i * xStep;
@@ -461,116 +340,85 @@ function PlatformSpark({ p }) {
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ display: "inline-block", marginLeft: "auto" }}>
       <path d={path} fill="none" stroke="var(--isl-blue)" strokeWidth="1.5" />
-    </svg>);
+    </svg>
+  );
+}
 
+function Platforms({ data }) {
+  return (
+    <section className="section wrap" data-screen-label="04 Platforms">
+      <header className="section-head"><h2 className="section-title serif">By Platform</h2></header>
+      <div className="channels">
+        <div className="channel-row is-head">
+          <div></div><div>Platform</div>
+          <div className="col-num">Followers</div><div className="col-num">Engagement Rate</div>
+          <div className="col-num">Page Reach</div><div className="col-num hide-apple">Page Clicks</div>
+          <div className="col-num">Trends</div>
+        </div>
+        {data.platforms.map((p, i) => (
+          <div className="channel-row" key={p.key}>
+            <div className="channel-idx serif ital">{String(i + 1).padStart(2, "0")}.</div>
+            <div><div className="channel-name serif">{p.name}</div><div className="channel-note">{p.note}</div></div>
+            <div className="col-num"><span className="big serif num">{fmtExact(p.followers)}</span><span className="sub"><span className={"delta " + p.followersDelta.dir}>{arrow(p.followersDelta.dir)} {p.followersDelta.pct.toFixed(1)}%</span></span></div>
+            <div className="col-num"><span className="big serif num">{p.engagementRate.toFixed(2)}%</span><span className="sub"><span className={"delta " + p.engagementRateDelta.dir}>{arrow(p.engagementRateDelta.dir)} {p.engagementRateDelta.pct.toFixed(1)}%</span></span></div>
+            <div className="col-num"><span className="big serif num">{fmt(p.pageReach)}</span><span className="sub"><span className={"delta " + p.pageReachDelta.dir}>{arrow(p.pageReachDelta.dir)} {p.pageReachDelta.pct.toFixed(1)}%</span></span></div>
+            <div className="col-num hide-apple"><span className="big serif num">{fmtExact(p.pageClicks)}</span><span className="sub"><span className={"delta " + p.pageClicksDelta.dir}>{arrow(p.pageClicksDelta.dir)} {p.pageClicksDelta.pct.toFixed(1)}%</span></span></div>
+            <div className="col-num"><PlatformSpark p={p} /></div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 // =================================================================
-// Top Posts by Platform — replaces "Campaigns" table
+// Top Posts
 // =================================================================
 function TopPosts({ data, platform, setPlatform }) {
   const posts = data.topPostsByPlatform[platform] || [];
   return (
     <section className="section wrap" data-screen-label="05 Top Posts">
-      <header className="section-head">
-        <h2 className="section-title serif">Top Posts</h2>
-      </header>
-
+      <header className="section-head"><h2 className="section-title serif">Top Posts</h2></header>
       <div className="platform-tabs">
-        {["linkedin", "facebook", "instagram"].map((k) =>
-        <button
-          key={k}
-          className={"platform-tab" + (platform === k ? " is-active" : "")}
-          onClick={() => setPlatform(k)}>
-          
+        {["linkedin", "facebook", "instagram"].map((k) => (
+          <button key={k} className={"platform-tab" + (platform === k ? " is-active" : "")} onClick={() => setPlatform(k)}>
             <span className="serif">{k === "linkedin" ? "LinkedIn" : k === "facebook" ? "Facebook" : "Instagram"}</span>
           </button>
-        )}
+        ))}
       </div>
-
       <table className="table">
-        <thead>
-          <tr>
-            <th>Post</th>
-            <th className="r">Impressions</th>
-            <th className="r">Reactions</th>
-            <th className="r">Shares</th>
-            <th className="r">Engagement</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Post</th><th className="r">Impressions</th><th className="r">Reactions</th><th className="r">Shares</th><th className="r">Engagement</th></tr></thead>
         <tbody>
           {posts.map((c) => {
             const engagement = (c.likes + c.shares) / c.impressions * 100;
             return (
               <tr key={c.title}>
-                <td>
-                  <span className={"flag " + (c.flag || "")}></span>
-                  <span className="campaign-name serif">{c.title}</span>
-                  <div className="campaign-chan">{platform}</div>
-                </td>
+                <td><span className={"flag " + (c.flag || "")}></span><span className="campaign-name serif">{c.title}</span><div className="campaign-chan">{platform}</div></td>
                 <td className="r num">{fmtExact(c.impressions)}</td>
                 <td className="r num">{c.likes}</td>
                 <td className="r num">{c.shares}</td>
-                <td className="r num" style={{ color: engagement >= 5 ? "var(--up)" : "var(--ink)" }}>
-                  {engagement.toFixed(2)}%
-                </td>
-              </tr>);
-
+                <td className="r num" style={{ color: engagement >= 5 ? "var(--up)" : "var(--ink)" }}>{engagement.toFixed(2)}%</td>
+              </tr>
+            );
           })}
         </tbody>
       </table>
-    </section>);
-
+    </section>
+  );
 }
 
 // =================================================================
-// Notes / Insights
+// All Posts
 // =================================================================
-function Notes({ data }) {
-  return (
-    <section className="section wrap" data-screen-label="06 Notes">
-      <header className="section-head">
-        <h2 className="section-title serif">Insights</h2>
-      </header>
-
-      <div className="notes">
-        <div className="note working">
-          <h4>Working</h4>
-          <ul>{data.notes.working.map((n, i) => <li key={i}>{n}</li>)}</ul>
-        </div>
-        <div className="note notworking">
-          <h4>Not working</h4>
-          <ul>{data.notes.notWorking.map((n, i) => <li key={i}>{n}</li>)}</ul>
-        </div>
-        <div className="note">
-          <h4>Actions</h4>
-          <ul>{data.notes.actions.map((n, i) => <li key={i}>{n}</li>)}</ul>
-        </div>
-        <div className="note">
-          <h4>Next quarter</h4>
-          <ul>{data.notes.next.map((n, i) => <li key={i}>{n}</li>)}</ul>
-        </div>
-      </div>
-    </section>);
-
-}
-
 function AllPosts({ data }) {
   const [search, setSearch] = useState("");
   const [platform, setPlatform] = useState("all");
   const [sort, setSort] = useState({ key: "Date", dir: "desc" });
 
-  const toggleSort = (key) => {
-    setSort((prev) => ({
-      key,
-      dir: prev.key === key && prev.dir === "desc" ? "asc" : "desc"
-    }));
-  };
-
-  const arrow = (key) => {
-    if (sort.key !== key) return <span style={{ opacity: 0.3, marginLeft: 4 }}>↕</span>;
-    return <span style={{ marginLeft: 4 }}>{sort.dir === "desc" ? "↓" : "↑"}</span>;
-  };
+  const toggleSort = (key) => setSort((prev) => ({ key, dir: prev.key === key && prev.dir === "desc" ? "asc" : "desc" }));
+  const sortArrow = (key) => sort.key !== key
+    ? <span style={{ opacity: 0.3, marginLeft: 4 }}>↕</span>
+    : <span style={{ marginLeft: 4 }}>{sort.dir === "desc" ? "↓" : "↑"}</span>;
 
   const posts = (data.allPosts || [])
     .filter((p) => {
@@ -581,71 +429,37 @@ function AllPosts({ data }) {
     .sort((a, b) => {
       const dir = sort.dir === "desc" ? -1 : 1;
       if (sort.key === "Date") return dir * (new Date(a.Date) - new Date(b.Date));
-      const av = a[sort.key] || 0;
-      const bv = b[sort.key] || 0;
-      return dir * (av - bv);
+      return dir * ((a[sort.key] || 0) - (b[sort.key] || 0));
     });
 
   const thStyle = { cursor: "pointer", userSelect: "none" };
+  const inputStyle = { border: "1px solid var(--rule)", padding: "8px 12px", fontFamily: "var(--sans)", fontSize: "14px", borderRadius: "2px", background: "var(--paper)", color: "var(--ink)" };
 
   return (
     <section className="section wrap" data-screen-label="07 All Posts">
-      <header className="section-head">
-        <h2 className="section-title serif">All Posts</h2>
-      </header>
-
+      <header className="section-head"><h2 className="section-title serif">All Posts</h2></header>
       <div style={{ display: "flex", gap: "16px", marginBottom: "24px", flexWrap: "wrap" }}>
-        <input
-          type="search"
-          placeholder="Search posts..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{
-            border: "0px solid var(--rule)",
-            padding: "8px 12px",
-            fontFamily: "var(--sans)",
-            fontSize: "14px",
-            borderRadius: "2px",
-            width: "280px",
-            background: "var(--paper)",
-            color: "var(--ink)"
-          }}
-        />
-        <select
-          value={platform}
-          onChange={(e) => setPlatform(e.target.value)}
-          style={{
-            border: "0px solid var(--rule)",
-            padding: "8px 12px",
-            fontFamily: "var(--sans)",
-            fontSize: "14px",
-            borderRadius: "2px",
-            background: "var(--paper)",
-            color: "var(--ink)"
-          }}
-        >
+        <input type="search" placeholder="Search posts..." value={search} onChange={(e) => setSearch(e.target.value)} style={{ ...inputStyle, width: "280px" }} />
+        <select value={platform} onChange={(e) => setPlatform(e.target.value)} style={inputStyle}>
           <option value="all">All platforms</option>
           <option value="linkedin">LinkedIn</option>
           <option value="facebook">Facebook</option>
           <option value="instagram">Instagram</option>
         </select>
-        <span style={{ fontSize: "13px", color: "var(--ink-3)", alignSelf: "center" }}>
-          {posts.length} posts
-        </span>
+        <span style={{ fontSize: "13px", color: "var(--ink-3)", alignSelf: "center" }}>{posts.length} posts</span>
       </div>
-
-      <div style={{ maxHeight: "560px", overflowY: "auto", border: "0px solid var(--rule)" }}>
+      <div style={{ maxHeight: "560px", overflowY: "auto" }}>
         <table className="table" style={{ marginBottom: 0 }}>
           <thead style={{ position: "sticky", top: 0, background: "var(--paper)", zIndex: 2 }}>
             <tr>
               <th>Post</th>
-              <th style={thStyle} onClick={() => toggleSort("Date")}>Date{arrow("Date")}</th>
+              <th style={thStyle} onClick={() => toggleSort("Date")}>Date{sortArrow("Date")}</th>
               <th>Platforms</th>
-              <th className="r" style={thStyle} onClick={() => toggleSort("Impressions")}>Impressions{arrow("Impressions")}</th>
-              <th className="r" style={thStyle} onClick={() => toggleSort("Engagements")}>Engagements{arrow("Engagements")}</th>
-              <th className="r" style={thStyle} onClick={() => toggleSort("Likes")}>Likes{arrow("Likes")}</th>
-              <th className="r" style={thStyle} onClick={() => toggleSort("Shares")}>Shares{arrow("Shares")}</th>
-              <th className="r" style={thStyle} onClick={() => toggleSort("Comments")}>Comments{arrow("Comments")}</th>
+              <th className="r" style={thStyle} onClick={() => toggleSort("Impressions")}>Impressions{sortArrow("Impressions")}</th>
+              <th className="r" style={thStyle} onClick={() => toggleSort("Engagements")}>Engagements{sortArrow("Engagements")}</th>
+              <th className="r" style={thStyle} onClick={() => toggleSort("Likes")}>Likes{sortArrow("Likes")}</th>
+              <th className="r" style={thStyle} onClick={() => toggleSort("Shares")}>Shares{sortArrow("Shares")}</th>
+              <th className="r" style={thStyle} onClick={() => toggleSort("Comments")}>Comments{sortArrow("Comments")}</th>
               <th className="r">Health</th>
             </tr>
           </thead>
@@ -659,10 +473,7 @@ function AllPosts({ data }) {
                 <tr key={i}>
                   <td>
                     <div className="campaign-name serif">
-                      {p.URL
-                        ? <a href={p.URL} target="_blank" rel="noopener" style={{ color: "#0070CA", textDecoration: "none" }}>{p["Post Name"] || "—"}</a>
-                        : p["Post Name"] || "—"
-                      }
+                      {p.URL ? <a href={p.URL} target="_blank" rel="noopener" style={{ color: "#0070CA", textDecoration: "none" }}>{p["Post Name"] || "—"}</a> : p["Post Name"] || "—"}
                     </div>
                     {p.Notes && <div className="campaign-chan">{p.Notes}</div>}
                   </td>
@@ -673,9 +484,7 @@ function AllPosts({ data }) {
                   <td className="r num">{p.Likes || 0}</td>
                   <td className="r num">{p.Shares || 0}</td>
                   <td className="r num">{p.Comments || 0}</td>
-                  <td className="r">
-                    <span style={{ color, fontSize: "13px", fontWeight: 500 }}>{label}</span>
-                  </td>
+                  <td className="r"><span style={{ color, fontSize: "13px", fontWeight: 500 }}>{label}</span></td>
                 </tr>
               );
             })}
@@ -687,21 +496,32 @@ function AllPosts({ data }) {
 }
 
 // =================================================================
+// Notes
+// =================================================================
+function Notes({ data }) {
+  return (
+    <section className="section wrap" data-screen-label="06 Notes">
+      <header className="section-head"><h2 className="section-title serif">Insights</h2></header>
+      <div className="notes">
+        <div className="note working"><h4>Working</h4><ul>{data.notes.working.map((n, i) => <li key={i}>{n}</li>)}</ul></div>
+        <div className="note notworking"><h4>Not working</h4><ul>{data.notes.notWorking.map((n, i) => <li key={i}>{n}</li>)}</ul></div>
+        <div className="note"><h4>Actions</h4><ul>{data.notes.actions.map((n, i) => <li key={i}>{n}</li>)}</ul></div>
+        <div className="note"><h4>Next quarter</h4><ul>{data.notes.next.map((n, i) => <li key={i}>{n}</li>)}</ul></div>
+      </div>
+    </section>
+  );
+}
+
+// =================================================================
 // Colophon
 // =================================================================
 function Colophon({ data }) {
   return (
     <footer className="wrap colophon">
-      <div className="left serif">
-        Integrated Staffing — Quarterly Marketing Report.<br />
-        {data.meta.quarter} {data.meta.year}, {data.meta.rangeLabel}.
-      </div>
-      <div className="right">
-        <div className="upper">Internal — Do Not Distribute</div>
-        <div style={{ marginTop: 8 }}>{data.meta.generatedLabel}</div>
-      </div>
-    </footer>);
-
+      <div className="left serif">Integrated Staffing — Quarterly Marketing Report.<br />{data.meta.quarter} {data.meta.year}, {data.meta.rangeLabel}.</div>
+      <div className="right"><div className="upper">Internal — Do Not Distribute</div><div style={{ marginTop: 8 }}>{data.meta.generatedLabel}</div></div>
+    </footer>
+  );
 }
 
 // =================================================================
@@ -711,10 +531,7 @@ function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const [metric, setMetric] = useState(t.trendMetric || "impressions");
   const [platform, setPlatform] = useState(t.topPlatform || "linkedin");
-  const params = new URLSearchParams(window.location.search);
-const reportKey = params.get("report") || "islq3";
-const defaultQuarter = reportKey === "islq1" ? "2026-Q1" : reportKey === "islq2" ? "2026-Q2" : "2026-Q3";
-const [quarter, setQuarter] = useState(defaultQuarter);
+  const [data, setData] = useState(null);
 
   useEffect(() => {
     document.body.setAttribute("data-layout", t.layout);
@@ -724,78 +541,35 @@ const [quarter, setQuarter] = useState(defaultQuarter);
     document.documentElement.style.setProperty("--isl-blue", accentColor);
   }, [t.layout, t.density, t.accent]);
 
-  const [data, setData] = useState(null);
-useEffect(() => {
-  const poll = setInterval(() => {
-    if (window.ISL_REPORT) {
-      setData(normalizeReport(window.ISL_REPORT));
-      clearInterval(poll);
-    }
-  }, 50);
-  return () => clearInterval(poll);
-}, []);
+  useEffect(() => {
+    const poll = setInterval(() => {
+      if (window.ISL_REPORT) {
+        setData(normalizeReport(window.ISL_REPORT));
+        clearInterval(poll);
+      }
+    }, 50);
+    return () => clearInterval(poll);
+  }, []);
 
-if (!data) return (
-    <div style={{
-      position: "fixed",
-      inset: 0,
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: "32px",
-      background: "var(--paper)"
-    }}>
-      <div style={{
-        fontFamily: "var(--serif)",
-        fontSize: "clamp(32px, 5vw, 56px)",
-        letterSpacing: "-0.02em",
-        color: "var(--ink)",
-        animation: "pulse 2s ease-in-out infinite"
-      }}>
+  if (!data) return (
+    <div style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "32px", background: "var(--paper)" }}>
+      <div style={{ fontFamily: "var(--serif)", fontSize: "clamp(32px, 5vw, 56px)", letterSpacing: "-0.02em", color: "var(--ink)", animation: "pulse 2s ease-in-out infinite" }}>
         Integrated <em style={{ fontStyle: "italic", color: "var(--isl-blue)" }}>Staffing</em>
       </div>
-      <div style={{
-        width: "120px",
-        height: "1px",
-        background: "var(--rule)",
-        position: "relative",
-        overflow: "hidden"
-      }}>
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          background: "var(--ink)",
-          animation: "scan 1.4s ease-in-out infinite"
-        }} />
+      <div style={{ width: "120px", height: "1px", background: "var(--rule)", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "var(--ink)", animation: "scan 1.4s ease-in-out infinite" }} />
       </div>
-      <div style={{
-        fontFamily: "var(--sans)",
-        fontSize: "11px",
-        letterSpacing: "0.18em",
-        textTransform: "uppercase",
-        color: "var(--ink-4)",
-        animation: "pulse 2s ease-in-out infinite"
-      }}>
+      <div style={{ fontFamily: "var(--sans)", fontSize: "11px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-4)", animation: "pulse 2s ease-in-out infinite" }}>
         Loading report
       </div>
-      <style>{`
-        @keyframes scan {
-          0%   { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50%       { opacity: 0.5; }
-        }
-      `}</style>
+      <style>{`@keyframes scan{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
     </div>
   );
 
   return (
     <React.Fragment>
       <Masthead data={data} />
-      <MastNav quarter={quarter} onQuarter={setQuarter} data={data} />
+      <MastNav data={data} />
       <main>
         <Hero data={data} />
         <Numbers data={data} />
@@ -806,44 +580,17 @@ if (!data) return (
         <Notes data={data} />
       </main>
       <Colophon data={data} />
-
       <TweaksPanel title="Tweaks">
         <TweakSection title="Layout">
-          <TweakRadio
-            label="Mode"
-            value={t.layout}
-            onChange={(v) => setTweak("layout", v)}
-            options={[
-            { value: "editorial", label: "Editorial" },
-            { value: "apple", label: "Apple" },
-            { value: "document", label: "Document" }]
-            } />
-          
-          <TweakRadio
-            label="Density"
-            value={t.density}
-            onChange={(v) => setTweak("density", v)}
-            options={[
-            { value: "airy", label: "Airy" },
-            { value: "balanced", label: "Balanced" },
-            { value: "tight", label: "Tight" }]
-            } />
-          
+          <TweakRadio label="Mode" value={t.layout} onChange={(v) => setTweak("layout", v)} options={[{value:"editorial",label:"Editorial"},{value:"apple",label:"Apple"},{value:"document",label:"Document"}]} />
+          <TweakRadio label="Density" value={t.density} onChange={(v) => setTweak("density", v)} options={[{value:"airy",label:"Airy"},{value:"balanced",label:"Balanced"},{value:"tight",label:"Tight"}]} />
         </TweakSection>
         <TweakSection title="Accent">
-          <TweakColor
-            label="Accent color"
-            value={t.accent === "isl" ? "#0a4d8c" : t.accent === "graphite" ? "#2a2622" : "#14110d"}
-            onChange={(v) => {
-              const map = { "#0a4d8c": "isl", "#2a2622": "graphite", "#14110d": "none" };
-              setTweak("accent", map[v] || "isl");
-            }}
-            options={["#0a4d8c", "#2a2622", "#14110d"]} />
-          
+          <TweakColor label="Accent color" value={t.accent === "isl" ? "#0a4d8c" : t.accent === "graphite" ? "#2a2622" : "#14110d"} onChange={(v) => { const map={"#0a4d8c":"isl","#2a2622":"graphite","#14110d":"none"}; setTweak("accent", map[v]||"isl"); }} options={["#0a4d8c","#2a2622","#14110d"]} />
         </TweakSection>
       </TweaksPanel>
-    </React.Fragment>);
-
+    </React.Fragment>
+  );
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);

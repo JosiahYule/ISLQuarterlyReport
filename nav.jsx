@@ -23,11 +23,6 @@ function Masthead() {
       <div className="wrap masthead-row">
         <div className="masthead-left">
           <div className="masthead-mark serif">Integrated <em>Staffing</em></div>
-          <div className="masthead-sub">Quarterly Marketing Report</div>
-        </div>
-        <div className="masthead-right">
-          <span>Josiah Yule</span>
-          <span className="issue serif ital">Issue 5</span>
         </div>
       </div>
     </header>
