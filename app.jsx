@@ -208,11 +208,10 @@ function MastNav({ quarter, onQuarter, data }) {
   return (
     <div className="masthead-nav">
       <div className="wrap masthead-nav-row">
-        <nav className="nav-tabs">
-          <a href="#" className="is-active">Social Media</a>
-          <a href="#">Website</a>
-          <a href="#">All Channels</a>
-        </nav>
+<nav className="nav-tabs">
+  <a href="/" className="is-active">Social Media</a>
+  <a href="/web/">Website</a>
+</nav>
         <div className="nav-meta">
           <span>{data.meta.rangeLabel}</span>
           <div ref={ref} style={{ position: "relative" }}>
