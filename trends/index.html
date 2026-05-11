@@ -11,6 +11,56 @@
   <link rel="icon" type="image/svg+xml" href="../favicon-gear.svg" />
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
+.masthead {
+  border-bottom: 1px solid var(--rule);
+  padding-top: 16px;
+  padding-bottom: 14px;
+  background: var(--paper);
+}
+.masthead-row { display: flex; align-items: baseline; justify-content: space-between; gap: 32px; }
+.masthead-left { display: flex; align-items: baseline; gap: 18px; min-width: 0; }
+.masthead-mark { font-family: var(--serif); font-size: 28px; line-height: 1; letter-spacing: -0.02em; }
+.masthead-mark em { font-style: italic; color: var(--isl-blue); }
+.masthead-sub {
+  font-size: 28px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-3);
+  border-left: 1px solid var(--rule); padding-left: 18px;
+}
+.masthead-right { display: flex; align-items: baseline; gap: 22px; font-size: 12px; color: var(--ink-3); }
+.masthead-right .issue { color: var(--ink); font-family: var(--serif); font-size: 16px; }
+
+.masthead-nav {
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: blur(8px);
+}
+.masthead-nav-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  padding: 12px 0;
+  font-size: 13px;
+}
+.nav-tabs { display: flex; gap: 28px; }
+.nav-tabs a {
+  color: var(--ink-3); position: relative; padding: 4px 0;
+  transition: color .15s ease;
+}
+.nav-tabs a:hover { color: var(--ink); }
+.nav-tabs a.is-active { color: var(--ink); }
+.nav-tabs a.is-active::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -13px; height: 2px; background: var(--ink);
+}
+.nav-meta { display: flex; gap: 18px; align-items: center; color: var(--ink-3); }
+.qchooser {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--ink); cursor: pointer;
+  border: 1px solid var(--rule); padding: 6px 12px; border-radius: 2px;
+  background: var(--paper);
+  transition: border-color .15s ease;
+}
+.qchooser:hover { border-color: var(--ink); }
+.qchooser .caret { font-size: 10px; opacity: .6; }
+
+
     /* ── Loading ──────────────────────────────────────────────── */
     .loading-screen {
       position: fixed; inset: 0; z-index: 1000;
