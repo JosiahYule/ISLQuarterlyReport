@@ -195,6 +195,8 @@ function Masthead({ data }) {
 }
 
 function MastNav({ quarter, onQuarter, data }) {
+  const params = new URLSearchParams(window.location.search);
+  const reportKey = params.get("report") || "islq3";
   const [open, setOpen] = useState(false);
   const ref = useRef();
   useEffect(() => {
@@ -392,6 +394,7 @@ function TrendChart({ data, metric = "impressions" }) {
 }
 
 function Trend({ data, metric, setMetric }) {
+  if (!data.weekly || data.weekly.every(w => w.imp === 0)) return null;
   const tab = (k, label) => {
     const lines = {
       impressions: { vals: data.weekly.map((w) => w.imp), color: "var(--isl-blue)", unit: "K" },
