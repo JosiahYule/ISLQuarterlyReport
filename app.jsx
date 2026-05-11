@@ -138,18 +138,30 @@ const weekly = Array.from({ length: 13 }, (_, i) => ({
 }));
 
   // Meta
+const params = new URLSearchParams(window.location.search);
+  const reportKey = params.get("report") || "islq3";
+
+  const REPORT_META = {
+    islq1: { quarter: "Q1", quarterWord: "One",   year: "2026", rangeLabel: "Sep – Nov 2025", issue: "1" },
+    islq2: { quarter: "Q2", quarterWord: "Two",   year: "2026", rangeLabel: "Dec – Feb 2026", issue: "2" },
+    islq3: { quarter: "Q3", quarterWord: "Three", year: "2026", rangeLabel: "Mar – May 2026", issue: "3" },
+  };
+
+  const reportMeta = REPORT_META[reportKey] || REPORT_META["islq3"];
+
   const meta = {
-    quarter: "Q3",
-    year: "2026",
-    rangeLabel: "Mar – May 2026",
+    quarter: reportMeta.quarter,
+    quarterWord: reportMeta.quarterWord,
+    year: reportMeta.year,
+    rangeLabel: reportMeta.rangeLabel,
     generatedLabel: r.generatedAt ? new Date(r.generatedAt).toLocaleDateString() : "",
     author: "Josiah Yule",
-    issue: "3"
+    issue: reportMeta.issue
   };
 
   return {
     meta,
-    editorsNote: "Engagement rate climbed to 8.66% this quarter across LinkedIn, Facebook, and Instagram — up 20.3% from Q2.",
+    : "Engagement rate climbed to 8.66% this quarter across LinkedIn, Facebook, and Instagram — up 20.3% from Q2.",editorsNote: insightMap.editorsNote || insightMap.working || "No editor's note yet.",
     overall,
     deltas,
     platforms,
@@ -227,7 +239,7 @@ function Hero({ data }) {
     <section className="hero wrap" data-screen-label="01 Hero">
       <div className="hero-kicker">Volume {data.meta.year} · {data.meta.quarter} Report · Social Media</div>
       <h1 className="hero-title serif" style={{ fontWeight: "100", fontFamily: "\"Instrument Serif\"" }}>
-        Quarter <em>Two</em>
+        Quarter <em>{data.meta.quarterWord}</em>
       </h1>
       <div className="hero-lede-row">
         <div className="hero-lede-meta">
