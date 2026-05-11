@@ -112,7 +112,7 @@
     .t-section-sub { font-size: 13px; color: var(--ink-3); font-family: var(--sans); }
     .t-badge {
       font-size: 11px; font-family: var(--sans); color: var(--ink-3);
-      border: 1px solid var(--rule); padding: 4px 12px; border-radius: 2px;
+      border: 0px solid var(--rule); padding: 4px 12px; border-radius: 2px;
       white-space: nowrap; align-self: flex-start;
     }
 
@@ -130,7 +130,7 @@
     .trends-hero h1 em { font-style: italic; color: var(--isl-blue); }
     .trends-hero-meta {
       font-size: 13px; color: var(--ink-3); font-family: var(--sans);
-      display: flex; flex-wrap: wrap; gap: 24px; border-top: 1px solid var(--rule); padding-top: 12px;
+      display: flex; flex-wrap: wrap; gap: 24px; border-top: 0px solid var(--rule); padding-top: 12px;
     }
     .trends-hero-meta strong { color: var(--ink); }
     .hero-progress-pill {
@@ -147,7 +147,7 @@
     /* ── Projection cards ─────────────────────────────────────── */
     .proj-grid {
       display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1px;
-      border: 1px solid var(--rule); background: var(--rule);
+      border: 0px solid var(--rule); background: var(--rule);
     }
     .proj-card {
       background: var(--paper); padding: 24px 20px;
@@ -183,7 +183,7 @@
     }
     .proj-stats-grid {
       display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
-      border: 1px solid var(--rule); background: var(--rule);
+      border: 0px solid var(--rule); background: var(--rule);
     }
     .proj-stat { background: var(--paper-2); padding: 10px 12px; }
     .proj-stat-label {
@@ -216,7 +216,7 @@
     /* ── Chart grid ───────────────────────────────────────────── */
     .charts-grid {
       display: grid; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
-      gap: 1px; border: 1px solid var(--rule); background: var(--rule);
+      gap: 1px; border: 0px solid var(--rule); background: var(--rule);
     }
     @media (max-width: 600px) { .charts-grid { grid-template-columns: 1fr; } }
     .chart-card { background: var(--paper); padding: 24px; }
@@ -288,15 +288,13 @@
 </div>
 
 <!-- Masthead -->
-    <header className="masthead">
-      <div className="wrap masthead-row"
-        <div className="masthead-left">
-          <div className="masthead-mark serif">
-            Integrated <em>Staffing</em>
-          </div>
-        </div>
-      </div>
-    </header>);
+<header class="masthead">
+  <div class="wrap masthead-row">
+    <div class="masthead-left">
+      <div class="masthead-mark serif">Integrated <em>Staffing</em></div>
+    </div>
+  </div>
+</header>
 
 <!-- Nav -->
 <div class="masthead-nav">
