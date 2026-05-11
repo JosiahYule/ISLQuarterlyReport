@@ -572,7 +572,7 @@ function App() {
     <React.Fragment>
       <Masthead data={data} />
       <MastNav data={data} />
-      <main>
+      <main className="report-wrap">
         <Hero data={data} />
         <Numbers data={data} />
         <Trend data={data} metric={metric} setMetric={setMetric} />
