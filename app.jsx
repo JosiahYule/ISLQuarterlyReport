@@ -215,7 +215,7 @@ function MastNav({ quarter, onQuarter, data }) {
           <span>{data.meta.rangeLabel}</span>
           <div ref={ref} style={{ position: "relative" }}>
             <button className="qchooser" onClick={() => setOpen(!open)}>
-              <span>{quarter.replace("-", " ")}</span>
+              <span>2026 · {reportKey === "islq1" ? "Q1" : reportKey === "islq2" ? "Q2" : "Q3"}</span>
               <span className="caret">▾</span>
             </button>
             <div className={"menu" + (open ? " is-open" : "")}>
@@ -237,7 +237,7 @@ function MastNav({ quarter, onQuarter, data }) {
 function Hero({ data }) {
   return (
     <section className="hero wrap" data-screen-label="01 Hero">
-      <div className="hero-kicker">Volume {data.meta.year} · {data.meta.quarter} Report · Social Media</div>
+      <div className="hero-kicker">{data.meta.quarter} Report · Social Media</div>
       <h1 className="hero-title serif" style={{ fontWeight: "100", fontFamily: "\"Instrument Serif\"" }}>
         Quarter <em>{data.meta.quarterWord}</em>
       </h1>
@@ -278,7 +278,7 @@ const KPI_DEFS = [
 { key: "shares", label: "Shares", fmt: fmtExact, note: "amplification by audience" },
 { key: "reactions", label: "Reactions", fmt: fmtExact, note: "likes + reactions" },
 { key: "followers", label: "Followers", fmt: fmtExact, note: "combined audience" },
-{ key: "linkclicks", label: "Link Clicks", fmt: fmtExact, note: "traffic to islstaffing.com" },
+{ key: "linkclicks", label: "Link Clicks", fmt: fmtExact, note: "engagement with posts" },
 { key: "comments", label: "Comments", fmt: fmtExact, note: "depth of conversation" },
 { key: "avgengagementrate", label: "Avg Engagement Rate", fmt: (v) => v.toFixed(2) + "%", note: "blended across posts" }];
 
@@ -769,7 +769,10 @@ function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const [metric, setMetric] = useState(t.trendMetric || "impressions");
   const [platform, setPlatform] = useState(t.topPlatform || "linkedin");
-  const [quarter, setQuarter] = useState("2026-Q2");
+  const params = new URLSearchParams(window.location.search);
+const reportKey = params.get("report") || "islq3";
+const defaultQuarter = reportKey === "islq1" ? "2026-Q1" : reportKey === "islq2" ? "2026-Q2" : "2026-Q3";
+const [quarter, setQuarter] = useState(defaultQuarter);
 
   useEffect(() => {
     document.body.setAttribute("data-layout", t.layout);
