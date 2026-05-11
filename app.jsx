@@ -161,7 +161,7 @@ const params = new URLSearchParams(window.location.search);
 
   return {
     meta,
-    : "Engagement rate climbed to 8.66% this quarter across LinkedIn, Facebook, and Instagram — up 20.3% from Q2.",editorsNote: insightMap.editorsNote || insightMap.working || "No editor's note yet.",
+    editorsNote: insightMap.editorsNote || insightMap.working || "No editor's note yet.",
     overall,
     deltas,
     platforms,
