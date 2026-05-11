@@ -148,24 +148,26 @@ function MastNav({ data }) {
 
   return (
     <div className="masthead-nav">
-      <div className="wrap masthead-nav-row">
-        <nav className="nav-tabs">
-          <a href="/" className="is-active">Social Media</a>
-          <a href="/web/">Website</a>
-          <a href="/trends/">Trends</a>
-        </nav>
-        <div className="nav-meta">
-          <span>{data.meta.rangeLabel}</span>
-          <div ref={ref} style={{ position: "relative" }}>
-            <button className="qchooser" onClick={() => setOpen(!open)}>
-              <span>2026 · {reportKey === "islq1" ? "Q1" : reportKey === "islq2" ? "Q2" : "Q3"}</span>
-              <span className="caret">▾</span>
-            </button>
-            <div className={"menu" + (open ? " is-open" : "")}>
-              <div className="group">2026</div>
-              <a href="?report=islq3" className={!window.location.search || window.location.search.includes("islq3") ? "active" : ""}>Q3 — Mar–May 2026</a>
-              <a href="?report=islq2" className={window.location.search.includes("islq2") ? "active" : ""}>Q2 — Dec–Feb 2026</a>
-              <a href="?report=islq1" className={window.location.search.includes("islq1") ? "active" : ""}>Q1 — Sep–Nov 2025</a>
+      <div className="wrap">
+        <div className="masthead-nav-row">
+          <nav className="nav-tabs">
+            <a href="/" className="is-active">Social Media</a>
+            <a href="/web/">Website</a>
+            <a href="/trends/">Trends</a>
+          </nav>
+          <div className="nav-meta">
+            <span>{data.meta.rangeLabel}</span>
+            <div ref={ref} style={{ position: "relative" }}>
+              <button className="qchooser" onClick={() => setOpen(!open)}>
+                <span>2026 · {reportKey === "islq1" ? "Q1" : reportKey === "islq2" ? "Q2" : "Q3"}</span>
+                <span className="caret">▾</span>
+              </button>
+              <div className={"menu" + (open ? " is-open" : "")}>
+                <div className="group">2026</div>
+                <a href="?report=islq3" className={!window.location.search || window.location.search.includes("islq3") ? "active" : ""}>Q3 — Mar–May 2026</a>
+                <a href="?report=islq2" className={window.location.search.includes("islq2") ? "active" : ""}>Q2 — Dec–Feb 2026</a>
+                <a href="?report=islq1" className={window.location.search.includes("islq1") ? "active" : ""}>Q1 — Sep–Nov 2025</a>
+              </div>
             </div>
           </div>
         </div>

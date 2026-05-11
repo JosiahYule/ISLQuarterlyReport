@@ -47,36 +47,38 @@ function MastNav({ active, quarter, onQuarter }) {
 
   return (
     <div className="masthead-nav">
-      <div className="wrap masthead-nav-row">
-        <nav className="nav-tabs">
-          {tabs.map(t => (
-            <a key={t.id} href={t.href} className={active === t.id ? "is-active" : ""}>
-              {t.label}
-            </a>
-          ))}
-        </nav>
-        {onQuarter ? (
-          <div className="nav-meta">
-            <span>{quarter?.rangeLabel ?? ""}</span>
-            <div ref={ref} style={{ position: "relative" }}>
-              <button className="qchooser" onClick={() => setOpen(!open)}>
-                <span>{quarter?.label ?? "Quarter"}</span>
-                <span className="caret">▾</span>
-              </button>
-              <div className={"menu" + (open ? " is-open" : "")}>
-                <div className="group">2026</div>
-                <a href="?report=islq3" className={quarter?.key === "islq3" ? "active" : ""} onClick={() => setOpen(false)}>Q3 — Mar – May 2026</a>
-                <a href="?report=islq2" className={quarter?.key === "islq2" ? "active" : ""} onClick={() => setOpen(false)}>Q2 — Dec – Feb 2026</a>
-                <div className="group">2025</div>
-                <a href="?report=islq1" className={quarter?.key === "islq1" ? "active" : ""} onClick={() => setOpen(false)}>Q1 — Sep – Nov 2025</a>
+      <div className="wrap">
+        <div className="masthead-nav-row">
+          <nav className="nav-tabs">
+            {tabs.map(t => (
+              <a key={t.id} href={t.href} className={active === t.id ? "is-active" : ""}>
+                {t.label}
+              </a>
+            ))}
+          </nav>
+          {onQuarter ? (
+            <div className="nav-meta">
+              <span>{quarter?.rangeLabel ?? ""}</span>
+              <div ref={ref} style={{ position: "relative" }}>
+                <button className="qchooser" onClick={() => setOpen(!open)}>
+                  <span>{quarter?.label ?? "Quarter"}</span>
+                  <span className="caret">▾</span>
+                </button>
+                <div className={"menu" + (open ? " is-open" : "")}>
+                  <div className="group">2026</div>
+                  <a href="?report=islq3" className={quarter?.key === "islq3" ? "active" : ""} onClick={() => setOpen(false)}>Q3 — Mar – May 2026</a>
+                  <a href="?report=islq2" className={quarter?.key === "islq2" ? "active" : ""} onClick={() => setOpen(false)}>Q2 — Dec – Feb 2026</a>
+                  <div className="group">2025</div>
+                  <a href="?report=islq1" className={quarter?.key === "islq1" ? "active" : ""} onClick={() => setOpen(false)}>Q1 — Sep – Nov 2025</a>
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="nav-meta">
-            <span>Q1 · Q2 · Q3</span>
-          </div>
-        )}
+          ) : (
+            <div className="nav-meta">
+              <span>Q1 · Q2 · Q3</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

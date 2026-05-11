@@ -122,7 +122,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .masthead-nav-row {
   display: flex; align-items: center; justify-content: space-between; gap: 24px;
-  padding-top: 12px; padding-bottom: 12px;
+  padding: 12px 0;
   font-size: 13px;
 }
 .nav-tabs { display: flex; gap: 28px; }
