@@ -55,6 +55,11 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 .wrap { max-width: var(--col); margin: 0 auto; padding: 0 32px; }
 
+/* Match trends page horizontal rhythm so left edge aligns consistently across views */
+@media (max-width: 768px) {
+  .wrap { padding: 0 20px; }
+}
+
 /* ============= LOADING SCREEN ============= */
 .loading-screen {
   position: fixed;
