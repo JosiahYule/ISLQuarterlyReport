@@ -1,801 +1,566 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Integrated Staffing — Quarterly Website Performance Report</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ISL Website Report</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <link rel="icon" type="image/svg+xml" href="../favicon-gear.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../editorial.css" />
 
 <style>
-  :root{
-    --isl-navy:#003D72;
-    --isl-primary:#00549A;
-    --isl-accent:#0070CA;
-    --isl-accent-bright:#4DA3E8;
-    --bg:#FAFBFC;
-    --card:#FFFFFF;
-    --border:rgba(0,0,0,.06);
-    --shadow:0 2px 8px rgba(0,0,0,.04), 0 12px 24px rgba(0,0,0,.06);
-    --text:#0B1220;
-    --muted:#64748B;
-    --success:#10B981;
-    --danger:#EF4444;
-    --radius-xl:24px;
-    --radius-lg:16px;
-    --radius-md:12px;
-    --font:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;
-    --transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    --elev-1:0 2px 10px rgba(13, 35, 67, 0.06);
-    --elev-2:0 14px 34px rgba(13, 35, 67, 0.12);
+  /* Web report specific additions */
+  .channel-row-web {
+    display: grid;
+    grid-template-columns: 0.4fr 1.6fr repeat(3, 1fr);
+    gap: 24px;
+    align-items: baseline;
+    padding: 32px 0;
+    border-top: 1px solid var(--rule);
   }
-  *{margin:0;padding:0;box-sizing:border-box}
-  html,body{height:100%}
-  body{font-family:var(--font);color:var(--text);background:linear-gradient(180deg,#f7f9fc 0%,#f3f7fb 100%);line-height:1.6;overflow-x:hidden;scroll-behavior:smooth;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-weight:400;}
-  body.page-transitioning{opacity:.92;filter:saturate(.95);transition:opacity .22s ease,filter .22s ease;}
-  .reveal{opacity:0;transform:translateY(18px) scale(.995);transition:opacity .55s ease,transform .55s cubic-bezier(.22,.76,.3,1);}
-  .reveal.is-visible{opacity:1;transform:translateY(0) scale(1);}
-  .kpi-value{font-variant-numeric:tabular-nums;}
-  .ct-btn{transition:transform .18s ease,box-shadow .18s ease,background-color .18s ease;}
-  .ct-btn:active{transform:scale(.98);}
-  @keyframes ambientFloat{0%{transform:translate3d(0,0,0) scale(1);}100%{transform:translate3d(14px,-10px,0) scale(1.08);}}
-  @media (prefers-reduced-motion:reduce){html,body{scroll-behavior:auto;}*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;}.reveal,.reveal.is-visible{opacity:1;transform:none;}}
+  .channel-row-web:last-child { border-bottom: 1px solid var(--rule); }
+  body[data-density="tight"] .channel-row-web { padding: 18px 0; }
+  .channel-row-web.is-head {
+    padding: 12px 0;
+    border-top: 0;
+    border-bottom: 1px solid var(--ink);
+  }
+  .channel-row-web.is-head > div {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+  .channel-row-web.is-head .col-num { text-align: right; }
 
-  /* LOADING */
-  .loading-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 40% 30%,rgba(212,230,250,.96),rgba(228,241,255,.92) 55%,rgba(243,249,255,.9) 100%);backdrop-filter:blur(14px) saturate(155%);-webkit-backdrop-filter:blur(14px) saturate(155%);z-index:2000;transition:opacity .4s ease,visibility .4s ease;}
-  .loading-overlay.is-hidden{opacity:0;visibility:hidden;pointer-events:none;}
-  .loading-card{display:flex;flex-direction:column;align-items:center;gap:18px;padding:34px 40px;border-radius:26px;background:linear-gradient(170deg,rgba(255,255,255,.99) 0%,rgba(246,250,255,.96) 100%);border:1px solid rgba(255,255,255,.9);box-shadow:0 2px 4px rgba(0,61,114,.03),0 24px 56px rgba(0,61,114,.13),inset 0 1px 0 #fff;animation:loadCardIn .4s cubic-bezier(.22,.76,.3,1) both;}
-  @keyframes loadCardIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-  .gear-wrap{position:relative;width:76px;height:76px;display:grid;place-items:center;}
-  .gear-wrap::after{content:"";position:absolute;inset:0;border-radius:50%;border:3px solid rgba(0,84,154,.1);}
-  .gear-wrap::before{content:"";position:absolute;inset:0;border-radius:50%;border:3px solid transparent;border-top-color:var(--isl-accent);border-right-color:rgba(0,112,202,.3);animation:arcSpin 1s cubic-bezier(.4,0,.2,1) infinite;}
-  .gear-icon-bg{width:58px;height:58px;border-radius:50%;background:linear-gradient(145deg,#003D72 0%,#0070CA 100%);box-shadow:0 6px 22px rgba(0,84,154,.32),0 0 0 5px rgba(0,84,154,.07);display:grid;place-items:center;}
-  .gear-spinner{width:28px;height:28px;color:rgba(255,255,255,.92);animation:gearSpin 5s linear infinite;}
-  .loading-text{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#1e3a58;}
-  .loading-bar{width:110px;height:3px;border-radius:99px;background:rgba(0,84,154,.1);overflow:hidden;}
-  .loading-bar::after{content:"";display:block;width:45%;height:100%;border-radius:99px;background:linear-gradient(90deg,#00549A,#0070CA);animation:barSlide 1.5s ease-in-out infinite;}
-  @keyframes arcSpin{to{transform:rotate(360deg)}}
-  @keyframes gearSpin{to{transform:rotate(360deg)}}
-  @keyframes barSlide{0%{transform:translateX(-130%)}100%{transform:translateX(270%)}}
+  .pages-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+  }
+  .page-tile {
+    padding: 28px 24px;
+    border-right: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .page-tile:nth-child(4n) { border-right: 0; }
+  .page-tile:nth-last-child(-n+4) { border-bottom: 0; }
+  .page-tile-name {
+    font-family: var(--serif);
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .page-stat { margin-bottom: 14px; }
+  .page-stat-label {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .page-stat-value {
+    font-family: var(--serif);
+    font-size: 22px;
+    color: var(--ink);
+  }
 
-  /* LAYOUT */
-  .container{max-width:1240px;margin:0 auto;padding:32px 24px 48px}
-  .topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:24px;padding:16px 0;position:relative;}
-  .brand{display:flex;align-items:center;gap:14px;min-width:0}
-  .brand-mark{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));box-shadow:0 4px 12px rgba(0,84,154,.2),inset 0 1px 0 rgba(255,255,255,.2);position:relative;overflow:hidden;display:grid;place-items:center;font-size:20px;font-weight:600;color:#fff;line-height:1;text-decoration:none;cursor:pointer;transition:var(--transition);font-family:var(--font);border:none;outline:none;appearance:none;-webkit-appearance:none;}
-  .brand-mark::after{content:"";position:absolute;inset:-40%;background:radial-gradient(circle,rgba(255,255,255,.3),transparent 60%);transform:rotate(25deg);pointer-events:none;}
-  .brand-mark:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,84,154,.25);}
-  .brand-mark:focus,.brand-mark:focus-visible{outline:none;box-shadow:0 0 0 4px rgba(0,112,202,.25),0 6px 16px rgba(0,0,0,.12);}
-  .brand-text{display:flex;flex-direction:column;line-height:1.3;min-width:0}
-  .brand-text strong{font-size:15px;letter-spacing:.05em;text-transform:uppercase;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .brand-text span{font-size:13px;color:var(--muted);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-
-  /* PILL + DROPDOWN */
-  .pill{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;background:var(--card);border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.06);font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;transition:var(--transition);}
-  .pill:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);transform:translateY(-1px);}
-  .pill-dot{width:8px;height:8px;border-radius:99px;background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));box-shadow:0 0 0 3px rgba(0,112,202,.15);flex:0 0 auto;}
-  .pill-wrap{position:relative}
-  .pill-caret{font-size:11px;color:var(--muted)}
-  .pill-menu{position:absolute;right:0;top:calc(100% + 8px);background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:0 8px 32px rgba(0,0,0,.12);min-width:230px;overflow:hidden;opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .18s ease,visibility .18s ease,transform .18s ease;z-index:100;}
-  .pill-menu.is-open{opacity:1;visibility:visible;transform:translateY(0)}
-  .pill-menu-group-label{display:block;padding:8px 16px 4px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-top:1px solid var(--border);}
-  .pill-menu-group-label:first-child{border-top:none;}
-  .pill-item{display:block;padding:10px 16px;font-size:13px;font-weight:500;color:var(--text);text-decoration:none;transition:background .14s ease;}
-  .pill-item:hover{background:rgba(0,84,154,.05)}
-  .pill-item.active{background:rgba(0,84,154,.08);color:var(--isl-primary);font-weight:600}
-
-  /* HERO */
-  .hero{border-radius:var(--radius-xl);padding:48px 40px;background:radial-gradient(ellipse 1200px 600px at 30% -10%,rgba(77,163,232,.18),transparent 70%),linear-gradient(135deg,#003D72 0%,#00549A 50%,#0070CA 100%);color:#fff;position:relative;overflow:hidden;box-shadow:0 20px 40px rgba(0,84,154,.2),inset 0 1px 0 rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.1);margin-bottom:32px;}
-  .hero::before{content:"";position:absolute;inset:-150px -200px auto auto;width:600px;height:600px;background:radial-gradient(circle,rgba(77,163,232,.4),transparent 70%);filter:blur(80px);opacity:.5;animation:heroGlow 10s ease-in-out infinite alternate;}
-  @keyframes heroGlow{0%{opacity:.5;transform:rotate(0deg) scale(1)}100%{opacity:.3;transform:rotate(20deg) scale(1.15)}}
-  .hero-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:32px;position:relative;z-index:1;align-items:end;}
-  .hero h1{font-size:42px;font-weight:600;letter-spacing:-0.03em;margin-bottom:12px;line-height:1.1;}
-  .hero .subtitle{font-size:15px;opacity:.92;color:rgba(255,255,255,.9);line-height:1.6;font-weight:400;}
-  .hero-meta{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap;}
-  .hero-chip{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(10px);font-size:13px;font-weight:600;transition:var(--transition);}
-  .hero-chip:hover{background:rgba(255,255,255,.22);transform:translateY(-1px);}
-  .hero-chip strong{font-weight:700}
-
-  /* SECTIONS */
-  .section{background:#fff;border:1px solid rgba(9,30,66,.08);border-radius:var(--radius-xl);box-shadow:var(--elev-1);padding:32px;margin-bottom:24px;transition:var(--transition);overflow:hidden;}
-  .section:hover{box-shadow:var(--elev-2);border-color:rgba(0,112,202,.18);transform:translateY(-2px);}
-  .section-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding-bottom:16px;border-bottom:2px solid rgba(0,112,202,.08);margin-bottom:24px;}
-  .section-title h2{font-size:20px;font-weight:600;letter-spacing:-0.02em;line-height:1.3;color:var(--isl-navy);}
-  .section-title p{font-size:14px;color:#5f6f84;margin-top:4px;font-weight:400;}
-  .section#quarter-totals,.section#traffic-channels,.section#top-pages{overflow:visible !important;}
-
-  /* KPIs */
-  .kpi-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
-  .kpi-card{background:#fff;border:1px solid rgba(9,30,66,.08);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--elev-1);transition:var(--transition);min-width:0;position:relative;overflow:visible;isolation:isolate;outline:none;}
-  .kpi-card:hover{transform:translateY(-2px);box-shadow:var(--elev-2);border-color:rgba(0,112,202,.18);}
-  .kpi-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
-  .kpi-value{font-size:28px;font-weight:500;letter-spacing:-0.03em;color:var(--text);line-height:1.1;margin-bottom:12px;font-variant-numeric:tabular-nums;}
-  .delta{display:inline-flex;align-items:center;gap:4px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid;white-space:nowrap;}
-  .delta.positive{background:rgba(16,185,129,.1);color:#059669;border-color:rgba(16,185,129,.25);}
-  .delta.negative{background:rgba(239,68,68,.1);color:#DC2626;border-color:rgba(239,68,68,.25);}
-  .delta-sm{padding:3px 7px;font-size:11px;gap:3px;}
-
-  /* TOOLTIPS */
-  .kpi-card::after,.channel::after,.mini-tip::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 10px);z-index:50;transform:translate(-50%,6px);width:max-content;max-width:320px;min-width:220px;padding:14px 16px;background:rgba(0,61,114,.96);color:#fff;border:1px solid rgba(255,255,255,.14);border-radius:14px;box-shadow:0 14px 34px rgba(0,0,0,.18);font-size:13px;line-height:1.5;font-weight:500;text-align:left;white-space:normal;opacity:0;pointer-events:none;transition:opacity .16s ease,transform .16s ease;}
-  .kpi-card::before,.channel::before,.mini-tip::before{content:"";position:absolute;left:50%;bottom:calc(100% + 4px);z-index:51;width:10px;height:10px;background:rgba(0,61,114,.96);border-left:1px solid rgba(255,255,255,.14);border-top:1px solid rgba(255,255,255,.14);transform:translateX(-50%) rotate(45deg);opacity:0;transition:opacity .16s ease;pointer-events:none;}
-  .kpi-card:hover::after,.kpi-card:hover::before,.kpi-card:focus::after,.kpi-card:focus::before,.channel:hover::after,.channel:hover::before,.channel:focus::after,.channel:focus::before,.mini-tip:hover::after,.mini-tip:hover::before,.mini-tip:focus::after,.mini-tip:focus::before{opacity:1;}
-  .kpi-card:hover::after,.kpi-card:focus::after,.channel:hover::after,.channel:focus::after,.mini-tip:hover::after,.mini-tip:focus::after{transform:translate(-50%,0);}
-  .mini-tip{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:999px;border:1px solid rgba(107,122,144,.55);color:#6B7A90;font-size:11px;line-height:1;cursor:help;position:relative;overflow:visible;isolation:isolate;outline:none;}
-  .mini-tip::after{left:auto;right:0;transform:translate(0,6px);max-width:min(320px,calc(100vw - 48px));min-width:200px;text-transform:none;letter-spacing:normal;}
-  .mini-tip::before{left:auto;right:6px;transform:rotate(45deg);}
-  .mini-tip:hover::after,.mini-tip:focus::after{transform:translate(0,0);}
-
-  /* CHANNELS */
-  .channel-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;align-items:stretch;}
-  .channel{background:#fff;border:1px solid rgba(9,30,66,.08);border-radius:var(--radius-lg);padding:24px;box-shadow:var(--elev-1);transition:var(--transition);min-width:0;position:relative;overflow:visible;isolation:isolate;outline:none;}
-  .channel:hover{transform:translateY(-2px);box-shadow:var(--elev-2);border-color:rgba(0,112,202,.18);}
-  .channel h3{font-size:16px;font-weight:600;color:var(--isl-navy);margin-bottom:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .cstat{margin-bottom:12px;}
-  .cstat span{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:500;margin-bottom:8px;}
-  .cstat strong{font-size:18px;font-weight:500;letter-spacing:-0.02em;color:var(--text);}
-
-  /* CHARTS */
-  .charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;}
-  .chart-card{background:#fff;border:1px solid rgba(9,30,66,.08);border-radius:var(--radius-lg);padding:22px;box-shadow:var(--elev-1);transition:var(--transition);display:flex;flex-direction:column;min-height:360px;}
-  .chart-card:hover{box-shadow:var(--elev-2);}
-  .chart-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
-  .chart-title{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);}
-  .chart-wrap{flex:1;min-height:260px;position:relative;}
-  .chart-wrap canvas{width:100% !important;height:100% !important;display:block;}
-  .chart-toggle{display:inline-flex;padding:4px;border-radius:999px;background:rgba(0,0,0,.03);border:1px solid rgba(0,0,0,.06);flex:0 0 auto;}
-  .ct-btn{appearance:none;-webkit-appearance:none;border:0;background:transparent;font-family:var(--font);cursor:pointer;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:500;color:var(--muted);transition:var(--transition);}
-  .ct-btn:hover{color:var(--text);}
-  .ct-btn.is-active{background:#fff;color:var(--isl-navy);box-shadow:0 2px 8px rgba(0,0,0,.08);border:1px solid rgba(0,0,0,.06);}
-
-  /* TABLE */
-  .table-shell{border:1px solid var(--border);border-radius:var(--radius-lg);background:#fff;overflow:hidden;}
-  .table-wrap{max-height:560px;overflow:auto;}
-  #top-pages .table-shell,#top-pages .table-wrap{overflow:visible;}
-  .post-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;}
-  .post-table thead th{position:sticky;top:0;z-index:3;text-align:left;padding:12px 14px;background:#fff;border-bottom:1px solid rgba(0,0,0,.08);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;white-space:nowrap;}
-  .sort-btn{border:0;background:transparent;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;padding:0;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-  .sort-btn.align-right{justify-content:flex-end;width:100%;}
-  .sort-head{display:flex;justify-content:flex-end;align-items:center;gap:6px;}
-  .sort-arrow{font-size:10px;color:#97a0ad;line-height:1;}
-  .post-table tbody td{padding:12px 14px;border-bottom:1px solid rgba(0,0,0,.06);vertical-align:top;}
-  .post-table tbody tr:hover{background:rgba(0,112,202,.04);}
-  .post-table tbody tr:nth-child(even){background:rgba(248,251,255,.75);}
-  .post-table th:first-child,.post-table td:first-child{position:sticky;left:0;background:inherit;z-index:2;}
-  .post-table thead th:first-child{background:#fff;z-index:4;}
-  .top-pages-table td:nth-child(n+2),.top-pages-table th:nth-child(n+2){text-align:right;}
-
-  /* SUMMARY */
-  .summary-shell{position:relative;display:grid;grid-template-columns:6px 1fr;gap:20px;align-items:stretch;}
-  .summary-rail{border-radius:999px;background:linear-gradient(180deg,rgba(0,112,202,0),rgba(0,112,202,.5),rgba(0,84,154,.4),rgba(0,112,202,0));box-shadow:0 0 12px rgba(0,112,202,.2);}
-  .summary-card{background:var(--card);border:1px solid rgba(0,0,0,.05);border-radius:var(--radius-lg);padding:18px;}
-  .summary-list{list-style:none;display:grid;gap:10px;}
-  .summary-list li{display:grid;grid-template-columns:20px 1fr;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:var(--radius-md);background:#fff;border:1px solid rgba(0,0,0,.05);}
-  .summary-dot{width:10px;height:10px;border-radius:999px;margin-top:5px;background:linear-gradient(135deg,var(--isl-primary),var(--isl-accent));box-shadow:0 0 0 3px rgba(0,112,202,.10);}
-  .summary-text{font-size:14px;color:var(--text);line-height:1.6;font-weight:400;}
-  .summary-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid;white-space:nowrap;vertical-align:baseline;margin:0 2px;}
-  .summary-badge.positive{background:rgba(16,185,129,.1);color:#059669;border-color:rgba(16,185,129,.25);}
-  .summary-badge.negative{background:rgba(239,68,68,.1);color:#DC2626;border-color:rgba(239,68,68,.25);}
-
-  /* INSIGHTS */
-  .insight-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
-  .insight-card{background:#fff;border:1px solid rgba(9,30,66,.08);border-radius:var(--radius-lg);padding:24px;box-shadow:var(--elev-1);transition:var(--transition);min-width:0;}
-  .insight-card:hover{box-shadow:var(--elev-2);border-color:rgba(0,112,202,.18);transform:translateY(-2px);}
-  .insight-card h3{font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
-  .insight-card .body{color:var(--text);font-size:14px;line-height:1.7;font-weight:400;overflow-wrap:anywhere;}
-
-  /* FLOATING NAV */
-  .glass-nav{position:fixed;left:24px;bottom:24px;z-index:200;width:152px;padding:8px;border-radius:14px;background:rgba(248,252,255,.92);border:1px solid rgba(255,255,255,.95);box-shadow:0 12px 28px rgba(15,39,76,.16);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);transition:width .3s cubic-bezier(.2,.85,.28,1),box-shadow .3s ease;}
-  .glass-nav:hover,.glass-nav:focus-within,.glass-nav.is-open{width:min(208px,70vw);box-shadow:0 18px 36px rgba(15,39,76,.2);}
-  .glass-nav-title{all:unset;display:flex;align-items:center;justify-content:space-between;width:100%;box-sizing:border-box;cursor:pointer;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#26435f;padding:4px 6px;font-weight:700;white-space:nowrap;border-radius:10px;}
-  .glass-nav-title::after{content:"▾";font-size:12px;line-height:1;opacity:.8;transform:translateY(-1px);transition:transform .28s ease;}
-  .glass-nav.is-open .glass-nav-title::after,.glass-nav:hover .glass-nav-title::after,.glass-nav:focus-within .glass-nav-title::after{transform:rotate(180deg) translateY(1px);}
-  .glass-nav-list{list-style:none;display:grid;gap:4px;margin-top:4px;max-height:0;opacity:0;overflow:hidden;pointer-events:none;visibility:hidden;transform:translateY(2px) scale(.98);transform-origin:top left;transition:max-height .34s cubic-bezier(.2,.85,.28,1),opacity .24s ease,transform .3s ease,visibility 0s linear .34s;}
-  .glass-nav:hover .glass-nav-list,.glass-nav:focus-within .glass-nav-list,.glass-nav.is-open .glass-nav-list{max-height:360px;opacity:1;pointer-events:auto;visibility:visible;transform:translateY(0) scale(1);transition-delay:0s;}
-  .glass-nav-link{display:block;text-decoration:none;padding:8px 10px;border-radius:10px;color:#15314d;font-size:12px;font-weight:600;transition:var(--transition);border:1px solid transparent;}
-  .glass-nav-link:hover,.glass-nav-link:focus-visible,.glass-nav-link.is-active{background:rgba(0,112,202,.14);border-color:rgba(0,112,202,.2);color:#053f71;outline:none;}
-
-  /* RESPONSIVE */
-  @media (max-width:1100px){.charts{grid-template-columns:1fr}.channel-grid{grid-template-columns:repeat(2,1fr)}.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-grid{grid-template-columns:1fr}.hero-meta{justify-content:flex-start}.insight-grid{grid-template-columns:1fr}}
-  @media (max-width:700px){.container{padding:24px 16px}.hero{padding:32px 24px}.hero h1{font-size:32px}.section{padding:24px 20px}.glass-nav{left:auto;right:12px;bottom:12px;width:128px;padding:7px;border-radius:12px}.glass-nav:hover,.glass-nav:focus-within,.glass-nav.is-open{width:min(182px,calc(100vw - 24px))}.channel-grid{grid-template-columns:1fr}.topbar{flex-direction:column;align-items:flex-start;gap:12px;padding-right:90px}.pill-wrap{position:absolute;top:0;right:0}.kpi-grid{grid-template-columns:1fr}.kpi-card::after,.kpi-card::before,.channel::after,.channel::before,.mini-tip::after,.mini-tip::before{display:none}}
-  @media print{body{background:#fff}.section,.hero,.chart-card,.kpi-card,.channel,.table-shell{box-shadow:none;page-break-inside:avoid}.container{padding:20px}}
+  @media (max-width: 880px) {
+    .pages-grid { grid-template-columns: repeat(2, 1fr); }
+    .page-tile:nth-child(2n) { border-right: 0; }
+    .page-tile:nth-child(4n) { border-right: 0; }
+    .channel-row-web { grid-template-columns: 1fr 1fr; row-gap: 12px; }
+  }
+  @media (max-width: 560px) {
+    .pages-grid { grid-template-columns: 1fr; }
+    .page-tile { border-right: 0; }
+  }
 </style>
 </head>
+<body data-layout="editorial" data-density="balanced">
 
-<body>
-<div class="loading-overlay" id="loadingOverlay" role="status" aria-live="polite" aria-label="Loading report data">
-  <div class="loading-card">
-    <div class="gear-wrap" aria-hidden="true">
-      <div class="gear-icon-bg">
-        <svg class="gear-spinner" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M19.14,12.94a7.43,7.43,0,0,0,.05-.94,7.43,7.43,0,0,0-.05-.94l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.6-.22l-2.49,1a7.2,7.2,0,0,0-1.62-.94l-.38-2.65A.49.49,0,0,0,13.79,2H10.21a.49.49,0,0,0-.49.42L9.34,5.07a7.2,7.2,0,0,0-1.62.94l-2.49-1a.5.5,0,0,0-.6.22l-2,3.46a.5.5,0,0,0,.12.64L4.86,11.06a7.43,7.43,0,0,0-.05.94,7.43,7.43,0,0,0,.05.94L2.75,14.59a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.6.22l2.49-1a7.2,7.2,0,0,0,1.62.94l.38,2.65a.49.49,0,0,0,.49.42h3.58a.49.49,0,0,0,.49-.42l.38-2.65a7.2,7.2,0,0,0,1.62-.94l2.49,1a.5.5,0,0,0,.6-.22l2-3.46a.5.5,0,0,0-.12-.64ZM12,15.5A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/>
-        </svg>
-      </div>
-    </div>
-    <p class="loading-text" id="loadingQuarterLabel">Loading Dashboard</p>
-    <div class="loading-bar" aria-hidden="true"></div>
-  </div>
-</div>
+<div id="root"></div>
 
-<div class="container">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<script src="../tweaks-panel.jsx" type="text/babel"></script>
 
-<!-- TOPBAR -->
-<div class="topbar">
-  <div class="brand">
-    <a class="brand-mark" href="https://performancereport.integratedstaffing.com/" aria-label="Back to Performance Report Home">IS</a>
-    <div class="brand-text">
-      <strong>Integrated Staffing</strong>
-      <span>Quarterly Website Performance Report</span>
-    </div>
-  </div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
 
-  <div class="pill-wrap">
-    <button class="pill" id="navBtn" type="button" aria-haspopup="menu" aria-expanded="false">
-      <span class="pill-dot"></span>
-      <span id="activeQuarterLabel">Website Report</span>
-      <span class="pill-caret">&#9662;</span>
-    </button>
-    <div class="pill-menu" id="navMenu" role="menu">
-      <span class="pill-menu-group-label">Social Media</span>
-      <a class="pill-item" href="/?report=islq1" role="menuitem">Q1 &bull; Sep&#8211;Nov 2025</a>
-      <a class="pill-item" href="/?report=islq2" role="menuitem">Q2 &bull; Dec&#8211;Feb 2026</a>
-      <a class="pill-item" href="/?report=islq3" role="menuitem">Q3 &bull; Mar&#8211;May 2026</a>
-      <span class="pill-menu-group-label">Website Analytics</span>
-      <a class="pill-item" href="/web/?report=webq2" role="menuitem" data-web-report="webq2">Website Q2 &bull; Dec&#8211;Feb 2026</a>
-      <a class="pill-item" href="/web/?report=webq3" role="menuitem" data-web-report="webq3">Website Q3 &bull; Mar&#8211;May 2026</a>
-      <span class="pill-menu-group-label">Other</span>
-      <a class="pill-item" href="/trends.html" role="menuitem">Trends &amp; Projections</a>
-    </div>
-  </div>
-</div>
+const WEB_ENDPOINT = "https://script.google.com/macros/s/AKfycbwWpZWB_eP48AX_B4TkGgKjEJPGoB7y9ynpv74SWA3MiEtV-Kmd-0eV-ecfTIysbWY3CQ/exec";
 
-<nav class="glass-nav" aria-label="Section navigation" tabindex="0">
-  <button class="glass-nav-title" type="button" aria-expanded="false" aria-label="Toggle section navigation">Jump to section</button>
-  <ul class="glass-nav-list">
-    <li><a class="glass-nav-link" href="#overview">Overview</a></li>
-    <li><a class="glass-nav-link" href="#summary">Summary</a></li>
-    <li><a class="glass-nav-link" href="#quarter-totals">Quarter Totals</a></li>
-    <li><a class="glass-nav-link" href="#traffic-channels">Traffic Channels</a></li>
-    <li><a class="glass-nav-link" href="#top-pages">Top Pages</a></li>
-    <li><a class="glass-nav-link" href="#insights">Insights</a></li>
-  </ul>
-</nav>
-
-<!-- HERO -->
-<section class="hero" id="overview">
-  <div class="hero-grid">
-    <div>
-      <h1>Website Performance Overview</h1>
-      <p class="subtitle">
-        A quarterly snapshot of traffic, engagement, and actions across Integrated Staffing&#8217;s website.
-        Built from GA4 and Squarespace Analytics.
-      </p>
-    </div>
-    <div class="hero-meta" aria-label="Report metadata">
-      <div class="hero-chip"><strong>Source:</strong> GA4 | Squarespace</div>
-      <div class="hero-chip"><strong>Property:</strong> integratedstaffing.ca</div>
-      <div class="hero-chip" id="heroGenerated"><strong>Generated:</strong> &#8212;</div>
-      <div class="hero-chip" id="heroQuarter"><strong>Quarter:</strong> &#8212;</div>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="summary" aria-label="Executive summary">
-  <div class="section-header">
-    <div class="section-title"><h2>Summary</h2><p>Highlights at a glance.</p></div>
-    <div class="pill" aria-label="Summary type"><span class="pill-dot" aria-hidden="true"></span><span>Highlights</span></div>
-  </div>
-  <div class="summary-shell">
-    <div class="summary-rail" aria-hidden="true"></div>
-    <div class="summary-card"><ul class="summary-list" id="execSummaryList"></ul></div>
-  </div>
-</section>
-
-<section class="section" id="quarter-totals">
-  <div class="section-header">
-    <div class="section-title"><h2>Quarter Totals</h2><p>Core website reach, engagement, and intent signals across all channels.</p></div>
-  </div>
-  <div class="kpi-grid">
-    <div class="kpi-card" tabindex="0" data-tip="Total visits (sessions) tracks all website visits in the quarter, including returning users and multiple visits by the same person.">
-      <div class="kpi-label">Total Visits</div><div class="kpi-value" id="kpiSessions">&#8212;</div><span class="delta" id="dSessions">&#8212;</span>
-    </div>
-    <div class="kpi-card" tabindex="0" data-tip="Website users represents unique visitors in the quarter. This helps separate overall traffic volume from audience size.">
-      <div class="kpi-label">Website Users</div><div class="kpi-value" id="kpiUsers">&#8212;</div><span class="delta" id="dUsers">&#8212;</span>
-    </div>
-    <div class="kpi-card" tabindex="0" data-tip="Engagement rate is the percentage of sessions considered engaged (meaningful activity, longer time on site, or key actions).">
-      <div class="kpi-label">Engagement Rate</div><div class="kpi-value" id="kpiEngRate">&#8212;</div><span class="delta" id="dEngRate">&#8212;</span>
-    </div>
-    <div class="kpi-card" tabindex="0" data-tip="Average time on site shows how long users spend actively engaged on the website during a typical visit.">
-      <div class="kpi-label">Avg Time on Site</div><div class="kpi-value" id="kpiTime">&#8212;</div><span class="delta" id="dTime">&#8212;</span>
-    </div>
-    <div class="kpi-card" tabindex="0" data-tip="Candidate actions combines high-intent recruiting behaviors like apply clicks, form starts, and job interest actions.">
-      <div class="kpi-label">Candidate Actions</div><div class="kpi-value" id="kpiActions">&#8212;</div><span class="delta" id="dActions">&#8212;</span>
-    </div>
-    <div class="kpi-card" tabindex="0" data-tip="Form submissions counts completed website contact forms submitted this quarter.">
-      <div class="kpi-label">Form Submissions</div><div class="kpi-value" id="kpiForms">&#8212;</div><span class="delta" id="dForms">&#8212;</span>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="traffic-channels">
-  <div class="section-header">
-    <div class="section-title"><h2>Traffic Channels</h2><p>Where website visitors are coming from.</p></div>
-  </div>
-  <div class="channel-grid" id="channelGrid"></div>
-  <div class="charts">
-    <div class="chart-card">
-      <div class="chart-head">
-        <div class="chart-title">Sessions by Channel</div>
-        <div class="chart-toggle" role="group" aria-label="Sessions chart type">
-          <button type="button" class="ct-btn is-active" data-chart="sessions" data-type="bar">Bar</button>
-          <button type="button" class="ct-btn" data-chart="sessions" data-type="pie">Pie</button>
-        </div>
-      </div>
-      <div class="chart-wrap"><canvas id="sessionsChart"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-head">
-        <div class="chart-title">Engagement Rate by Channel</div>
-        <div class="chart-toggle" role="group" aria-label="Engagement chart type">
-          <button type="button" class="ct-btn is-active" data-chart="engagement" data-type="bar">Bar</button>
-          <button type="button" class="ct-btn" data-chart="engagement" data-type="pie">Pie</button>
-        </div>
-      </div>
-      <div class="chart-wrap"><canvas id="engChart"></canvas></div>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="top-pages">
-  <div class="section-header">
-    <div class="section-title"><h2>Top Landing Pages</h2><p>The pages driving the most traffic and highest intent actions.</p></div>
-  </div>
-  <div class="table-shell">
-    <div class="table-wrap" role="region" aria-label="Top landing pages table scroll area">
-      <table class="post-table top-pages-table" id="topPages"></table>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="insights" aria-label="Insights and analysis">
-  <div class="section-header">
-    <div class="section-title"><h2>Insights, Analysis, and Actions</h2><p>What&#8217;s working, what needs attention, and the focus moving forward.</p></div>
-    <div class="pill"><span class="pill-dot" aria-hidden="true"></span><span>Notes</span></div>
-  </div>
-  <div class="insight-grid">
-    <div class="insight-card"><h3>What&#8217;s Working</h3><div class="body" id="insWorking"></div></div>
-    <div class="insight-card"><h3>What&#8217;s Not Working</h3><div class="body" id="insNotWorking"></div></div>
-    <div class="insight-card"><h3>Actions From This Data</h3><div class="body" id="insActions"></div></div>
-    <div class="insight-card"><h3>Next Quarter Focus</h3><div class="body" id="insNext"></div></div>
-  </div>
-</section>
-
-</div>
-
-<script>
-/* ================================================
-   CONFIG
-================================================ */
-const REPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbwWpZWB_eP48AX_B4TkGgKjEJPGoB7y9ynpv74SWA3MiEtV-Kmd-0eV-ecfTIysbWY3CQ/exec";
-
-const REPORT_LABELS = {
-  webq2: { quarter: "Q2", range: "Dec\u2013Feb 2026" },
-  webq3: { quarter: "Q3", range: "Mar\u2013May 2026" }
-  // Add webq4 etc. as new quarters arrive
+const TWEAK_DEFAULTS = {
+  layout: "editorial",
+  density: "balanced",
+  accent: "isl"
 };
 
-/* Read ?report= from the URL, default to webq3 */
-const ACTIVE_REPORT = (new URLSearchParams(window.location.search).get("report") || "webq3").toLowerCase();
-const ACTIVE_LABEL  = REPORT_LABELS[ACTIVE_REPORT] || { quarter: "Web", range: "" };
+const REPORT_META = {
+  webq1: { quarter: "Q1", quarterWord: "One",   rangeLabel: "Sep – Nov 2025", issue: "1" },
+  webq2: { quarter: "Q2", quarterWord: "Two",   rangeLabel: "Dec – Feb 2026", issue: "2" },
+  webq3: { quarter: "Q3", quarterWord: "Three", rangeLabel: "Mar – May 2026", issue: "3" },
+};
 
-/* ================================================
-   STATE
-================================================ */
-let REPORT = null;
-let Q2     = null;
-let TOP_PAGES_SORT = { key: "views", dir: "desc" };
-const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-/* ================================================
-   FETCH — passes ?report= to Apps Script
-================================================ */
-async function loadData(){
-  const url = REPORT_ENDPOINT + "?report=" + encodeURIComponent(ACTIVE_REPORT) + "&nocache=" + Date.now();
-  const res = await fetch(url, { cache: "default" });
-  if(!res.ok) throw new Error("Web App JSON failed: " + res.status + " " + res.statusText);
-  return await res.json();
+// ── Helpers ──────────────────────────────────────────────────────────
+const fmtInt = n => (typeof n === "number" && Number.isFinite(n)) ? n.toLocaleString() : "—";
+const fmtPct = n => (typeof n === "number" && Number.isFinite(n)) ? n.toFixed(1) + "%" : "—";
+function fmtTime(sec) {
+  if (typeof sec !== "number" || !Number.isFinite(sec)) return "—";
+  const m = Math.floor(sec / 60), s = Math.round(sec % 60);
+  return m + ":" + String(s).padStart(2, "0");
 }
 
-function previousReportKey(key){
-  const m = String(key || "").match(/^(.*?)(\d+)$/i);
-  if(!m) return null;
+function parseDelta(d) {
+  if (d == null) return { dir: "flat", pct: 0 };
+  if (typeof d === "object" && "dir" in d) return d;
+  if (typeof d === "object" && "direction" in d) return { dir: d.direction, pct: d.percent || 0 };
+  if (typeof d !== "string") return { dir: "flat", pct: 0 };
+  const s = d.trim();
+  let dir = "flat";
+  if (/^[▲↑]/.test(s)) dir = "up";
+  else if (/^[▼↓]/.test(s)) dir = "down";
+  const m = s.match(/-?\d+(\.\d+)?/);
+  const pct = m ? Math.abs(parseFloat(m[0])) : 0;
+  return { dir, pct };
+}
+
+function arrow(dir) { return dir === "up" ? "↑" : dir === "down" ? "↓" : "—"; }
+
+function Delta({ d }) {
+  if (!d) return null;
+  const pd = parseDelta(d);
+  return (
+    <span className={"delta " + pd.dir}>
+      <span className="arrow serif ital">{arrow(pd.dir)}</span>
+      <span>{pd.pct.toFixed(1)}%</span>
+    </span>
+  );
+}
+
+// ── Data loading ──────────────────────────────────────────────────────
+function getReportKey() {
+  const params = new URLSearchParams(window.location.search);
+  return (params.get("report") || "webq3").toLowerCase();
+}
+
+function getPrevKey(key) {
+  const m = key.match(/^(.*?)(\d+)$/i);
+  if (!m) return null;
   const num = Number(m[2]);
-  if(!Number.isFinite(num) || num <= 1) return null;
+  if (num <= 1) return null;
   return m[1] + (num - 1);
 }
 
-async function loadReportByKey(key){
-  const url = REPORT_ENDPOINT + "?report=" + encodeURIComponent(key) + "&nocache=" + Date.now();
-  const res = await fetch(url, { cache: "default" });
-  if(!res.ok) throw new Error("Previous report fetch failed: " + res.status);
-  const json = await res.json();
-  if(json && json.error) throw new Error(json.error);
-  return json;
+async function fetchReport(key) {
+  const res = await fetch(`${WEB_ENDPOINT}?report=${key}&t=${Date.now()}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Fetch failed: " + res.status);
+  return await res.json();
 }
 
-/* ================================================
-   FORMATTERS
-================================================ */
-const fmtInt = n => (typeof n === "number" && Number.isFinite(n)) ? n.toLocaleString() : "\u2014";
-const fmtPct = n => (typeof n === "number" && Number.isFinite(n)) ? (n.toFixed(2) + "%") : "\u2014";
-function fmtTime(sec){
-  if(typeof sec !== "number" || !Number.isFinite(sec)) return "\u2014";
-  const m = Math.floor(sec / 60), s = Math.round(sec % 60);
-  return m + ":" + String(s).padStart(2,"0");
+function calcAutoDelta(cur, prev) {
+  if (typeof cur !== "number" || typeof prev !== "number" || prev === 0) return null;
+  const pct = ((cur - prev) / Math.abs(prev)) * 100;
+  return { dir: pct > 0 ? "up" : pct < 0 ? "down" : "flat", pct: Math.abs(pct) };
 }
-function animateCount(el, target, { duration=900, format="int" }={}){
-  if(!el || !Number.isFinite(target)) return;
-  if(prefersReducedMotion){ el.textContent = format==="pct" ? fmtPct(target) : format==="time" ? fmtTime(target) : fmtInt(target); return; }
-  const start = performance.now();
-  const tick = now => {
-    const p = Math.min((now - start) / duration, 1), e = 1 - Math.pow(1-p,3), v = e * target;
-    if(format==="pct") el.textContent = v.toFixed(2) + "%";
-    else if(format==="time") el.textContent = fmtTime(v);
-    else el.textContent = Math.round(v).toLocaleString();
-    if(p < 1) requestAnimationFrame(tick);
+
+// ── Masthead ──────────────────────────────────────────────────────────
+function Masthead({ reportKey }) {
+  const meta = REPORT_META[reportKey] || REPORT_META.webq3;
+  return (
+    <header className="masthead">
+      <div className="wrap masthead-row">
+        <div className="masthead-left">
+          <div className="masthead-mark serif">Integrated <em>Staffing</em></div>
+          <div className="masthead-sub">Quarterly Website Report</div>
+        </div>
+        <div className="masthead-right">
+          <span>Josiah Yule</span>
+          <span className="issue serif ital">Issue {meta.issue}</span>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+// ── Nav ───────────────────────────────────────────────────────────────
+function MastNav({ reportKey }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef();
+  const meta = REPORT_META[reportKey] || REPORT_META.webq3;
+
+  useEffect(() => {
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, []);
+
+  return (
+    <div className="masthead-nav">
+      <div className="wrap masthead-nav-row">
+        <nav className="nav-tabs">
+          <a href="/">Social Media</a>
+          <a href="/web/" className="is-active">Website</a>
+        </nav>
+        <div className="nav-meta">
+          <span>{meta.rangeLabel}</span>
+          <div ref={ref} style={{ position: "relative" }}>
+            <button className="qchooser" onClick={() => setOpen(!open)}>
+              <span>2026 · {meta.quarter}</span>
+              <span className="caret">▾</span>
+            </button>
+            <div className={"menu" + (open ? " is-open" : "")}>
+              <div className="group">2026</div>
+              <a href="?report=webq3" className={reportKey === "webq3" ? "active" : ""} onClick={() => setOpen(false)}>Q3 — Mar–May 2026</a>
+              <a href="?report=webq2" className={reportKey === "webq2" ? "active" : ""} onClick={() => setOpen(false)}>Q2 — Dec–Feb 2026</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Hero ──────────────────────────────────────────────────────────────
+function Hero({ reportKey, data }) {
+  const meta = REPORT_META[reportKey] || REPORT_META.webq3;
+  const note = typeof data.insights?.working === "string"
+    ? data.insights.working.split("\n\n")[0]
+    : "Website performance report for Integrated Staffing.";
+
+  return (
+    <section className="hero wrap">
+      <div className="hero-kicker">Volume 2026 · {meta.quarter} Report · Website Analytics</div>
+      <h1 className="hero-title serif">Quarter <em>{meta.quarterWord}</em></h1>
+      <div className="hero-lede-row">
+        <div className="hero-lede-meta">
+          <div className="meta-pair">
+            <span className="label">Reporting period</span>
+            <span className="value serif">{meta.rangeLabel}</span>
+          </div>
+          <div className="meta-pair">
+            <span className="label">Source</span>
+            <span className="value serif">GA4 · Squarespace</span>
+          </div>
+          <div className="meta-pair">
+            <span className="label">Property</span>
+            <span className="value serif">integratedstaffing.ca</span>
+          </div>
+          <div className="meta-pair">
+            <span className="label">Generated</span>
+            <span className="value serif">
+              {data.generatedAt ? new Date(data.generatedAt).toLocaleDateString() : "—"}
+            </span>
+          </div>
+        </div>
+        <p className="hero-lede serif">{note}</p>
+      </div>
+    </section>
+  );
+}
+
+// ── KPIs ──────────────────────────────────────────────────────────────
+const KPI_DEFS = [
+  { key: "sessions",            label: "Total Visits",       fmt: fmtInt, note: "all sessions this quarter" },
+  { key: "users",               label: "Unique Users",       fmt: fmtInt, note: "distinct visitors" },
+  { key: "engagementRate",      label: "Engagement Rate",    fmt: fmtPct, note: "meaningful sessions" },
+  { key: "avgEngagementTimeSec",label: "Avg Time on Site",   fmt: fmtTime, note: "active engagement per visit" },
+  { key: "actions",             label: "Candidate Actions",  fmt: fmtInt, note: "high-intent interactions" },
+  { key: "formSubmissions",     label: "Form Submissions",   fmt: fmtInt, note: "completed contact forms" },
+];
+
+function Numbers({ data, prevData }) {
+  const o = data.overall || {};
+  const prev = prevData?.overall || {};
+
+  return (
+    <section className="section wrap">
+      <header className="section-head">
+        <h2 className="section-title serif">The Numbers</h2>
+      </header>
+      <div className="kpi-grid">
+        {KPI_DEFS.map(k => {
+          const v = o[k.key];
+          const d = data.deltas?.[k.key]
+            ? parseDelta(data.deltas[k.key])
+            : calcAutoDelta(v, prev[k.key]) || { dir: "flat", pct: 0 };
+          return (
+            <div className="kpi" key={k.key}>
+              <div className="kpi-label">{k.label}</div>
+              <div className="kpi-value num">{k.fmt(v)}</div>
+              <div className="kpi-foot">
+                <span className={"delta " + d.dir}>
+                  <span className="arrow serif ital">{arrow(d.dir)}</span>
+                  <span>{d.pct.toFixed(1)}%</span>
+                </span>
+                <span className="delta-note">{k.note}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+// ── Traffic Channels ──────────────────────────────────────────────────
+function Channels({ data, prevData }) {
+  const channels = data.channels || [];
+  const prevChannels = prevData?.channels || [];
+
+  const prevMap = {};
+  prevChannels.forEach(c => { prevMap[c.name?.toLowerCase()] = c; });
+
+  return (
+    <section className="section wrap">
+      <header className="section-head">
+        <h2 className="section-title serif">Traffic Channels</h2>
+      </header>
+
+      <div className="channels">
+        <div className="channel-row-web is-head">
+          <div></div>
+          <div>Channel</div>
+          <div className="col-num">Sessions</div>
+          <div className="col-num">Share</div>
+          <div className="col-num">Eng. Rate</div>
+        </div>
+
+        {channels.map((c, i) => {
+          const prev = prevMap[c.name?.toLowerCase()] || null;
+          const sessionsDelta = calcAutoDelta(c.sessions, prev?.sessions);
+          const erDelta = calcAutoDelta(c.engagementRate, prev?.engagementRate);
+
+          return (
+            <div className="channel-row-web" key={c.name}>
+              <div className="channel-idx serif ital">{String(i + 1).padStart(2, "0")}</div>
+              <div>
+                <div className="channel-name serif">{c.name}</div>
+              </div>
+              <div className="col-num">
+                <span className="big">{fmtInt(c.sessions)}</span>
+                {sessionsDelta && (
+                  <span className={"delta " + sessionsDelta.dir} style={{ fontSize: 12 }}>
+                    <span className="arrow serif ital">{arrow(sessionsDelta.dir)}</span>
+                    <span>{sessionsDelta.pct.toFixed(1)}%</span>
+                  </span>
+                )}
+              </div>
+              <div className="col-num">
+                <span className="big">{fmtPct(c.shareOfTraffic)}</span>
+              </div>
+              <div className="col-num">
+                <span className="big">{fmtPct(c.engagementRate)}</span>
+                {erDelta && (
+                  <span className={"delta " + erDelta.dir} style={{ fontSize: 12 }}>
+                    <span className="arrow serif ital">{arrow(erDelta.dir)}</span>
+                    <span>{erDelta.pct.toFixed(1)}%</span>
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+// ── Top Pages ─────────────────────────────────────────────────────────
+function TopPages({ data, prevData }) {
+  const pages = data.topPages || [];
+  const prevPages = prevData?.topPages || [];
+
+  const prevMap = {};
+  prevPages.forEach(p => { prevMap[(p.key || p.name || "").toLowerCase()] = p; });
+
+  return (
+    <section className="section wrap">
+      <header className="section-head">
+        <h2 className="section-title serif">Top Pages</h2>
+      </header>
+
+      <div className="pages-grid" style={{ borderTop: "1px solid var(--rule)", borderLeft: "1px solid var(--rule)" }}>
+        {pages.map(p => {
+          const prev = prevMap[(p.key || p.name || "").toLowerCase()] || null;
+          const viewsDelta = calcAutoDelta(p.pageViews, prev?.pageViews);
+          const timeDelta = calcAutoDelta(p.avgTimeOnPageSec, prev?.avgTimeOnPageSec);
+
+          return (
+            <div className="page-tile" key={p.key}>
+              <div className="page-tile-name">{p.key}</div>
+              <div className="page-stat">
+                <div className="page-stat-label">Page Views</div>
+                <div className="page-stat-value">
+                  {fmtInt(p.pageViews)}
+                  {viewsDelta && (
+                    <span className={"delta " + viewsDelta.dir} style={{ fontSize: 13, marginLeft: 8 }}>
+                      <span className="arrow serif ital">{arrow(viewsDelta.dir)}</span>
+                      <span>{viewsDelta.pct.toFixed(1)}%</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="page-stat">
+                <div className="page-stat-label">Bounce Rate</div>
+                <div className="page-stat-value">{fmtPct(p.bounceRate)}</div>
+              </div>
+              <div className="page-stat">
+                <div className="page-stat-label">Avg Time</div>
+                <div className="page-stat-value">
+                  {fmtTime(p.avgTimeOnPageSec)}
+                  {timeDelta && (
+                    <span className={"delta " + timeDelta.dir} style={{ fontSize: 13, marginLeft: 8 }}>
+                      <span className="arrow serif ital">{arrow(timeDelta.dir)}</span>
+                      <span>{timeDelta.pct.toFixed(1)}%</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+// ── Insights ──────────────────────────────────────────────────────────
+function Notes({ data }) {
+  const ins = data.insights || {};
+  const toList = (v) => {
+    if (Array.isArray(v)) return v;
+    if (typeof v === "string" && v.trim()) return v.split("\n\n").filter(Boolean);
+    return ["No notes yet."];
   };
-  requestAnimationFrame(tick);
+
+  const sections = [
+    { key: "working",    label: "Working",      sub: "momentum to preserve", cls: "working" },
+    { key: "notWorking", label: "Not working",  sub: "habits to break",      cls: "notworking" },
+    { key: "actions",    label: "Actions",      sub: "this quarter",         cls: "" },
+    { key: "next",       label: "Next quarter", sub: "Q4 priorities",        cls: "" },
+  ];
+
+  return (
+    <section className="section wrap">
+      <header className="section-head">
+        <h2 className="section-title serif">Editor's Notes</h2>
+      </header>
+      <div className="notes">
+        {sections.map(s => (
+          <div className={"note " + s.cls} key={s.key}>
+            <h4>{s.label} <em className="serif ital">— {s.sub}</em></h4>
+            <ul>
+              {toList(ins[s.key]).map((n, i) => <li key={i}>{n}</li>)}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
-/* ================================================
-   QUARTER LABELS — run immediately (before fetch)
-   so pill + hero show correct quarter right away
-================================================ */
-(function initQuarterLabels(){
-  const pill = document.getElementById("activeQuarterLabel");
-  if(pill) pill.textContent = "Website " + ACTIVE_LABEL.quarter;
-
-  const heroQ = document.getElementById("heroQuarter");
-  if(heroQ) heroQ.innerHTML = "<strong>Quarter:</strong> " + ACTIVE_LABEL.quarter + " \u2022 " + ACTIVE_LABEL.range;
-
-  const loadLbl = document.getElementById("loadingQuarterLabel");
-  if(loadLbl) loadLbl.textContent = "Loading Website " + ACTIVE_LABEL.quarter;
-
-  /* Mark the active link in the dropdown */
-  document.querySelectorAll("[data-web-report]").forEach(el => {
-    el.classList.toggle("active", el.dataset.webReport === ACTIVE_REPORT);
-  });
-})();
-
-/* ================================================
-   AUTO DELTA CALCULATOR (client-side, Q3 vs Q2)
-================================================ */
-function toNum(v){ const n = Number(String(v ?? "").replace(/,/g,"")); return Number.isFinite(n) ? n : null; }
-function isNum(v){ return typeof v === "number" && Number.isFinite(v); }
-function formatAutoDelta(cur, prev){
-  const c = toNum(cur), p = toNum(prev);
-  if(c === null || p === null || p === 0) return null;
-  const pct = ((c - p) / Math.abs(p)) * 100;
-  if(!Number.isFinite(pct)) return null;
-  if(Math.abs(pct) < 0.005) return "0%";
-  const arrow = pct >= 0 ? "\u25B2" : "\u25BC";
-  const fixed = Math.abs(pct).toFixed(2).replace(/\.00$/,"").replace(/(\.\d)0$/,"$1");
-  return arrow + " " + fixed + "%";
+// ── Colophon ──────────────────────────────────────────────────────────
+function Colophon({ reportKey }) {
+  const meta = REPORT_META[reportKey] || REPORT_META.webq3;
+  return (
+    <footer className="wrap colophon">
+      <div className="left serif">
+        Integrated Staffing — Quarterly Website Report.<br />
+        {meta.quarter} 2026, {meta.rangeLabel}.
+      </div>
+      <div className="right">
+        <div className="upper">Internal — Do Not Distribute</div>
+        <div style={{ marginTop: 8 }}>Generated {new Date().toLocaleDateString()}</div>
+      </div>
+    </footer>
+  );
 }
 
-/* ================================================
-   DELTA RENDERER
-================================================ */
-function setDelta(id, val){
-  const el = document.getElementById(id);
-  if(!el) return;
-  el.textContent = val || "\u2014";
-  el.classList.remove("positive","negative");
-  if(!val) return;
-  const t = String(val).trim();
-  if(t.startsWith("\u25B2") || t.startsWith("\u2191")) el.classList.add("positive");
-  if(t.startsWith("\u25BC") || t.startsWith("\u2193")) el.classList.add("negative");
-}
+// ── App ───────────────────────────────────────────────────────────────
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [data, setData] = useState(null);
+  const [prevData, setPrevData] = useState(null);
+  const reportKey = getReportKey();
 
-/* ================================================
-   NAV DROPDOWN
-================================================ */
-function quarterDropdown(){
-  const btn = document.getElementById("navBtn"), menu = document.getElementById("navMenu");
-  if(!btn || !menu) return;
-  btn.addEventListener("click", () => { const open = menu.classList.toggle("is-open"); btn.setAttribute("aria-expanded", String(open)); });
-  document.addEventListener("click", e => { if(!btn.contains(e.target) && !menu.contains(e.target)){ menu.classList.remove("is-open"); btn.setAttribute("aria-expanded","false"); } });
-  document.addEventListener("keydown", e => { if(e.key === "Escape"){ menu.classList.remove("is-open"); btn.setAttribute("aria-expanded","false"); } });
-}
+  useEffect(() => {
+    document.body.setAttribute("data-layout", t.layout);
+    document.body.setAttribute("data-density", t.density);
+  }, [t.layout, t.density]);
 
-/* ================================================
-   PAYLOAD NORMALIZER
-================================================ */
-function normalizePayloadToReport(payload){
-  const looksNew = payload && typeof payload === "object" && payload.overall && typeof payload.overall === "object" && payload.deltas && typeof payload.deltas === "object";
-  if(looksNew){
-    return {
-      _meta: { generatedAt: payload.generatedAt || payload.config && payload.config.generatedAt || null },
-      config: payload.config || {},
-      execSummary: Array.isArray(payload.execSummary) ? payload.execSummary : [],
-      overall: payload.overall || {},
-      deltas: payload.deltas || {},
-      channels: Array.isArray(payload.channels) ? payload.channels : [],
-      topPages: Array.isArray(payload.topPages) ? payload.topPages : [],
-      insights: (payload.insights && typeof payload.insights === "object") ? payload.insights : { working:"", notWorking:"", actions:"", next:"" }
-    };
-  }
-  /* Legacy fallback */
-  const overall = {}, deltas = {};
-  const rows = Array.isArray(payload && payload.quarterTotals) ? payload.quarterTotals : [];
-  const norm = s => String(s || "").trim().toLowerCase();
-  rows.forEach(r => {
-    const f = norm(r && r.field), v = r && r.value, d = r && r.delta || "";
-    if(f.includes("visits") || f.includes("sessions")){ if(Number.isFinite(v)) overall.sessions=v; deltas.sessions=d; }
-    else if(f.includes("users")){ if(Number.isFinite(v)) overall.users=v; deltas.users=d; }
-    else if(f.includes("engagement rate")){ if(Number.isFinite(v)) overall.engagementRate=v; deltas.engagementRate=d; }
-    else if(f.includes("avg time") || f.includes("time on site")){ if(Number.isFinite(v)) overall.avgEngagementTimeSec=v; deltas.avgEngagementTimeSec=d; }
-    else if(f.includes("actions") || f.includes("candidate")){ if(Number.isFinite(v)) overall.actions=v; deltas.actions=d; }
-    else if(f.includes("form")){ if(Number.isFinite(v)) overall.formSubmissions=v; deltas.formSubmissions=d; }
-  });
-  return { _meta:{ generatedAt: payload && payload.generatedAt || null }, execSummary:[], overall, deltas, channels:[], topPages:[], insights:{ working:"", notWorking:"", actions:"", next:"" } };
-}
-
-/* ================================================
-   RENDERERS
-================================================ */
-function setHTML(id, val){ const el=document.getElementById(id); if(el) el.innerHTML = (val && String(val).trim()) ? String(val) : ""; }
-
-function renderGeneratedAt(){
-  const el = document.getElementById("heroGenerated");
-  if(!el) return;
-  const iso = REPORT && REPORT._meta && REPORT._meta.generatedAt;
-  if(!iso) return;
-  const d = new Date(iso);
-  if(!Number.isFinite(d.getTime())) return;
-  el.innerHTML = "<strong>Generated:</strong> " + d.toLocaleString(undefined,{year:"numeric",month:"short",day:"2-digit",hour:"2-digit",minute:"2-digit"});
-}
-
-function renderExecutiveSummary(){
-  const ul = document.getElementById("execSummaryList");
-  if(!ul) return;
-  ul.innerHTML = "";
-  ((REPORT && REPORT.execSummary) || []).forEach(s => {
-    const li = document.createElement("li");
-    li.innerHTML = '<span class="summary-dot" aria-hidden="true"></span><span class="summary-text">' +
-      String(s).replace(/([\u25B2]\s?\d+(\.\d+)?%)/g,'<span class="summary-badge positive">$1</span>').replace(/([\u25BC]\s?\d+(\.\d+)?%)/g,'<span class="summary-badge negative">$1</span>') +
-      '</span>';
-    ul.appendChild(li);
-  });
-}
-
-function renderInsights(){
-  const ins = (REPORT && REPORT.insights) || {};
-  setHTML("insWorking", ins.working);
-  setHTML("insNotWorking", ins.notWorking);
-  setHTML("insActions", ins.actions);
-  setHTML("insNext", ins.next);
-}
-
-function getActionsVal(o){ return typeof o && o.actions !== undefined && Number.isFinite(o.actions) ? o.actions : typeof o && o.candidateActions !== undefined && Number.isFinite(o.candidateActions) ? o.candidateActions : undefined; }
-function getActionsDelta(d){ return d && (d.actions || d.candidateActions || d.conversions) || undefined; }
-
-function renderKPIs(){
-  const o = (REPORT && REPORT.overall) || {}, d = (REPORT && REPORT.deltas) || {};
-  function r(id, val, fmt){ const el=document.getElementById(id); if(!el) return; el.textContent = fmt==="pct" ? fmtPct(val) : fmt==="time" ? fmtTime(val) : fmtInt(val); if(Number.isFinite(val)) animateCount(el,val,{format:fmt}); }
-  r("kpiSessions", o.sessions, "int");
-  r("kpiUsers", o.users, "int");
-  r("kpiEngRate", o.engagementRate, "pct");
-  r("kpiTime", o.avgEngagementTimeSec, "time");
-  r("kpiForms", o.formSubmissions, "int");
-  r("kpiActions", getActionsVal(o), "int");
-  setDelta("dSessions", d.sessions);
-  setDelta("dUsers", d.users);
-  setDelta("dEngRate", d.engagementRate);
-  setDelta("dTime", d.avgEngagementTimeSec);
-  setDelta("dForms", d.formSubmissions);
-  setDelta("dActions", getActionsDelta(d));
-}
-
-function getChannelTip(name){
-  const tips = { direct:"Direct traffic includes people who visit by typing the URL, using a bookmark, or from untagged links.","organic search":"Organic Search comes from unpaid search results and reflects SEO visibility.",referral:"Referral traffic comes from clicks on links from other external websites.",social:"Social traffic comes from social media platforms.",email:"Email traffic comes from newsletter and campaign links.",paid:"Paid traffic is driven by advertising campaigns.","paid search":"Paid Search comes from sponsored search listings.",display:"Display traffic comes from banner/display ad placements.","cross-network":"Cross-network traffic is from campaigns running across multiple Google networks." };
-  const k = String(name || "").trim().toLowerCase();
-  return tips[k] || (name + " groups sessions by acquisition source for traffic volume, share, and engagement comparison.");
-}
-
-function makeDeltaHTML(val){
-  if(!val) return "";
-  const t = String(val).trim();
-  if(!t || t === "—") return "";
-  let cls = "";
-  if(t.startsWith("▲") || t.startsWith("↑")) cls = " positive";
-  else if(t.startsWith("▼") || t.startsWith("↓")) cls = " negative";
-  return '<span class="delta delta-sm' + cls + '">' + t + "</span>";
-}
-
-function renderChannels(){
-  const grid = document.getElementById("channelGrid");
-  if(!grid) return;
-  grid.innerHTML = "";
-  const channels = (REPORT && REPORT.channels) || [];
-  const total = channels.reduce((s,c) => s + (c.sessions || 0), 0);
-  channels.forEach(c => {
-    const div = document.createElement("div");
-    div.className = "channel"; div.tabIndex = 0;
-    div.setAttribute("data-tip", getChannelTip(c.name));
-    const share = total > 0 ? ((c.sessions || 0) / total * 100) : undefined;
-    const prevC = Q2 && (Q2.channels || []).find(x => (x.name||"").toLowerCase() === (c.name||"").toLowerCase());
-    const sessionsDelta = formatAutoDelta(c.sessions, prevC && prevC.sessions) || c.sessionsDelta || "";
-    const engRateDelta  = formatAutoDelta(c.engagementRate, prevC && prevC.engagementRate) || c.engagementRateDelta || "";
-    div.innerHTML = "<h3>" + (c.name||"Channel") + "</h3>" +
-      '<div class="cstat"><span>Sessions</span><strong>' + fmtInt(c.sessions) + "</strong>" + makeDeltaHTML(sessionsDelta) + "</div>" +
-      '<div class="cstat"><span>Share of Traffic</span><strong>' + fmtPct(share) + "</strong></div>" +
-      '<div class="cstat"><span>Engagement Rate</span><strong>' + fmtPct(c.engagementRate) + "</strong>" + makeDeltaHTML(engRateDelta) + "</div>";
-    grid.appendChild(div);
-  });
-}
-
-function pv(p){ return typeof p && p.pageViews !== undefined && Number.isFinite(p.pageViews) ? p.pageViews : typeof p && p.views !== undefined && Number.isFinite(p.views) ? p.views : undefined; }
-function br(p){ const v = p && (p.bounceRate !== undefined ? p.bounceRate : p.bounce_rate !== undefined ? p.bounce_rate : p.bounce); return typeof v === "number" && Number.isFinite(v) ? (v <= 1 ? v*100 : v) : undefined; }
-function at(p){ return p && (p.avgTimeOnPageSec !== undefined ? p.avgTimeOnPageSec : p.avgTimeSec !== undefined ? p.avgTimeSec : p.avgEngagementTimeSec); }
-function sortArrow(k){ return TOP_PAGES_SORT.key !== k ? "\u2195" : TOP_PAGES_SORT.dir === "asc" ? "\u25B2" : "\u25BC"; }
-function toggleSort(k){ TOP_PAGES_SORT = TOP_PAGES_SORT.key===k ? {key:k,dir:TOP_PAGES_SORT.dir==="asc"?"desc":"asc"} : {key:k,dir:"desc"}; renderTopPages(); }
-
-function renderTopPages(){
-  const table = document.getElementById("topPages");
-  if(!table) return;
-  const ORDER = ["Home Page","About","Contract","Direct Hire","Find Work","Team","Learn","Contact"];
-  const pages = (REPORT && Array.isArray(REPORT.topPages)) ? REPORT.topPages : [];
-  const byKey = new Map();
-  pages.forEach(p => { const k = String((p && (p.key || p.name || p.title)) || "").trim().toLowerCase(); if(k) byKey.set(k,p); });
-  const q2Pages = (Q2 && Array.isArray(Q2.topPages)) ? Q2.topPages : [];
-  const q2ByKey = new Map();
-  q2Pages.forEach(p => { const k = String((p && (p.key || p.name)) || "").trim().toLowerCase(); if(k) q2ByKey.set(k,p); });
-  const rows = ORDER.map((label,i) => {
-    const p = byKey.get(label.toLowerCase()) || {};
-    const q2p = q2ByKey.get(label.toLowerCase()) || null;
-    return {
-      label, i,
-      views:   pv(p), bounce: br(p), timeSec: at(p),
-      viewsDelta:  formatAutoDelta(pv(p),  pv(q2p))  || p.viewsDelta  || "",
-      bounceDelta: formatAutoDelta(br(p),  br(q2p))  || p.bounceDelta || "",
-      timeDelta:   formatAutoDelta(at(p),  at(q2p))  || p.timeDelta   || ""
-    };
-  });
-  const sorted = [...rows].sort((a,b) => {
-    const k=TOP_PAGES_SORT.key, d=TOP_PAGES_SORT.dir==="asc"?1:-1, av=a[k], bv=b[k];
-    const an=(typeof av==="number"&&Number.isFinite(av))?av:null, bn=(typeof bv==="number"&&Number.isFinite(bv))?bv:null;
-    if(an===null&&bn===null) return a.i-b.i; if(an===null) return 1; if(bn===null) return -1;
-    return (an-bn)*d;
-  });
-  table.innerHTML = "<thead><tr>" +
-    "<th>Landing Page</th>" +
-    '<th><button type="button" class="sort-btn align-right" data-sort-key="views">Page Views <span class="sort-arrow">' + sortArrow("views") + "</span></button></th>" +
-    '<th><div class="sort-head"><button type="button" class="sort-btn align-right" data-sort-key="bounce">Bounce Rate <span class="sort-arrow">' + sortArrow("bounce") + '</span></button><span class="mini-tip" tabindex="0" role="img" data-tip="Bounce rate is the percentage of visits where users leave after viewing just one page, without any additional interaction.">?</span></div></th>' +
-    '<th><button type="button" class="sort-btn align-right" data-sort-key="timeSec">Avg Time on Page <span class="sort-arrow">' + sortArrow("timeSec") + "</span></button></th>" +
-    "</tr></thead><tbody>" +
-    sorted.map(r => "<tr><td>" + r.label + '</td><td><span style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end;width:100%;">' + fmtInt(r.views) + makeDeltaHTML(r.viewsDelta) + '</span></td><td><span style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end;width:100%;">' + fmtPct(r.bounce) + makeDeltaHTML(r.bounceDelta) + '</span></td><td><span style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end;width:100%;">' + fmtTime(r.timeSec) + makeDeltaHTML(r.timeDelta) + "</span></td></tr>").join("") +
-    "</tbody>";
-  table.querySelectorAll("[data-sort-key]").forEach(btn => btn.addEventListener("click", () => toggleSort(btn.dataset.sortKey)));
-}
-
-/* ================================================
-   CHARTS
-================================================ */
-let _sChart = null, _eChart = null;
-function cColor(i){ return ["rgba(0,112,202,.82)","rgba(245,158,11,.82)","rgba(239,68,68,.82)","rgba(16,185,129,.82)"][i%4]; }
-function cBorder(i){ return ["rgba(0,84,154,1)","rgba(217,119,6,1)","rgba(220,38,38,1)","rgba(5,150,105,1)"][i%4]; }
-
-function buildChart(which, labels, values, type){
-  const isSess = which === "sessions";
-  const ctx = document.getElementById(isSess ? "sessionsChart" : "engChart");
-  if(!ctx) return;
-  const existing = isSess ? _sChart : _eChart;
-  if(existing) existing.destroy();
-  const chart = new Chart(ctx.getContext("2d"), {
-    type,
-    data: { labels, datasets: [{ label: isSess ? "Sessions" : "Engagement Rate (%)", data: values, backgroundColor: labels.map((_,i) => cColor(i)), borderColor: labels.map((_,i) => cBorder(i)), borderWidth:1 }] },
-    options: { responsive:true, maintainAspectRatio:false, animation: prefersReducedMotion ? false : { duration:720, delay(c){ return c && c.type==="data" && c.mode==="default" ? c.dataIndex*90 : 0; } }, plugins:{ legend:{ display: type==="pie" } }, scales: type==="pie" ? {} : { y:{ beginAtZero:true, ...(isSess ? {} : { suggestedMax:100 }) } } }
-  });
-  if(isSess) _sChart = chart; else _eChart = chart;
-}
-
-function buildCharts(){
-  const labels   = ((REPORT && REPORT.channels) || []).map(c => c.name);
-  const sessions = ((REPORT && REPORT.channels) || []).map(c => c.sessions || 0);
-  const engRates = ((REPORT && REPORT.channels) || []).map(c => typeof c.engagementRate === "number" ? c.engagementRate : 0);
-  const sType = (document.querySelector('.ct-btn[data-chart="sessions"].is-active') || {}).dataset && document.querySelector('.ct-btn[data-chart="sessions"].is-active').dataset.type || "bar";
-  const eType = (document.querySelector('.ct-btn[data-chart="engagement"].is-active') || {}).dataset && document.querySelector('.ct-btn[data-chart="engagement"].is-active').dataset.type || "bar";
-  buildChart("sessions", labels, sessions, sType);
-  buildChart("engagement", labels, engRates, eType);
-}
-
-function wireChartToggles(){
-  document.querySelectorAll(".ct-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const group = btn.closest(".chart-toggle");
-      if(group){ group.querySelectorAll(".ct-btn").forEach(n => n.classList.remove("is-active")); btn.classList.add("is-active"); }
-      const k = btn.dataset.chart, t = btn.dataset.type;
-      if(k==="sessions" && _sChart) buildChart("sessions", _sChart.data.labels.slice(), _sChart.data.datasets[0].data.slice(), t);
-      if(k==="engagement" && _eChart) buildChart("engagement", _eChart.data.labels.slice(), _eChart.data.datasets[0].data.slice(), t);
-    });
-  });
-}
-
-/* ================================================
-   ANIMATIONS + SECTION NAV
-================================================ */
-function wireReveal(){
-  const targets = Array.from(document.querySelectorAll(".section,.hero,.chart-card,.table-shell"));
-  targets.forEach(el => el.classList.add("reveal"));
-  if(prefersReducedMotion || !("IntersectionObserver" in window)){ targets.forEach(el => el.classList.add("is-visible")); return; }
-  const obs = new IntersectionObserver(entries => entries.forEach(e => { if(!e.isIntersecting) return; e.target.classList.add("is-visible"); obs.unobserve(e.target); }), { threshold:.16, rootMargin:"0px 0px -10% 0px" });
-  targets.forEach(el => obs.observe(el));
-}
-
-function wirePageTransition(){
-  document.querySelectorAll(".pill-item[href]").forEach(l => l.addEventListener("click", () => document.body.classList.add("page-transitioning")));
-}
-
-function wireFloatNav(){
-  const nav = document.querySelector(".glass-nav"), toggle = nav && nav.querySelector(".glass-nav-title");
-  const links = Array.from(document.querySelectorAll(".glass-nav-link"));
-  if(!links.length || !nav || !toggle) return;
-  const close = () => { nav.classList.remove("is-open"); toggle.setAttribute("aria-expanded","false"); };
-  toggle.addEventListener("click", e => { e.preventDefault(); const open = nav.classList.toggle("is-open"); toggle.setAttribute("aria-expanded", open ? "true" : "false"); });
-  links.forEach(l => l.addEventListener("click", () => { if(window.matchMedia("(max-width:700px)").matches) close(); }));
-  document.addEventListener("click", e => { if(!nav.contains(e.target)) close(); });
-  const sections = links.map(l => document.querySelector(l.getAttribute("href"))).filter(Boolean);
-  const setActive = id => links.forEach(l => { const a = l.getAttribute("href") === "#"+id; l.classList.toggle("is-active",a); a ? l.setAttribute("aria-current","true") : l.removeAttribute("aria-current"); });
-  const obs = new IntersectionObserver(entries => { const vis = entries.filter(e => e.isIntersecting).sort((a,b) => b.intersectionRatio - a.intersectionRatio); if(vis[0]) setActive(vis[0].target.id); }, { threshold:[.25,.5,.75], rootMargin:"-25% 0px -45% 0px" });
-  sections.forEach(s => obs.observe(s));
-  if(sections[0]) setActive(sections[0].id);
-}
-
-function hideLoader(){ const el = document.getElementById("loadingOverlay"); if(el) el.classList.add("is-hidden"); }
-
-/* ================================================
-   INIT
-================================================ */
-quarterDropdown();
-
-(async function init(){
-  try{
-    const payload = await loadData();
-    if(payload && payload.error){ console.error(payload); throw new Error(payload.error); }
-    REPORT = normalizePayloadToReport(payload);
-
-    const prevKey = previousReportKey(ACTIVE_REPORT);
-    if(prevKey){
-      try{
-        const q2Raw = await loadReportByKey(prevKey);
-        if(q2Raw) Q2 = normalizePayloadToReport(q2Raw);
-      }catch(err){
-        console.warn("Previous quarter (" + prevKey + ") could not be loaded. Deltas will not display.", err);
+  useEffect(() => {
+    (async () => {
+      try {
+        const current = await fetchReport(reportKey);
+        setData(current);
+        const prevKey = getPrevKey(reportKey);
+        if (prevKey) {
+          try {
+            const prev = await fetchReport(prevKey);
+            setPrevData(prev);
+          } catch {}
+        }
+      } catch (err) {
+        console.error(err);
       }
-    }
-    wireChartToggles();
-    renderGeneratedAt();
-    renderKPIs();
-    renderChannels();
-    renderTopPages();
-    buildCharts();
-    renderExecutiveSummary();
-    renderInsights();
-    wireFloatNav();
-    wirePageTransition();
-    wireReveal();
-  }catch(err){
-    console.error(err);
-    alert("Data failed to load. Open console for details.");
-  }finally{
-    hideLoader();
-  }
-})();
-</script>
+    })();
+  }, [reportKey]);
 
+  if (!data) return (
+    <div style={{ padding: "80px 32px", fontFamily: "var(--serif)", fontSize: "24px" }}>
+      Loading…
+    </div>
+  );
+
+  return (
+    <React.Fragment>
+      <Masthead reportKey={reportKey} />
+      <MastNav reportKey={reportKey} />
+      <main>
+        <Hero reportKey={reportKey} data={data} />
+        <Numbers data={data} prevData={prevData} />
+        <Channels data={data} prevData={prevData} />
+        <TopPages data={data} prevData={prevData} />
+        <Notes data={data} />
+      </main>
+      <Colophon reportKey={reportKey} />
+
+      <TweaksPanel title="Tweaks">
+        <TweakSection title="Layout">
+          <TweakRadio
+            label="Mode"
+            value={t.layout}
+            onChange={v => setTweak("layout", v)}
+            options={[
+              { value: "editorial", label: "Editorial" },
+              { value: "apple",     label: "Apple" },
+              { value: "document",  label: "Document" }
+            ]}
+          />
+          <TweakRadio
+            label="Density"
+            value={t.density}
+            onChange={v => setTweak("density", v)}
+            options={[
+              { value: "airy",     label: "Airy" },
+              { value: "balanced", label: "Balanced" },
+              { value: "tight",    label: "Tight" }
+            ]}
+          />
+        </TweakSection>
+      </TweaksPanel>
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
 </body>
 </html>
