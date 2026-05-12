@@ -431,6 +431,11 @@ function AllPosts({ data }) {
     .sort((a, b) => {
       const dir = sort.dir === "desc" ? -1 : 1;
       if (sort.key === "Date") return dir * (new Date(a.Date) - new Date(b.Date));
+      if (sort.key === "EngRate") {
+        const erA = a.Impressions > 0 ? (a.Engagements / a.Impressions) * 100 : 0;
+        const erB = b.Impressions > 0 ? (b.Engagements / b.Impressions) * 100 : 0;
+        return dir * (erA - erB);
+      }
       return dir * ((a[sort.key] || 0) - (b[sort.key] || 0));
     });
 
@@ -459,7 +464,7 @@ function AllPosts({ data }) {
               <th>Platforms</th>
               <th className="r" style={thStyle} onClick={() => toggleSort("Impressions")}>Impressions{sortArrow("Impressions")}</th>
               <th className="r" style={thStyle} onClick={() => toggleSort("Engagements")}>Engagements{sortArrow("Engagements")}</th>
-              <th className="r">Eng. Rate</th>
+              <th className="r" style={thStyle} onClick={() => toggleSort("EngRate")}>Eng. Rate{sortArrow("EngRate")}</th>
               <th className="r">Health</th>
             </tr>
           </thead>
