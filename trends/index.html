@@ -35,7 +35,6 @@
     .proj-card-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); font-family: var(--sans); margin-bottom: 14px; }
     .proj-number { font-family: var(--serif); font-size: 40px; line-height: 1; letter-spacing: -0.03em; color: var(--ink); margin-bottom: 2px; }
     .proj-number-sub { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); font-family: var(--sans); margin-bottom: 16px; }
-    .proj-range { font-size: 12px; color: var(--ink-3); margin-bottom: 12px; font-family: var(--sans); }
     .proj-range strong { color: var(--ink); }
     .proj-progress-wrap { margin-bottom: 16px; }
     .proj-progress-track { height: 3px; background: var(--rule); border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
@@ -50,13 +49,7 @@
     .proj-stat-value.na  { color: var(--ink-3); font-weight: 400; font-style: italic; font-size: 12px; }
     .proj-stat-value.rate{ color: var(--isl-blue); }
 
-    .chart-toggle { display: flex; gap: 0; border: 1px solid var(--rule); width: fit-content; }
-    .chart-toggle-btn { padding: 7px 16px; border: none; background: transparent; font-size: 12px; font-family: var(--sans); font-weight: 500; color: var(--ink-3); cursor: pointer; transition: background .15s, color .15s; letter-spacing: 0.04em; }
-    .chart-toggle-btn + .chart-toggle-btn { border-left: 1px solid var(--rule); }
-    .chart-toggle-btn.is-active { background: var(--ink); color: var(--paper); }
-    .chart-toggle-btn:hover:not(.is-active) { color: var(--ink); background: var(--paper-2); }
-
-    .charts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); gap: 1px; background: var(--rule); }
+.charts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); gap: 1px; background: var(--rule); }
     @media (max-width: 600px) { .charts-grid { grid-template-columns: 1fr; } }
     .chart-card { background: var(--paper); padding: 24px; }
     .chart-card-title { font-family: var(--serif); font-size: 18px; letter-spacing: -0.01em; color: var(--ink); margin-bottom: 2px; }
@@ -66,21 +59,6 @@
     .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--ink-3); font-family: var(--sans); }
     .legend-dot { width: 10px; height: 10px; border-radius: 1px; flex-shrink: 0; }
 
-    .method-body { font-size: 13px; color: var(--ink-2); font-family: var(--sans); line-height: 1.7; }
-    .method-body li { margin-bottom: 12px; padding-left: 4px; }
-    .method-body li strong { color: var(--ink); }
-    .method-body code { font-family: monospace; font-size: 12px; background: var(--paper-2); padding: 1px 5px; border-radius: 2px; }
-
-    .refresh-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 10px 0; margin-bottom: 40px; border-bottom: 1px solid var(--rule); font-size: 12px; color: var(--ink-3); font-family: var(--sans); }
-    .refresh-bar-left { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-    .live-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #1a7f4b; margin-right: 6px; animation: livePulse 2s ease-in-out infinite; }
-    @keyframes livePulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-    .refresh-btn { font-size: 11px; font-family: var(--sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); background: transparent; border: 1px solid var(--rule); padding: 5px 12px; cursor: pointer; transition: border-color .15s, color .15s; }
-    .refresh-btn:hover { border-color: var(--ink); color: var(--ink); }
-    .refresh-btn:disabled { opacity: .4; cursor: not-allowed; }
-
-    .error-bar { font-size: 12px; font-family: var(--sans); color: #b91c1c; padding: 10px 0; border-bottom: 1px solid rgba(185,28,28,.2); margin-bottom: 24px; display: none; }
-    .error-bar.show { display: block; }
   </style>
 </head>
 <body data-layout="editorial" data-density="balanced">
@@ -106,6 +84,7 @@ renderNav("trends", null, null);
         <strong>Q3:</strong>&nbsp;<span id="progressLabel">calculating…</span>
         <span class="hero-progress-track"><span class="hero-progress-fill" id="progressFill" style="width:0%"></span></span>
       </span>
+      <span id="updatedAt" style="color:var(--ink-4)"></span>
     </div>
   </div>
 
@@ -128,38 +107,17 @@ renderNav("trends", null, null);
         <div class="t-section-title">Quarterly Trends</div>
         <div class="t-section-sub">Quarter-over-quarter trajectory with Q3 pace projections.</div>
       </div>
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-        <div class="chart-toggle">
-          <button class="chart-toggle-btn is-active" id="btnComparison">Quarter Comparison</button>
-          <button class="chart-toggle-btn" id="btnTimeline">Q3 Projection Timeline</button>
-        </div>
-      </div>
+      <span class="t-badge">Q1 · Q2 · Q3</span>
     </div>
     <div class="charts-grid" id="chartsGrid"></div>
   </section>
 
-  <section class="t-section">
-    <div class="t-section-head">
-      <div>
-        <div class="t-section-label">Methodology</div>
-        <div class="t-section-title">How Projections Work</div>
-      </div>
-    </div>
-    <ul class="method-body">
-      <li><strong>Blended projection model</strong> — Projections are hidden for the first 7 days of the quarter. After that, up to three signals are blended: (1) <strong>Simple pace</strong> — <code>(V ÷ D_elapsed) × D_total</code>; (2) <strong>7-day rolling rate</strong> — the daily increment over the past 7 session snapshots projected forward; (3) <strong>Linear regression</strong> — a least-squares line fitted to all session snapshots and extrapolated to quarter-end. When all three are available weights are 20/40/40. During the first 14 days the result is faded toward Q2 pace to dampen early-quarter volatility.</li>
-      <li><strong>Posts multiplier</strong> — For impressions, reactions, link clicks, shares, and comments the blended projection is mixed 70/30 with a posts-adjusted estimate: <em>(engagement per post) × (projected posts for the quarter)</em>. This corrects for changes in posting frequency between quarters.</li>
-      <li><strong>Confidence range</strong> — Once at least 5 session snapshots are stored, each card shows a low–high range based on the standard deviation of historical simple-pace projections.</li>
-      <li><strong>Followers</strong> — Uses net-new growth starting from the Q2 closing total. Rate vs Q2 compares daily growth rate against Q2's daily growth rate. The headline shows projected total (Q2 actual + projected net new).</li>
-      <li><strong>Q3 Projection Timeline</strong> — Each data point represents one session snapshot stored locally in your browser. As pace shifts day-to-day the line drifts, revealing whether Q3 is trending ahead of or behind expectations. A reference line shows the Q2 final total.</li>
-      <li>Data is fetched live from Google Apps Script and auto-refreshes every 5 minutes.</li>
-    </ul>
-  </section>
 
 </div>
 
 <script>
-const ENDPOINT = "https://script.google.com/macros/s/AKfycbwB-RGI1lVHrUE03PkkSEYbLuiTLxE4phMBBOm81diNJtSPyUWGoB_bOlkgFIoVF4yzLQ/exec";
-const REFRESH_SEC = 300;
+const ENDPOINT="https://script.google.com/macros/s/AKfycbwB-RGI1lVHrUE03PkkSEYbLuiTLxE4phMBBOm81diNJtSPyUWGoB_bOlkgFIoVF4yzLQ/exec";
+const REFRESH_SEC=300;
 
 const QUARTERS = [
   { key:"islq1", label:"Q1", rangeLabel:"Sep–Nov 2025", start:new Date("2025-09-01"), end:new Date("2025-12-01"), localFallback:"../2026q1/2026-q1.json" },
@@ -235,20 +193,15 @@ function computeAdvancedPace(current, qStart, qEnd, q2Rate, metricHistory, histB
   else if(rollingProj!==null)            blended=0.35*simpleProj+0.65*rollingProj;
   else                                   blended=simpleProj;
   const confidence=Math.min(1,dElapsed/14);
-  let projected = (q2Rate!==null&&Number.isFinite(q2Rate)&&q2Rate>0) ? confidence*blended+(1-confidence)*(q2Rate*dTotal) : blended;
-  let low=null, high=null;
-  if(metricHistory.length>=5){
-    const histProjs=metricHistory.map(s=>{ const dE=(s.t-qStart.getTime())/86400000; if(dE<1) return null; return ((s.val-histBaseline)/dE)*dTotal; }).filter(v=>v!==null&&Number.isFinite(v)&&v>0);
-    if(histProjs.length>=3){ const mean=histProjs.reduce((a,b)=>a+b,0)/histProjs.length; const std=Math.sqrt(histProjs.reduce((s,v)=>s+(v-mean)**2,0)/histProjs.length); low=Math.max(0,projected-std); high=projected+std; }
-  }
-  return {projected, low, high, dailyRate:rollingRate??simpleRate, dElapsed, dTotal};
+  const projected=(q2Rate!==null&&Number.isFinite(q2Rate)&&q2Rate>0)?confidence*blended+(1-confidence)*(q2Rate*dTotal):blended;
+  return {projected, dailyRate:rollingRate??simpleRate, dElapsed, dTotal};
 }
 
 function getMetricHistory(metricId){ return loadHistory().filter(s=>s.vals&&s.vals[metricId]!==undefined).map(s=>({t:s.t,val:s.vals[metricId]})); }
 function applyPostsMultiplier(pace, m, q3v, postsQ3v, projectedPosts){
   if(!pace||!m.postsMultiplier||projectedPosts===null||!postsQ3v||postsQ3v<=0||q3v===null) return pace;
-  const engPerPost=q3v/postsQ3v, postsMulProj=engPerPost*projectedPosts, blendedProj=0.70*pace.projected+0.30*postsMulProj, scale=pace.projected>0?blendedProj/pace.projected:1;
-  return{...pace,projected:blendedProj,low:pace.low!==null?pace.low*scale:null,high:pace.high!==null?pace.high*scale:null};
+  const engPerPost=q3v/postsQ3v, postsMulProj=engPerPost*projectedPosts, blendedProj=0.70*pace.projected+0.30*postsMulProj;
+  return{...pace,projected:blendedProj};
 }
 
 const HIST_KEY="islq3_proj_history";
@@ -289,27 +242,22 @@ function renderProjCards(qdata, q3comp, q3done){
     const headlineVal=projected!==null&&m.baselineFromQ2&&q2v!==null?q2v+projected:projected;
     const headline=headlineVal!==null?fmtApprox(headlineVal,m.isPercent):fmt(q3v,m.isPercent);
     const headlineSub=headlineVal!==null?(q3done?(m.baselineFromQ2?"Q3 Projected Total":"Q3 Final"):(m.baselineFromQ2?"Projected Total · Q3":"Projected Final · Q3")):(m.baselineFromQ2?"Q3 Current Total":"Q3 Current");
-    let rangeHtml="";
-    if(pace&&pace.low!==null&&pace.high!==null){ const lv=m.baselineFromQ2&&q2v!==null?q2v+pace.low:pace.low; const hv=m.baselineFromQ2&&q2v!==null?q2v+pace.high:pace.high; rangeHtml=`<div class="proj-range"><strong>Range:</strong> ${fmtApprox(lv,m.isPercent)} – ${fmtApprox(hv,m.isPercent)}</div>`; }
     const dE=pace?Math.round(pace.dElapsed):0; const dT=pace?Math.round(pace.dTotal):92;
     const stat1Label=m.baselineFromQ2?"Q3 Net New":"Q3 to Date"; const stat1Val=m.baselineFromQ2&&q3v!==null&&q2v!==null?fmt(q3v-q2v,m.isPercent):fmt(q3v,m.isPercent);
     let stat2Val="—", stat2Cls=""; if(pace){ stat2Val=m.isPercent?`${pace.dailyRate.toFixed(3)}%/day`:`${pace.dailyRate.toFixed(1)}/day`; stat2Cls="rate"; }
     let stat3Val="—", stat3Cls="na"; if(rateVsQ2!==null){ const sign=rateVsQ2>=0?"▲ +":"▼ "; stat3Val=`${sign}${Math.abs(rateVsQ2).toFixed(1)}%`; stat3Cls=rateVsQ2>=0?"pos":"neg"; } else if(!m.isPace){ stat3Val="n/a"; }
-    return `<div class="proj-card"><div class="proj-card-label">${m.label}</div><div class="proj-number">${headline}</div><div class="proj-number-sub">${headlineSub}</div>${rangeHtml}<div class="proj-progress-wrap"><div class="proj-progress-track"><div class="proj-progress-fill" style="width:${Math.min(100,q3comp*100).toFixed(1)}%"></div></div><div class="proj-progress-labels"><span>Day ${dE} of ${dT}${q3done?" · complete":""}</span><span>${pct}%</span></div></div><div class="proj-stats-grid"><div class="proj-stat"><div class="proj-stat-label">${stat1Label}</div><div class="proj-stat-value">${stat1Val}</div></div><div class="proj-stat"><div class="proj-stat-label">Daily Rate</div><div class="proj-stat-value ${stat2Cls}">${stat2Val}</div></div><div class="proj-stat"><div class="proj-stat-label">Rate vs Q2</div><div class="proj-stat-value ${stat3Cls}">${stat3Val}</div></div><div class="proj-stat"><div class="proj-stat-label">Q2 Actual</div><div class="proj-stat-value">${fmt(q2v,m.isPercent)}</div></div></div></div>`;
+    return `<div class="proj-card"><div class="proj-card-label">${m.label}</div><div class="proj-number">${headline}</div><div class="proj-number-sub">${headlineSub}</div><div class="proj-progress-wrap"><div class="proj-progress-track"><div class="proj-progress-fill" style="width:${Math.min(100,q3comp*100).toFixed(1)}%"></div></div><div class="proj-progress-labels"><span>Day ${dE} of ${dT}${q3done?" · complete":""}</span><span>${pct}%</span></div></div><div class="proj-stats-grid"><div class="proj-stat"><div class="proj-stat-label">${stat1Label}</div><div class="proj-stat-value">${stat1Val}</div></div><div class="proj-stat"><div class="proj-stat-label">Daily Rate</div><div class="proj-stat-value ${stat2Cls}">${stat2Val}</div></div><div class="proj-stat"><div class="proj-stat-label">Rate vs Q2</div><div class="proj-stat-value ${stat3Cls}">${stat3Val}</div></div><div class="proj-stat"><div class="proj-stat-label">Q2 Actual</div><div class="proj-stat-value">${fmt(q2v,m.isPercent)}</div></div></div></div>`;
   }).join("");
 }
 
-const charts={}; let currentView="comparison"; let cachedQdata=null, cachedQ3comp=0, cachedQ3done=false;
-const C = { q1:"rgba(100,116,139,.7)", q2:"rgba(0,61,114,.8)", q3:"rgba(0,84,154,.85)", proj:"rgba(180,130,0,.85)", area:"rgba(0,84,154,.07)", ref:"rgba(100,116,139,.4)" };
+const charts={};
+const C={q1:"rgba(100,116,139,.7)",q2:"rgba(0,61,114,.8)",q3:"rgba(0,84,154,.85)",proj:"rgba(180,130,0,.85)",area:"rgba(0,84,154,.07)"};
 
-function buildShells(sub){
+function buildCharts(qdata, q3comp, q3done){
   const grid=$("chartsGrid"); if(!grid) return;
-  grid.innerHTML=METRICS.map(m=>`<div class="chart-card"><div class="chart-card-title">${m.label}</div><div class="chart-card-sub">${sub}</div><div class="chart-wrap"><canvas id="chart-${m.id}"></canvas></div><div class="chart-legend" id="legend-${m.id}"></div></div>`).join("");
-}
-
-function buildComparison(qdata, q3comp, q3done){
-  buildShells(!q3done?"Q1 & Q2 actuals · Q3 pace projection":"Quarter-over-quarter actuals");
   const [d1,d2,d3]=qdata; const q3=QUARTERS[2]; const q2=QUARTERS[1];
+  const sub=q3done?"Quarter-over-quarter actuals":"Q1 & Q2 actuals · Q3 pace projection";
+  grid.innerHTML=METRICS.map(m=>`<div class="chart-card"><div class="chart-card-title">${m.label}</div><div class="chart-card-sub">${sub}</div><div class="chart-wrap"><canvas id="chart-${m.id}"></canvas></div><div class="chart-legend" id="legend-${m.id}"></div></div>`).join("");
   const postsM=METRICS.find(m=>m.id==="posts"); const postsQ3v=postsM?extractMetric(d3,postsM):null; const postsQ2v=postsM?extractMetric(d2,postsM):null;
   const postsQ2Rate=postsQ2v!==null?postsQ2v/((q2.end-q2.start)/86400000):null;
   const postsPace=postsM&&postsQ3v!==null&&!q3done?computeAdvancedPace(postsQ3v,q3.start,q3.end,postsQ2Rate,getMetricHistory("posts"),0):null;
@@ -326,8 +274,8 @@ function buildComparison(qdata, q3comp, q3done){
       if(charts[m.id]) charts[m.id].destroy();
       const ctx=canvas.getContext("2d");
       const labels=["Q1 · Sep–Nov","Q2 · Dec–Feb",projected!==null?"Q3 · Projected":"Q3 · Mar–May"];
-      const colors=[C.q1, C.q2, projected!==null?C.proj:C.q3];
-      charts[m.id]=new Chart(ctx,{type:"bar",data:{labels,datasets:[{data:[q1v??0,q2v??0,chartQ3val],backgroundColor:colors,borderWidth:0,borderRadius:2,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:600,easing:"easeOutQuart"},plugins:{legend:{display:false},tooltip:{callbacks:{label(c){ const v=c.parsed.y; return v===null?"":fmt(v,m.isPercent)+(c.label.includes("Projected")?" (projected)":""); }}}},scales:{x:{grid:{display:false},ticks:{font:{size:11,family:"Inter Tight, system-ui"},color:"#64748b"},border:{display:false}},y:{beginAtZero:true,grid:{color:"rgba(0,0,0,.04)"},border:{display:false,dash:[3,3]},ticks:{font:{size:11,family:"Inter Tight, system-ui"},color:"#64748b",padding:6,callback:v=>m.isPercent?`${v.toFixed(1)}%`:v>=1000?v.toLocaleString():v}}}}});
+      const colors=[C.q1,C.q2,projected!==null?C.proj:C.q3];
+      charts[m.id]=new Chart(ctx,{type:"bar",data:{labels,datasets:[{data:[q1v??0,q2v??0,chartQ3val],backgroundColor:colors,borderWidth:0,borderRadius:2,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:600,easing:"easeOutQuart"},plugins:{legend:{display:false},tooltip:{callbacks:{label(c){const v=c.parsed.y;return v===null?"":fmt(v,m.isPercent)+(c.label.includes("Projected")?" (projected)":"");}}}},scales:{x:{grid:{display:false},ticks:{font:{size:11,family:"Inter Tight, system-ui"},color:"#64748b"},border:{display:false}},y:{beginAtZero:true,grid:{color:"rgba(0,0,0,.04)"},border:{display:false,dash:[3,3]},ticks:{font:{size:11,family:"Inter Tight, system-ui"},color:"#64748b",padding:6,callback:v=>m.isPercent?`${v.toFixed(1)}%`:v>=1000?v.toLocaleString():v}}}}});
       const legendEl=document.getElementById(`legend-${m.id}`);
       if(legendEl) legendEl.innerHTML=[`<div class="legend-item"><div class="legend-dot" style="background:${C.q1}"></div>Q1 Actual</div>`,`<div class="legend-item"><div class="legend-dot" style="background:${C.q2}"></div>Q2 Actual</div>`,projected!==null?`<div class="legend-item"><div class="legend-dot" style="background:${C.proj}"></div>Q3 Projected</div>`:`<div class="legend-item"><div class="legend-dot" style="background:${C.q3}"></div>Q3 ${q3done?"Actual":"To Date"}</div>`].join("");
     }
@@ -335,81 +283,25 @@ function buildComparison(qdata, q3comp, q3done){
   if(typeof Chart!=="undefined") go(); else document.querySelector("script[src*='chart']").addEventListener("load",go);
 }
 
-function buildTimeline(qdata, q3comp, q3done){
-  buildShells("Projected Q3 final at each session · Q2 reference line");
-  const [,d2,d3]=qdata; const q3=QUARTERS[2]; const dTotal=(q3.end-q3.start)/86400000; const history=loadHistory();
-  const postsM=METRICS.find(m=>m.id==="posts"); const postsQ3v=postsM?extractMetric(d3,postsM):null; const postsQ2v=postsM?extractMetric(d2,postsM):null;
-  const postsQ2Rate=postsQ2v!==null?postsQ2v/((QUARTERS[1].end-QUARTERS[1].start)/86400000):null;
-  const postsPace=postsM&&postsQ3v!==null&&!q3done?computeAdvancedPace(postsQ3v,q3.start,q3.end,postsQ2Rate,getMetricHistory("posts"),0):null;
-  const projectedPosts=postsPace?postsPace.projected:null;
-  function go(){
-    for(const m of METRICS){
-      const q2v=extractMetric(d2,m), q3v=extractMetric(d3,m);
-      const canvas=document.getElementById(`chart-${m.id}`); if(!canvas) continue;
-      if(charts[m.id]) charts[m.id].destroy();
-      const ctx=canvas.getContext("2d");
-      if(!m.isPace){
-        charts[m.id]=new Chart(ctx,{type:"bar",data:{labels:["Q2 · Dec–Feb","Q3 · Current"],datasets:[{data:[q2v??0,q3v??0],backgroundColor:[C.q2,C.q3],borderWidth:0,borderRadius:2,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:11},color:"#64748b"},border:{display:false}},y:{beginAtZero:true,grid:{color:"rgba(0,0,0,.04)"},border:{display:false},ticks:{font:{size:11},color:"#64748b"}}}}});
-        const l=document.getElementById(`legend-${m.id}`); if(l) l.innerHTML=`<div class="legend-item"><div class="legend-dot" style="background:${C.q2}"></div>Q2 Actual</div><div class="legend-item"><div class="legend-dot" style="background:${C.q3}"></div>Q3 Snapshot</div>`; continue;
-      }
-      const pts=[];
-      for(const snap of history){
-        const v=snap.vals[m.id]; if(v===null||v===undefined) continue;
-        const dElapsed=(snap.t-q3.start.getTime())/86400000; if(dElapsed<1) continue;
-        const netV=m.baselineFromQ2&&q2v!==null?v-q2v:v; let projNet=(netV/dElapsed)*dTotal;
-        if(m.postsMultiplier&&projectedPosts!==null){ const snapPosts=snap.vals["posts"]; if(snapPosts&&snapPosts>0&&v!==null){ const engPerPost=v/snapPosts; projNet=0.70*projNet+0.30*engPerPost*projectedPosts; } }
-        const projFinal=m.baselineFromQ2&&q2v!==null?q2v+projNet:projNet;
-        if(!Number.isFinite(projFinal)||projFinal<=0) continue; pts.push({t:snap.t,proj:Math.round(projFinal)});
-      }
-      if(pts.length===0){
-        ctx.save(); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle="#94a3b8"; ctx.font="12px Inter Tight, system-ui"; ctx.textAlign="center"; ctx.textBaseline="middle";
-        ctx.fillText("History builds up as you revisit this page.",canvas.width/2,canvas.height/2-8); ctx.fillText("Check back tomorrow to see the trend.",canvas.width/2,canvas.height/2+12); ctx.restore();
-        const l=document.getElementById(`legend-${m.id}`); if(l) l.innerHTML=`<div class="legend-item" style="color:#94a3b8">Collecting snapshots…</div>`; continue;
-      }
-      const labels=pts.map(p=>new Date(p.t).toLocaleDateString("en-US",{month:"short",day:"numeric"})); const projData=pts.map(p=>p.proj);
-      const minP=Math.min(...projData), maxP=Math.max(...projData); const yPad=(maxP-minP)*0.3||maxP*0.1;
-      const datasets=[{label:"Projected Q3 Final",data:projData,borderColor:C.proj,backgroundColor:C.area,borderWidth:2,pointRadius:projData.map((_,i)=>i===projData.length-1?6:projData.length<8?3:1.5),pointBackgroundColor:C.proj,pointBorderColor:"#fff",pointBorderWidth:projData.map((_,i)=>i===projData.length-1?2:0),fill:true,tension:0.3,spanGaps:false}];
-      if(q2v!==null) datasets.push({label:"Q2 Final",data:Array(labels.length).fill(q2v),borderColor:C.ref,backgroundColor:"transparent",borderWidth:1.5,borderDash:[3,5],pointRadius:0,fill:false,tension:0});
-      charts[m.id]=new Chart(ctx,{type:"line",data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},plugins:{legend:{display:false},tooltip:{callbacks:{label(c){const v=c.parsed.y;return v===null?"":c.dataset.label+": "+fmt(v,m.isPercent);}}}},scales:{x:{grid:{color:"rgba(0,0,0,.03)"},ticks:{font:{size:10,family:"Inter Tight, system-ui"},color:"#64748b",maxTicksLimit:12},border:{display:false}},y:{min:Math.max(0,minP-yPad),grid:{color:"rgba(0,0,0,.04)"},border:{display:false},ticks:{font:{size:11,family:"Inter Tight, system-ui"},color:"#64748b",padding:6,callback:v=>m.isPercent?`${v.toFixed(1)}%`:v>=1000?v.toLocaleString():v}}}}});
-      const l=document.getElementById(`legend-${m.id}`);
-      if(l){ const items=[`<div class="legend-item"><div class="legend-dot" style="background:${C.proj}"></div>Projected Q3 Final</div>`]; if(q2v!==null) items.push(`<div class="legend-item"><div class="legend-dot" style="background:${C.ref}"></div>Q2 Final</div>`); l.innerHTML=items.join(""); }
-    }
-  }
-  if(typeof Chart!=="undefined") go(); else document.querySelector("script[src*='chart']").addEventListener("load",go);
+function setLastUpdated(){
+  const el=$("updatedAt");
+  if(el) el.textContent="Updated "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
 }
-
-function renderCharts(qdata, q3comp, q3done){ cachedQdata=qdata; cachedQ3comp=q3comp; cachedQ3done=q3done; currentView==="timeline"?buildTimeline(qdata,q3comp,q3done):buildComparison(qdata,q3comp,q3done); }
-
-function wireToggle(){
-  const bC=$("btnComparison"), bT=$("btnTimeline"); if(!bC||!bT) return;
-  bC.addEventListener("click",()=>{if(currentView==="comparison") return; currentView="comparison"; bC.classList.add("is-active"); bT.classList.remove("is-active"); if(cachedQdata) buildComparison(cachedQdata,cachedQ3comp,cachedQ3done);});
-  bT.addEventListener("click",()=>{if(currentView==="timeline") return; currentView="timeline"; bT.classList.add("is-active"); bC.classList.remove("is-active"); if(cachedQdata) buildTimeline(cachedQdata,cachedQ3comp,cachedQ3done);});
-}
-
-let countdownSec=REFRESH_SEC, countdownTimer=null;
-function startCountdown(){ clearInterval(countdownTimer); countdownSec=REFRESH_SEC; tickCountdown(); countdownTimer=setInterval(()=>{ countdownSec--; tickCountdown(); if(countdownSec<=0){ clearInterval(countdownTimer); doRefresh(); } },1000); }
-function tickCountdown(){ const el=$("countdown"); if(!el) return; const m=Math.floor(countdownSec/60),s=countdownSec%60; el.textContent=`${m}:${String(s).padStart(2,"0")}`; }
-function setLastUpdated(){ const el=$("lastUpdated"); if(el) el.textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}); }
 
 let isLoading=false;
 async function loadAndRender(){
   if(isLoading) return; isLoading=true;
-  const btn=$("refreshBtn"); if(btn) btn.disabled=true;
   try{
     const qdata=await Promise.all(QUARTERS.map(fetchQ)); const q3=QUARTERS[2], q3comp=completion(q3), q3done=quarterComplete(q3);
     const pct=(q3comp*100).toFixed(1);
     const pl=$("progressLabel"), pf=$("progressFill");
     if(pl) pl.textContent=`${pct}% elapsed${q3done?" · complete":""}`;
     if(pf) pf.style.width=`${Math.min(100,q3comp*100).toFixed(1)}%`;
-    const missing=QUARTERS.filter((_,i)=>!qdata[i]).map(q=>q.label);
-    const eb=$("errorBar");
-    if(eb){ if(missing.length){ eb.textContent=`Could not load data for: ${missing.join(", ")}.`; eb.classList.add("show"); } else eb.classList.remove("show"); }
-    renderProjCards(qdata,q3comp,q3done); renderCharts(qdata,q3comp,q3done); storeSnapshot(qdata[2]); setLastUpdated(); if(typeof hideLoadingScreen==="function") hideLoadingScreen();
-  }catch(err){ const eb=$("errorBar"); if(eb){ eb.textContent=`Error: ${err.message}`; eb.classList.add("show"); } }
-  finally{ isLoading=false; if(btn) btn.disabled=false; }
+    renderProjCards(qdata,q3comp,q3done); buildCharts(qdata,q3comp,q3done); storeSnapshot(qdata[2]); setLastUpdated(); if(typeof hideLoadingScreen==="function") hideLoadingScreen();
+  }catch(err){ console.error("Trends load error:",err); }
+  finally{ isLoading=false; }
 }
-async function doRefresh(){ await loadAndRender(); startCountdown(); }
-window.addEventListener("DOMContentLoaded",()=>{ wireToggle(); const btn=$("refreshBtn"); if(btn) btn.addEventListener("click",doRefresh); doRefresh(); startCountdown(); });
+window.addEventListener("DOMContentLoaded",()=>{ loadAndRender(); setInterval(loadAndRender,REFRESH_SEC*1000); });
 </script>
 </body>
 </html>
