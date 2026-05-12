@@ -545,6 +545,10 @@ function App() {
   }, [t.layout, t.density, t.accent]);
 
   useEffect(() => {
+    if (data) document.title = `ISL ${data.meta.quarter} ${data.meta.year}`;
+  }, [data]);
+
+  useEffect(() => {
     const poll = setInterval(() => {
       if (window.ISL_REPORT) {
         setData(normalizeReport(window.ISL_REPORT));
@@ -582,7 +586,7 @@ function App() {
         <AllPosts data={data} />
         <Notes data={data} />
       </main>
-      <Colophon data={data} />
+
       <TweaksPanel title="Tweaks">
         <TweakSection title="Layout">
           <TweakRadio label="Mode" value={t.layout} onChange={(v) => setTweak("layout", v)} options={[{value:"editorial",label:"Editorial"},{value:"apple",label:"Apple"},{value:"document",label:"Document"}]} />
