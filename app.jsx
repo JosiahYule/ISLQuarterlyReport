@@ -459,6 +459,7 @@ function AllPosts({ data }) {
               <th>Platforms</th>
               <th className="r" style={thStyle} onClick={() => toggleSort("Impressions")}>Impressions{sortArrow("Impressions")}</th>
               <th className="r" style={thStyle} onClick={() => toggleSort("Engagements")}>Engagements{sortArrow("Engagements")}</th>
+              <th className="r">Eng. Rate</th>
               <th className="r">Health</th>
             </tr>
           </thead>
@@ -480,6 +481,7 @@ function AllPosts({ data }) {
                   <td style={{ color: "var(--ink-3)", fontSize: "13px" }}>{p.Platforms || "—"}</td>
                   <td className="r num">{(p.Impressions || 0).toLocaleString()}</td>
                   <td className="r num">{(p.Engagements || 0).toLocaleString()}</td>
+                  <td className="r num">{er.toFixed(2)}%</td>
                   <td className="r"><span style={{ color, fontSize: "13px", fontWeight: 500 }}>{label}</span></td>
                 </tr>
               );
