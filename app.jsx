@@ -421,6 +421,7 @@ function AllPosts({ data }) {
   const [search, setSearch] = useState("");
   const [platform, setPlatform] = useState("all");
   const [sort, setSort] = useState({ key: "Date", dir: "desc" });
+  const [view, setView] = useState("list");
 
   const toggleSort = (key) => setSort((prev) => ({ key, dir: prev.key === key && prev.dir === "desc" ? "asc" : "desc" }));
   const sortArrow = (key) => sort.key !== key
@@ -430,7 +431,9 @@ function AllPosts({ data }) {
   const posts = (data.allPosts || [])
     .filter((p) => {
       const matchPlatform = platform === "all" || (p.Platforms || "").toLowerCase().includes(platform);
-      const matchSearch = !search || (p["Post Name"] || "").toLowerCase().includes(search.toLowerCase());
+      const query = search.toLowerCase().trim();
+      const searchable = [p["Post Name"], p.Notes, p["Post Type"], p.Type].filter(Boolean).join(" ").toLowerCase();
+      const matchSearch = !query || searchable.includes(query);
       return matchPlatform && matchSearch;
     })
     .sort((a, b) => {
@@ -446,21 +449,42 @@ function AllPosts({ data }) {
 
   const thStyle = { cursor: "pointer", userSelect: "none" };
   const inputStyle = { border: "1px solid var(--rule)", padding: "8px 12px", fontFamily: "var(--sans)", fontSize: "14px", borderRadius: "2px", background: "var(--paper)", color: "var(--ink)" };
+  const calendarMonths = posts.reduce((acc, p) => {
+    const d = p.Date ? new Date(p.Date) : null;
+    const key = d && !Number.isNaN(d.getTime())
+      ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
+      : "unknown";
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(p);
+    return acc;
+  }, {});
+  const calendarKeys = Object.keys(calendarMonths).sort((a, b) => b.localeCompare(a));
+  const healthForER = (er) => {
+    const label = er > 10 ? "Very Strong" : er >= 6 ? "Strong" : er >= 4 ? "Moderate" : "Low";
+    const color = er > 10 ? "var(--isl-blue)" : er >= 6 ? "var(--up)" : er >= 4 ? "#b87000" : "var(--down)";
+    return { label, color };
+  };
 
   return (
     <section className="section wrap" data-screen-label="07 All Posts">
       <header className="section-head"><h2 className="section-title serif">All Posts</h2></header>
-      <div style={{ display: "flex", gap: "16px", marginBottom: "24px", flexWrap: "wrap" }}>
-        <input type="search" placeholder="Search posts..." value={search} onChange={(e) => setSearch(e.target.value)} style={{ ...inputStyle, width: "280px" }} />
-        <select value={platform} onChange={(e) => setPlatform(e.target.value)} style={inputStyle}>
-          <option value="all">All platforms</option>
-          <option value="linkedin">LinkedIn</option>
-          <option value="facebook">Facebook</option>
-          <option value="instagram">Instagram</option>
-        </select>
-        <span style={{ fontSize: "13px", color: "var(--ink-3)", alignSelf: "center" }}>{posts.length} posts</span>
+      <div style={{ display: "flex", gap: "16px", marginBottom: "24px", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+          <input type="search" placeholder="Search posts, notes, or post type..." value={search} onChange={(e) => setSearch(e.target.value)} style={{ ...inputStyle, width: "320px" }} />
+          <select value={platform} onChange={(e) => setPlatform(e.target.value)} style={inputStyle}>
+            <option value="all">All platforms</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="facebook">Facebook</option>
+            <option value="instagram">Instagram</option>
+          </select>
+          <span style={{ fontSize: "13px", color: "var(--ink-3)", alignSelf: "center" }}>{posts.length} posts</span>
+        </div>
+        <div className="view-toggle">
+          <button className={"toggle-btn" + (view === "list" ? " is-active" : "")} onClick={() => setView("list")}>List</button>
+          <button className={"toggle-btn" + (view === "calendar" ? " is-active" : "")} onClick={() => setView("calendar")}>Calendar</button>
+        </div>
       </div>
-      <div style={{ maxHeight: "560px", overflowY: "auto" }}>
+      {view === "list" ? <div style={{ maxHeight: "560px", overflowY: "auto" }}>
         <table className="table" style={{ marginBottom: 0 }}>
           <thead style={{ position: "sticky", top: 0, background: "var(--paper)", zIndex: 2 }}>
             <tr>
@@ -470,7 +494,7 @@ function AllPosts({ data }) {
               <th className="r" style={thStyle} onClick={() => toggleSort("Impressions")}>Impressions{sortArrow("Impressions")}</th>
               <th className="r" style={thStyle} onClick={() => toggleSort("Engagements")}>Engagements{sortArrow("Engagements")}</th>
               <th className="r" style={thStyle} onClick={() => toggleSort("EngRate")}>Eng. Rate{sortArrow("EngRate")}</th>
-              <th className="r">Health</th>
+              <th className="health-col">Health</th>
             </tr>
           </thead>
           <tbody>
@@ -492,13 +516,84 @@ function AllPosts({ data }) {
                   <td className="r num">{(p.Impressions || 0).toLocaleString()}</td>
                   <td className="r num">{(p.Engagements || 0).toLocaleString()}</td>
                   <td className="r num">{er.toFixed(2)}%</td>
-                  <td className="r"><span style={{ color, fontSize: "13px", fontWeight: 500 }}>{label}</span></td>
+                  <td className="health-col"><span style={{ color, fontSize: "13px", fontWeight: 500 }}>{label}</span></td>
                 </tr>
               );
             })}
           </tbody>
         </table>
-      </div>
+      </div> :
+      <div className="calendar-view">
+        {calendarKeys.map((monthKey) => {
+          const monthPosts = calendarMonths[monthKey];
+          if (monthKey === "unknown") {
+            return (
+              <div key={monthKey} className="calendar-month">
+                <h3 className="calendar-month-title serif">Unknown date</h3>
+                <div className="calendar-grid-unknown">
+                  {monthPosts.map((p, i) => {
+                    const er = p.Impressions > 0 ? (p.Engagements / p.Impressions) * 100 : 0;
+                    const { color } = healthForER(er);
+                    return (
+                      <article key={`${monthKey}-${i}`} className="calendar-post" style={{ "--health-color": color }}>
+                        <div className="calendar-post-title">{p["Post Name"] || "—"}</div>
+                        <div className="calendar-post-meta">{p.Platforms || "—"} · ER {er.toFixed(2)}%</div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          }
+          const [year, month] = monthKey.split("-").map(Number);
+          const firstDay = new Date(year, month - 1, 1);
+          const daysInMonth = new Date(year, month, 0).getDate();
+          const startOffset = firstDay.getDay();
+          const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+          const label = firstDay.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+          const dayToPosts = {};
+          monthPosts.forEach((p) => {
+            const d = new Date(p.Date);
+            if (!Number.isNaN(d.getTime())) {
+              const day = d.getDate();
+              if (!dayToPosts[day]) dayToPosts[day] = [];
+              dayToPosts[day].push(p);
+            }
+          });
+          return (
+            <div key={monthKey} className="calendar-month">
+              <h3 className="calendar-month-title serif">{label}</h3>
+              <div className="calendar-weekdays">
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => <div key={d}>{d}</div>)}
+              </div>
+              <div className="calendar-grid-month">
+                {Array.from({ length: totalCells }, (_, idx) => {
+                  const dayNumber = idx - startOffset + 1;
+                  const inMonth = dayNumber >= 1 && dayNumber <= daysInMonth;
+                  const postsForDay = inMonth ? (dayToPosts[dayNumber] || []) : [];
+                  return (
+                    <div key={idx} className={"calendar-day-cell" + (inMonth ? "" : " is-pad")}>
+                      {inMonth ? <div className="calendar-day-number serif">{dayNumber}</div> : null}
+                      <div className="calendar-day-posts">
+                        {postsForDay.map((p, i) => {
+                          const er = p.Impressions > 0 ? (p.Engagements / p.Impressions) * 100 : 0;
+                          const { color, label } = healthForER(er);
+                          return (
+                            <article key={`${idx}-${i}`} className="calendar-post" style={{ "--health-color": color }} title={`${label} · ER ${er.toFixed(2)}%`}>
+                              <div className="calendar-post-title">{p["Post Name"] || "—"}</div>
+                              <div className="calendar-post-meta">{p.Platforms || "—"} · {er.toFixed(2)}%</div>
+                            </article>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>}
     </section>
   );
 }
