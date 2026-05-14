@@ -22,7 +22,7 @@ const fmt = (n) => {
   if (Number.isInteger(n)) return n.toLocaleString();
   return n.toFixed(2);
 };
-const fmtExact = (n) => n.toLocaleString();
+const fmtExact = (n) => (typeof n === "number" ? n.toLocaleString() : "—");
 const fmtPct = (n) => n.toFixed(2) + "%";
 function arrow(dir) { return dir === "up" ? "↑" : dir === "down" ? "↓" : "—"; }
 
@@ -142,8 +142,13 @@ function MastNav({ data }) {
   const ref = useRef();
   useEffect(() => {
     const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("click", close);
-    return () => document.removeEventListener("click", close);
+    document.addEventListener("pointerdown", close);
+    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", onKey);
+    };
   }, []);
 
   return (
@@ -158,15 +163,15 @@ function MastNav({ data }) {
           <div className="nav-meta">
             <span>{data.meta.rangeLabel}</span>
             <div ref={ref} style={{ position: "relative" }}>
-              <button className="qchooser" onClick={() => setOpen(!open)}>
+              <button className="qchooser" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(!open)}>
                 <span>2026 · {reportKey === "islq1" ? "Q1" : reportKey === "islq2" ? "Q2" : "Q3"}</span>
                 <span className="caret">▾</span>
               </button>
-              <div className={"menu" + (open ? " is-open" : "")}>
+              <div className={"menu" + (open ? " is-open" : "")} role="menu">
                 <div className="group">2026</div>
-                <a href="?report=islq3" className={!window.location.search || window.location.search.includes("islq3") ? "active" : ""}>Q3 — Mar–May 2026</a>
-                <a href="?report=islq2" className={window.location.search.includes("islq2") ? "active" : ""}>Q2 — Dec–Feb 2026</a>
-                <a href="?report=islq1" className={window.location.search.includes("islq1") ? "active" : ""}>Q1 — Sep–Nov 2025</a>
+                <a href="?report=islq3" role="menuitem" className={!window.location.search || window.location.search.includes("islq3") ? "active" : ""}>Q3 — Mar–May 2026</a>
+                <a href="?report=islq2" role="menuitem" className={window.location.search.includes("islq2") ? "active" : ""}>Q2 — Dec–Feb 2026</a>
+                <a href="?report=islq1" role="menuitem" className={window.location.search.includes("islq1") ? "active" : ""}>Q1 — Sep–Nov 2025</a>
               </div>
             </div>
           </div>
@@ -416,6 +421,7 @@ function AllPosts({ data }) {
   const [search, setSearch] = useState("");
   const [platform, setPlatform] = useState("all");
   const [sort, setSort] = useState({ key: "Date", dir: "desc" });
+  const [view, setView] = useState("list");
 
   const toggleSort = (key) => setSort((prev) => ({ key, dir: prev.key === key && prev.dir === "desc" ? "asc" : "desc" }));
   const sortArrow = (key) => sort.key !== key
@@ -425,7 +431,9 @@ function AllPosts({ data }) {
   const posts = (data.allPosts || [])
     .filter((p) => {
       const matchPlatform = platform === "all" || (p.Platforms || "").toLowerCase().includes(platform);
-      const matchSearch = !search || (p["Post Name"] || "").toLowerCase().includes(search.toLowerCase());
+      const query = search.toLowerCase().trim();
+      const searchable = [p["Post Name"], p.Notes, p["Post Type"], p.Type].filter(Boolean).join(" ").toLowerCase();
+      const matchSearch = !query || searchable.includes(query);
       return matchPlatform && matchSearch;
     })
     .sort((a, b) => {
@@ -441,21 +449,37 @@ function AllPosts({ data }) {
 
   const thStyle = { cursor: "pointer", userSelect: "none" };
   const inputStyle = { border: "1px solid var(--rule)", padding: "8px 12px", fontFamily: "var(--sans)", fontSize: "14px", borderRadius: "2px", background: "var(--paper)", color: "var(--ink)" };
+  const calendarMonths = posts.reduce((acc, p) => {
+    const d = p.Date ? new Date(p.Date) : null;
+    const key = d && !Number.isNaN(d.getTime())
+      ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
+      : "unknown";
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(p);
+    return acc;
+  }, {});
+  const calendarKeys = Object.keys(calendarMonths).sort((a, b) => b.localeCompare(a));
 
   return (
     <section className="section wrap" data-screen-label="07 All Posts">
       <header className="section-head"><h2 className="section-title serif">All Posts</h2></header>
-      <div style={{ display: "flex", gap: "16px", marginBottom: "24px", flexWrap: "wrap" }}>
-        <input type="search" placeholder="Search posts..." value={search} onChange={(e) => setSearch(e.target.value)} style={{ ...inputStyle, width: "280px" }} />
-        <select value={platform} onChange={(e) => setPlatform(e.target.value)} style={inputStyle}>
-          <option value="all">All platforms</option>
-          <option value="linkedin">LinkedIn</option>
-          <option value="facebook">Facebook</option>
-          <option value="instagram">Instagram</option>
-        </select>
-        <span style={{ fontSize: "13px", color: "var(--ink-3)", alignSelf: "center" }}>{posts.length} posts</span>
+      <div style={{ display: "flex", gap: "16px", marginBottom: "24px", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+          <input type="search" placeholder="Search posts, notes, or post type..." value={search} onChange={(e) => setSearch(e.target.value)} style={{ ...inputStyle, width: "320px" }} />
+          <select value={platform} onChange={(e) => setPlatform(e.target.value)} style={inputStyle}>
+            <option value="all">All platforms</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="facebook">Facebook</option>
+            <option value="instagram">Instagram</option>
+          </select>
+          <span style={{ fontSize: "13px", color: "var(--ink-3)", alignSelf: "center" }}>{posts.length} posts</span>
+        </div>
+        <div className="view-toggle">
+          <button className={"toggle-btn" + (view === "list" ? " is-active" : "")} onClick={() => setView("list")}>List</button>
+          <button className={"toggle-btn" + (view === "calendar" ? " is-active" : "")} onClick={() => setView("calendar")}>Calendar</button>
+        </div>
       </div>
-      <div style={{ maxHeight: "560px", overflowY: "auto" }}>
+      {view === "list" ? <div style={{ maxHeight: "560px", overflowY: "auto" }}>
         <table className="table" style={{ marginBottom: 0 }}>
           <thead style={{ position: "sticky", top: 0, background: "var(--paper)", zIndex: 2 }}>
             <tr>
@@ -465,7 +489,7 @@ function AllPosts({ data }) {
               <th className="r" style={thStyle} onClick={() => toggleSort("Impressions")}>Impressions{sortArrow("Impressions")}</th>
               <th className="r" style={thStyle} onClick={() => toggleSort("Engagements")}>Engagements{sortArrow("Engagements")}</th>
               <th className="r" style={thStyle} onClick={() => toggleSort("EngRate")}>Eng. Rate{sortArrow("EngRate")}</th>
-              <th className="r">Health</th>
+              <th className="health-col">Health</th>
             </tr>
           </thead>
           <tbody>
@@ -487,13 +511,41 @@ function AllPosts({ data }) {
                   <td className="r num">{(p.Impressions || 0).toLocaleString()}</td>
                   <td className="r num">{(p.Engagements || 0).toLocaleString()}</td>
                   <td className="r num">{er.toFixed(2)}%</td>
-                  <td className="r"><span style={{ color, fontSize: "13px", fontWeight: 500 }}>{label}</span></td>
+                  <td className="health-col"><span style={{ color, fontSize: "13px", fontWeight: 500 }}>{label}</span></td>
                 </tr>
               );
             })}
           </tbody>
         </table>
-      </div>
+      </div> :
+      <div className="calendar-view">
+        {calendarKeys.map((monthKey) => {
+          const monthPosts = calendarMonths[monthKey];
+          const label = monthKey === "unknown"
+            ? "Unknown date"
+            : new Date(monthPosts[0].Date).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+          return (
+            <div key={monthKey} className="calendar-month">
+              <h3 className="calendar-month-title serif">{label}</h3>
+              <div className="calendar-grid">
+                {monthPosts.map((p, i) => {
+                  const d = p.Date ? new Date(p.Date) : null;
+                  const day = d && !Number.isNaN(d.getTime()) ? d.getDate() : "—";
+                  const er = p.Impressions > 0 ? (p.Engagements / p.Impressions) * 100 : 0;
+                  return (
+                    <article key={`${monthKey}-${i}`} className="calendar-card">
+                      <div className="calendar-day serif">{day}</div>
+                      <div className="calendar-title">{p["Post Name"] || "—"}</div>
+                      <div className="calendar-meta">{p.Platforms || "—"} · ER {er.toFixed(2)}%</div>
+                      {p.Notes && <div className="calendar-notes">{p.Notes}</div>}
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>}
     </section>
   );
 }
