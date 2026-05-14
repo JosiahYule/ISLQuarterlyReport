@@ -35,8 +35,13 @@ function MastNav({ active, quarter, onQuarter }) {
 
   useEffect(() => {
     const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("click", close);
-    return () => document.removeEventListener("click", close);
+    document.addEventListener("pointerdown", close);
+    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", onKey);
+    };
   }, []);
 
   const tabs = [
@@ -60,16 +65,16 @@ function MastNav({ active, quarter, onQuarter }) {
             <div className="nav-meta">
               <span>{quarter?.rangeLabel ?? ""}</span>
               <div ref={ref} style={{ position: "relative" }}>
-                <button className="qchooser" onClick={() => setOpen(!open)}>
+                <button className="qchooser" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(!open)}>
                   <span>{quarter?.label ?? "Quarter"}</span>
                   <span className="caret">▾</span>
                 </button>
-                <div className={"menu" + (open ? " is-open" : "")}>
+                <div className={"menu" + (open ? " is-open" : "")} role="menu">
                   <div className="group">2026</div>
-                  <a href="?report=islq3" className={quarter?.key === "islq3" ? "active" : ""} onClick={() => setOpen(false)}>Q3 — Mar – May 2026</a>
-                  <a href="?report=islq2" className={quarter?.key === "islq2" ? "active" : ""} onClick={() => setOpen(false)}>Q2 — Dec – Feb 2026</a>
+                  <a href="?report=islq3" role="menuitem" className={quarter?.key === "islq3" ? "active" : ""} onClick={() => setOpen(false)}>Q3 — Mar – May 2026</a>
+                  <a href="?report=islq2" role="menuitem" className={quarter?.key === "islq2" ? "active" : ""} onClick={() => setOpen(false)}>Q2 — Dec – Feb 2026</a>
                   <div className="group">2025</div>
-                  <a href="?report=islq1" className={quarter?.key === "islq1" ? "active" : ""} onClick={() => setOpen(false)}>Q1 — Sep – Nov 2025</a>
+                  <a href="?report=islq1" role="menuitem" className={quarter?.key === "islq1" ? "active" : ""} onClick={() => setOpen(false)}>Q1 — Sep – Nov 2025</a>
                 </div>
               </div>
             </div>

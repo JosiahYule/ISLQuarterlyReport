@@ -22,7 +22,7 @@ const fmt = (n) => {
   if (Number.isInteger(n)) return n.toLocaleString();
   return n.toFixed(2);
 };
-const fmtExact = (n) => n.toLocaleString();
+const fmtExact = (n) => (typeof n === "number" ? n.toLocaleString() : "—");
 const fmtPct = (n) => n.toFixed(2) + "%";
 function arrow(dir) { return dir === "up" ? "↑" : dir === "down" ? "↓" : "—"; }
 
@@ -142,8 +142,13 @@ function MastNav({ data }) {
   const ref = useRef();
   useEffect(() => {
     const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("click", close);
-    return () => document.removeEventListener("click", close);
+    document.addEventListener("pointerdown", close);
+    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", onKey);
+    };
   }, []);
 
   return (
@@ -158,15 +163,15 @@ function MastNav({ data }) {
           <div className="nav-meta">
             <span>{data.meta.rangeLabel}</span>
             <div ref={ref} style={{ position: "relative" }}>
-              <button className="qchooser" onClick={() => setOpen(!open)}>
+              <button className="qchooser" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(!open)}>
                 <span>2026 · {reportKey === "islq1" ? "Q1" : reportKey === "islq2" ? "Q2" : "Q3"}</span>
                 <span className="caret">▾</span>
               </button>
-              <div className={"menu" + (open ? " is-open" : "")}>
+              <div className={"menu" + (open ? " is-open" : "")} role="menu">
                 <div className="group">2026</div>
-                <a href="?report=islq3" className={!window.location.search || window.location.search.includes("islq3") ? "active" : ""}>Q3 — Mar–May 2026</a>
-                <a href="?report=islq2" className={window.location.search.includes("islq2") ? "active" : ""}>Q2 — Dec–Feb 2026</a>
-                <a href="?report=islq1" className={window.location.search.includes("islq1") ? "active" : ""}>Q1 — Sep–Nov 2025</a>
+                <a href="?report=islq3" role="menuitem" className={!window.location.search || window.location.search.includes("islq3") ? "active" : ""}>Q3 — Mar–May 2026</a>
+                <a href="?report=islq2" role="menuitem" className={window.location.search.includes("islq2") ? "active" : ""}>Q2 — Dec–Feb 2026</a>
+                <a href="?report=islq1" role="menuitem" className={window.location.search.includes("islq1") ? "active" : ""}>Q1 — Sep–Nov 2025</a>
               </div>
             </div>
           </div>
