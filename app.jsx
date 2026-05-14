@@ -459,6 +459,11 @@ function AllPosts({ data }) {
     return acc;
   }, {});
   const calendarKeys = Object.keys(calendarMonths).sort((a, b) => b.localeCompare(a));
+  const healthForER = (er) => {
+    const label = er > 10 ? "Very Strong" : er >= 6 ? "Strong" : er >= 4 ? "Moderate" : "Low";
+    const color = er > 10 ? "var(--isl-blue)" : er >= 6 ? "var(--up)" : er >= 4 ? "#b87000" : "var(--down)";
+    return { label, color };
+  };
 
   return (
     <section className="section wrap" data-screen-label="07 All Posts">
@@ -521,24 +526,67 @@ function AllPosts({ data }) {
       <div className="calendar-view">
         {calendarKeys.map((monthKey) => {
           const monthPosts = calendarMonths[monthKey];
-          const label = monthKey === "unknown"
-            ? "Unknown date"
-            : new Date(monthPosts[0].Date).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+          if (monthKey === "unknown") {
+            return (
+              <div key={monthKey} className="calendar-month">
+                <h3 className="calendar-month-title serif">Unknown date</h3>
+                <div className="calendar-grid-unknown">
+                  {monthPosts.map((p, i) => {
+                    const er = p.Impressions > 0 ? (p.Engagements / p.Impressions) * 100 : 0;
+                    const { color } = healthForER(er);
+                    return (
+                      <article key={`${monthKey}-${i}`} className="calendar-post" style={{ "--health-color": color }}>
+                        <div className="calendar-post-title">{p["Post Name"] || "—"}</div>
+                        <div className="calendar-post-meta">{p.Platforms || "—"} · ER {er.toFixed(2)}%</div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          }
+          const [year, month] = monthKey.split("-").map(Number);
+          const firstDay = new Date(year, month - 1, 1);
+          const daysInMonth = new Date(year, month, 0).getDate();
+          const startOffset = firstDay.getDay();
+          const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+          const label = firstDay.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+          const dayToPosts = {};
+          monthPosts.forEach((p) => {
+            const d = new Date(p.Date);
+            if (!Number.isNaN(d.getTime())) {
+              const day = d.getDate();
+              if (!dayToPosts[day]) dayToPosts[day] = [];
+              dayToPosts[day].push(p);
+            }
+          });
           return (
             <div key={monthKey} className="calendar-month">
               <h3 className="calendar-month-title serif">{label}</h3>
-              <div className="calendar-grid">
-                {monthPosts.map((p, i) => {
-                  const d = p.Date ? new Date(p.Date) : null;
-                  const day = d && !Number.isNaN(d.getTime()) ? d.getDate() : "—";
-                  const er = p.Impressions > 0 ? (p.Engagements / p.Impressions) * 100 : 0;
+              <div className="calendar-weekdays">
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => <div key={d}>{d}</div>)}
+              </div>
+              <div className="calendar-grid-month">
+                {Array.from({ length: totalCells }, (_, idx) => {
+                  const dayNumber = idx - startOffset + 1;
+                  const inMonth = dayNumber >= 1 && dayNumber <= daysInMonth;
+                  const postsForDay = inMonth ? (dayToPosts[dayNumber] || []) : [];
                   return (
-                    <article key={`${monthKey}-${i}`} className="calendar-card">
-                      <div className="calendar-day serif">{day}</div>
-                      <div className="calendar-title">{p["Post Name"] || "—"}</div>
-                      <div className="calendar-meta">{p.Platforms || "—"} · ER {er.toFixed(2)}%</div>
-                      {p.Notes && <div className="calendar-notes">{p.Notes}</div>}
-                    </article>
+                    <div key={idx} className={"calendar-day-cell" + (inMonth ? "" : " is-pad")}>
+                      {inMonth ? <div className="calendar-day-number serif">{dayNumber}</div> : null}
+                      <div className="calendar-day-posts">
+                        {postsForDay.map((p, i) => {
+                          const er = p.Impressions > 0 ? (p.Engagements / p.Impressions) * 100 : 0;
+                          const { color, label } = healthForER(er);
+                          return (
+                            <article key={`${idx}-${i}`} className="calendar-post" style={{ "--health-color": color }} title={`${label} · ER ${er.toFixed(2)}%`}>
+                              <div className="calendar-post-title">{p["Post Name"] || "—"}</div>
+                              <div className="calendar-post-meta">{p.Platforms || "—"} · {er.toFixed(2)}%</div>
+                            </article>
+                          );
+                        })}
+                      </div>
+                    </div>
                   );
                 })}
               </div>
