@@ -189,6 +189,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .hero-title em { font-style: italic; color: var(--isl-blue); font-weight: 400; }
 
+
 .hero-meta-row {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -202,6 +203,12 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   align-items: start;
   padding-top: 14px;
   border-top: 1px solid var(--rule-soft);
+}
+.hero-lede-row {
+  display: grid; grid-template-columns: 1fr 2fr; gap: var(--gap);
+  align-items: start;
+  padding-top: 18px;
+  border-top: 1px solid var(--rule);
 }
 .meta-pair { display: flex; flex-direction: column; gap: 4px; }
 .meta-pair .label { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-4); }
