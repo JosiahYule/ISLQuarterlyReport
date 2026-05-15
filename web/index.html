@@ -33,6 +33,7 @@
   .page-stat { margin-bottom: 14px; }
   .page-stat-label { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-4); font-weight: 500; margin-bottom: 4px; }
   .page-stat-value { font-family: var(--serif); font-size: 22px; color: var(--ink); }
+  .page-delta { font-size: 17px; margin-left: 10px; font-weight: 600; }
 
   @media (max-width: 880px) {
     .pages-grid { grid-template-columns: repeat(2, 1fr); }
@@ -105,13 +106,13 @@ function Hero({ reportKey, data }) {
     <section className="hero wrap">
       <div className="hero-kicker">Volume 2026 · {meta.quarter} Report · Website Analytics</div>
       <h1 className="hero-title serif">Quarter <em>{meta.quarterWord}</em></h1>
+      <div className="hero-meta-row" role="list" aria-label="Report metadata">
+        <div className="meta-pair" role="listitem"><span className="label">Reporting period</span><span className="value serif">{meta.rangeLabel}</span></div>
+        <div className="meta-pair" role="listitem"><span className="label">Source</span><span className="value serif">GA4 · Squarespace</span></div>
+        <div className="meta-pair" role="listitem"><span className="label">Property</span><span className="value serif">integratedstaffing.ca</span></div>
+        <div className="meta-pair" role="listitem"><span className="label">Generated</span><span className="value serif">{data.generatedAt ? new Date(data.generatedAt).toLocaleDateString() : "—"}</span></div>
+      </div>
       <div className="hero-lede-row">
-        <div className="hero-lede-meta">
-          <div className="meta-pair"><span className="label">Reporting period</span><span className="value serif">{meta.rangeLabel}</span></div>
-          <div className="meta-pair"><span className="label">Source</span><span className="value serif">GA4 · Squarespace</span></div>
-          <div className="meta-pair"><span className="label">Property</span><span className="value serif">integratedstaffing.ca</span></div>
-          <div className="meta-pair"><span className="label">Generated</span><span className="value serif">{data.generatedAt ? new Date(data.generatedAt).toLocaleDateString() : "—"}</span></div>
-        </div>
         <p className="hero-lede serif">{note}</p>
       </div>
     </section>
@@ -191,9 +192,9 @@ function TopPages({ data, prevData }) {
           return (
             <div className="page-tile" key={p.key}>
               <div className="page-tile-name">{p.key}</div>
-              <div className="page-stat"><div className="page-stat-label">Page Views</div><div className="page-stat-value">{fmtInt(p.pageViews)}{vd && <span className={"delta " + vd.dir} style={{fontSize:13,marginLeft:8}}><span className="arrow serif ital">{arrow(vd.dir)}</span><span>{vd.pct.toFixed(1)}%</span></span>}</div></div>
+              <div className="page-stat"><div className="page-stat-label">Page Views</div><div className="page-stat-value">{fmtInt(p.pageViews)}{vd && <span className={"page-delta delta " + vd.dir}><span className="arrow serif ital">{arrow(vd.dir)}</span><span>{vd.pct.toFixed(1)}%</span></span>}</div></div>
               <div className="page-stat"><div className="page-stat-label">Bounce Rate</div><div className="page-stat-value">{fmtPct(p.bounceRate)}</div></div>
-              <div className="page-stat"><div className="page-stat-label">Avg Time</div><div className="page-stat-value">{fmtTime(p.avgTimeOnPageSec)}{td && <span className={"delta " + td.dir} style={{fontSize:13,marginLeft:8}}><span className="arrow serif ital">{arrow(td.dir)}</span><span>{td.pct.toFixed(1)}%</span></span>}</div></div>
+              <div className="page-stat"><div className="page-stat-label">Avg Time</div><div className="page-stat-value">{fmtTime(p.avgTimeOnPageSec)}{td && <span className={"page-delta delta " + td.dir}><span className="arrow serif ital">{arrow(td.dir)}</span><span>{td.pct.toFixed(1)}%</span></span>}</div></div>
             </div>
           );
         })}

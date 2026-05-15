@@ -61,6 +61,16 @@ When rolling into a new quarter, update:
 
 - Quarter dropdown links/labels in each affected page
 - Hero/metadata labels (quarter, date range, generated date)
+- Hero metadata row values shown directly under the quarter headline on both:
+  - `index.html` (Social Media report)
+  - `web/index.html` (Website report)
+
+### 2.1) UI readability checks (website + social)
+
+Before publishing design tweaks, quickly verify:
+
+- Hero metadata appears without divider lines above/below the metadata block.
+- Website **Top Pages** deltas are visually prominent and readable against the metric values.
 
 ### 3) Update local JSON files (for archived/local pages)
 
