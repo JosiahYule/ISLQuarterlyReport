@@ -199,6 +199,12 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   display: grid; grid-template-columns: 1fr; gap: 0;
   align-items: start;
 }
+  display: grid; grid-template-columns: 1fr 2fr; gap: var(--gap);
+  align-items: start;
+  padding-top: 18px;
+  border-top: 1px solid var(--rule);
+}
+.hero-lede-meta { display: flex; flex-direction: column; gap: 10px; }
 .meta-pair { display: flex; flex-direction: column; gap: 4px; }
 .meta-pair .label { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-4); }
 .meta-pair .value { font-family: var(--serif); font-size: 16px; line-height: 1.2; }
