@@ -191,12 +191,12 @@ function Hero({ data }) {
       <h1 className="hero-title serif" style={{ fontWeight: "100", fontFamily: '"Instrument Serif"' }}>
         Quarter <em>{data.meta.quarterWord}</em>
       </h1>
+      <div className="hero-meta-row" role="list" aria-label="Report metadata">
+        <div className="meta-pair" role="listitem"><span className="label">Reporting period</span><span className="value serif">{data.meta.rangeLabel}</span></div>
+        <div className="meta-pair" role="listitem"><span className="label">Generated</span><span className="value serif">{data.meta.generatedLabel}</span></div>
+        <div className="meta-pair" role="listitem"><span className="label">Prepared by</span><span className="value serif">{data.meta.author}</span></div>
+      </div>
       <div className="hero-lede-row">
-        <div className="hero-lede-meta">
-          <div className="meta-pair"><span className="label">Reporting period</span><span className="value serif">{data.meta.rangeLabel}</span></div>
-          <div className="meta-pair"><span className="label">Generated</span><span className="value serif">{data.meta.generatedLabel}</span></div>
-          <div className="meta-pair"><span className="label">Prepared by</span><span className="value serif">{data.meta.author}</span></div>
-        </div>
         <p className="hero-lede serif">
           {data.editorsNote.split(/(\bLinkedIn\b|\bFacebook\b|\bInstagram\b)/).map((part, i) =>
             part === "LinkedIn" || part === "Facebook" || part === "Instagram"
